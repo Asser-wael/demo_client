@@ -1,3 +1,5 @@
+import axiosInstance from "../api/axiosInstance";
+
 export async function subscribeToPush() {
   try {
     const registration =
@@ -5,26 +7,26 @@ export async function subscribeToPush() {
 
     await navigator.serviceWorker.ready;
 
-    console.log("SW ready");
-
     const permission =
       await Notification.requestPermission();
 
-    console.log("Permission:", permission);
-
     if (permission !== "granted") return;
 
-    const key = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+    let subscription =
+      await registration.pushManager.getSubscription();
 
-    console.log("Key length:", key?.length);
+    if (!subscription) {
+      subscription =
+        await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey:
+            urlBase64ToUint8Array(
+              import.meta.env.VITE_VAPID_PUBLIC_KEY
+            ),
+        });
+    }
 
-    const subscription =
-      await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(key),
-      });
-
-    console.log("SUBSCRIPTION:", subscription);
+    console.log("Subscription:", subscription);
 
     await axiosInstance.post(
       "/notifications/subscribe",
@@ -33,13 +35,15 @@ export async function subscribeToPush() {
 
     console.log("Push subscribed!");
   } catch (error) {
-    console.error("PUSH ERROR:", error);
+    console.error("Push error:", error);
   }
 }
 
 function urlBase64ToUint8Array(base64String) {
   const padding =
-    "=".repeat((4 - (base64String.length % 4)) % 4);
+    "=".repeat(
+      (4 - (base64String.length % 4)) % 4
+    );
 
   const base64 = (base64String + padding)
     .replace(/-/g, "+")
