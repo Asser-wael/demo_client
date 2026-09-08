@@ -1,40 +1,39 @@
-import axiosInstance from "../api/axiosInstance";
-
 export async function subscribeToPush() {
   try {
-    const registration = await navigator.serviceWorker.register("/sw.js");
+    const registration =
+      await navigator.serviceWorker.register("/sw.js");
 
-    const permission = await Notification.requestPermission();
+    await navigator.serviceWorker.ready;
 
-    if (permission !== "granted") {
-      console.log("Notification permission denied");
-      return;
-    }
+    console.log("SW ready");
 
-    let subscription =
-      await registration.pushManager.getSubscription();
-    console.log(
-      "VAPID:",
-      import.meta.env.VITE_VAPID_PUBLIC_KEY
-    );
-    if (!subscription) {
-      subscription =
-        await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(
-            import.meta.env.VITE_VAPID_PUBLIC_KEY
-          ),
-        });
-    }
+    const permission =
+      await Notification.requestPermission();
+
+    console.log("Permission:", permission);
+
+    if (permission !== "granted") return;
+
+    const key = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+    console.log("Key length:", key?.length);
+
+    const subscription =
+      await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key),
+      });
+
+    console.log("SUBSCRIPTION:", subscription);
 
     await axiosInstance.post(
       "/notifications/subscribe",
       { subscription }
     );
 
-    console.log("Push subscription successful");
+    console.log("Push subscribed!");
   } catch (error) {
-    console.error("Push error:", error);
+    console.error("PUSH ERROR:", error);
   }
 }
 
