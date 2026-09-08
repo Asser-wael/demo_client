@@ -891,7 +891,7 @@ export default function Home() {
               </p>
 
               <div className="mt-2 text-sm font-semibold text-[var(--color-accent)]">
-                <Currency amount={950} />
+                <Currency amount={40} />
               </div>
             </div>
           </motion.div>
