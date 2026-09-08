@@ -13,7 +13,10 @@ export async function subscribeToPush() {
 
     let subscription =
       await registration.pushManager.getSubscription();
-
+    console.log(
+      "VAPID:",
+      import.meta.env.VITE_VAPID_PUBLIC_KEY
+    );
     if (!subscription) {
       subscription =
         await registration.pushManager.subscribe({
