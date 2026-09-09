@@ -235,6 +235,7 @@ function App() {
 
   useEffect(() => {
     if (!user) return;
+    await Notification.requestPermission();
 
     subscribeToPush();
   }, [user]);
