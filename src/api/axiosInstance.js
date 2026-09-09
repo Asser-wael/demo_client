@@ -28,8 +28,6 @@ axiosInstance.interceptors.request.use(
 
 /* =========================================================
    REFRESH QUEUE
-   عشان لو أكتر من request فشلوا في نفس اللحظة (401)،
-   يعملوا refresh واحد بس مش واحد لكل request
 ========================================================= */
 
 let isRefreshing = false;
@@ -49,10 +47,6 @@ function onRefreshFailed() {
   refreshSubscribers = [];
 }
 
-/*
- * Local-only logout: بيمسح الحالة في الـ redux + localStorage
- * من غير ما يبعت أي request للسيرفر (عشان منقعش في loop)
- */
 function forceLocalLogout() {
   store.dispatch(logout());
   localStorage.removeItem("accessToken");
@@ -87,7 +81,6 @@ axiosInstance.interceptors.response.use(
 
     originalRequest._retry = true;
 
-    // لو فيه refresh شغال بالفعل، استنى نتيجته بدل ما تعمل واحد جديد
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         subscribeTokenRefresh((newToken) => {
@@ -107,8 +100,6 @@ axiosInstance.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // مهم: استخدم axios العادي مش axiosInstance عشان الـ refresh
-      // نفسه ميدخلش في نفس الـ interceptor
       const response = await axios.post(
         `${API_URL}/auth/refresh`,
         {},
@@ -142,7 +133,6 @@ axiosInstance.interceptors.response.use(
       isRefreshing = false;
       onRefreshFailed();
 
-      // لوج اويت محلي بس - من غير ما نبعت request تاني للسيرفر
       forceLocalLogout();
 
       return Promise.reject(refreshError);
