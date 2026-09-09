@@ -268,7 +268,7 @@ function MenuCard({
         amount: 0.15,
       }}
       variants={reduceMotion ? staticVariant : fadeUp}
-      onClick={() => navigate(`/menu/${item?._id}`)}
+      onClick={() => navigate(`/products/${item?._id}`)}
       className="
         group
         h-full
@@ -1193,7 +1193,7 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={() => navigate("/menu")}
+              onClick={() => navigate("/products")}
               className="
                 mt-8
                 w-fit
@@ -1233,7 +1233,7 @@ export default function Home() {
         <SectionHeader
           title="New on the menu this season"
           buttonText="See seasonal menu"
-          onClick={() => navigate("/menu?sort=new")}
+          onClick={() => navigate("/menu")}
         />
 
         {newLoading ? (
