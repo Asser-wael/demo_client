@@ -225,6 +225,7 @@ function App() {
   ========================================================= */
 
   useEffect(() => {
+    if (!user) return;
     dispatch(getCart());
   }, [dispatch]);
 
