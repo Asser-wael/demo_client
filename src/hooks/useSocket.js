@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const useSocket = () => {
+const useSocket = (token) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
+    if (!token) return;
+
     const socketInstance = io(import.meta.env.VITE_SOCKET_URL, {
       withCredentials: true,
+      auth: {
+        token,
+      },
     });
 
     setSocket(socketInstance);
@@ -14,7 +19,7 @@ const useSocket = () => {
     return () => {
       socketInstance.disconnect();
     };
-  }, []);
+  }, [token]);
 
   return socket;
 };

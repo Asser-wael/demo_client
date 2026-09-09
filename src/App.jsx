@@ -25,7 +25,7 @@ function App() {
     (state) => state.auth
   );
 
-  const socket = useSocket();
+  const socket = useSocket(accessToken);
 
 
   const { orders } = useSelector(
@@ -38,7 +38,6 @@ function App() {
 
   useEffect(() => {
     if (!accessToken) return;
-
     dispatch(getUser());
   }, [accessToken, dispatch]);
 
