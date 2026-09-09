@@ -15,6 +15,7 @@ const useSocket = (token) => {
     });
 
     setSocket(socketInstance);
+console.log("done");
 
     return () => {
       socketInstance.disconnect();
