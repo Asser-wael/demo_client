@@ -25,7 +25,7 @@ function App() {
     (state) => state.auth
   );
 
-  const socket = useSocket(accessToken);
+  const socket = useSocket();
 
 
   const { orders } = useSelector(

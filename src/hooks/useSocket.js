@@ -1,17 +1,12 @@
-// hooks/useSocket.js
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const useSocket = (token) => {
+const useSocket = () => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     const socketInstance = io(import.meta.env.VITE_SOCKET_URL, {
       withCredentials: true,
-      auth: {
-        token: token, 
-      },
-      transports: ["websocket", "polling"],
     });
 
     setSocket(socketInstance);
@@ -19,7 +14,7 @@ const useSocket = (token) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [token]);
+  }, []);
 
   return socket;
 };
