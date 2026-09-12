@@ -33,6 +33,7 @@ export async function subscribeToPush() {
       const key = urlBase64ToUint8Array(
         import.meta.env.VITE_VAPID_PUBLIC_KEY
       );
+console.log(key);
 
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
