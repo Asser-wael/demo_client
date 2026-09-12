@@ -43,15 +43,27 @@ import EditProduct from "../../components/products/EditProduct";
 import useCountUp from "../../hooks/useCountUp";
 
 /* =========================================================
+   CURRENCY COMPONENT
+========================================================= */
+
+function Currency({ amount, className = "" }) {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) {
+    return <span className={className}>NZ$ —</span>;
+  }
+
+  const formatted = Number(amount).toLocaleString("en-NZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return <span className={className}>NZ$ {formatted}</span>;
+}
+
+/* =========================================================
    CONSTANTS
 ========================================================= */
 
 const PERIODS = ["weekly", "monthly", "yearly"];
-
-const currency = (value) =>
-  `${Number(value || 0).toLocaleString("en-US", {
-    maximumFractionDigits: 0,
-  })} EGP`;
 
 /* =========================================================
    ANIMATION
@@ -123,10 +135,6 @@ function StatCard({
 }) {
   const animatedValue = useCountUp(value, 900);
 
-  const displayValue = isCurrency
-    ? currency(animatedValue)
-    : animatedValue.toLocaleString("en-US");
-
   return (
     <motion.div
       variants={fadeUp}
@@ -144,7 +152,11 @@ function StatCard({
           </p>
 
           <p className="mt-3 truncate text-[22px] font-semibold tracking-tight text-text sm:text-[26px] lg:text-[30px]">
-            {displayValue}
+            {isCurrency ? (
+              <Currency amount={animatedValue} />
+            ) : (
+              animatedValue.toLocaleString("en-US")
+            )}
           </p>
 
           {note && (
@@ -821,11 +833,9 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      <p className="shrink-0 text-sm font-semibold text-text">
-                        {currency(
-                          order.totalPrice
-                        )}
-                      </p>
+                      <div className="shrink-0 text-sm font-semibold text-text">
+                        <Currency amount={order.totalPrice} />
+                      </div>
 
                     </div>
                   ))
