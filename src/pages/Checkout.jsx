@@ -63,9 +63,10 @@ const Field = React.forwardRef(({ icon, error, className = "", ...props }, ref) 
       <input
         ref={ref}
         {...props}
-        className={`w-full rounded-xl border bg-card px-4 py-3 pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${error
-          ? "border-red-400 focus:border-red-400 focus:ring-red-400"
-          : "border-border focus:border-primary focus:ring-primary"
+        style={{ paddingLeft: "44px" }}
+        className={`w-full rounded-xl border bg-card px-4 py-3 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${error
+            ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+            : "border-border focus:border-primary focus:ring-primary"
           } ${className}`}
       />
     </div>
