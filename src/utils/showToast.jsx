@@ -491,7 +491,7 @@ const ToastCard = ({
                     color: ORDER_ACCENT,
                   }}
                 >
-                  EGP
+                  NZ$
                 </span>
               </motion.div>
             </div>
