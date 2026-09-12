@@ -17,6 +17,7 @@ import { getCategories } from "../../features/category/categorySlice";
 import { addProduct } from "../../features/products/productSlice";
 
 const emptySize = () => ({
+  id: crypto.randomUUID(),
   size: "",
   stock: "",
   price: "",
@@ -25,6 +26,7 @@ const emptySize = () => ({
 });
 
 const emptyVariant = () => ({
+  id: crypto.randomUUID(),
   color: { name: "" },
   sizes: [emptySize()],
 });
@@ -75,11 +77,11 @@ export default function AddProduct({ onDone }) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setImageError("يجب أن يكون الملف صورة");
+      setImageError("File must be an image");
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setImageError("حجم الصورة يجب أن يكون أقل من 10 ميجابايت");
+      setImageError("Image must be under 10MB");
       return;
     }
 
@@ -90,56 +92,62 @@ export default function AddProduct({ onDone }) {
 
   const addColor = () => setVariants((prev) => [...prev, emptyVariant()]);
 
-  const removeColor = (variantIndex) =>
-    setVariants((prev) => prev.filter((_, i) => i !== variantIndex));
+  const removeColor = (id) =>
+    setVariants((prev) => prev.filter((v) => v.id !== id));
 
-  const updateColorName = (variantIndex, value) =>
+  const updateColorName = (id, value) =>
     setVariants((prev) =>
-      prev.map((v, i) => (i === variantIndex ? { ...v, color: { name: value } } : v))
+      prev.map((v) => (v.id === id ? { ...v, color: { name: value } } : v))
     );
 
-  const addSize = (variantIndex) =>
+  const addSize = (variantId) =>
     setVariants((prev) =>
-      prev.map((v, i) =>
-        i === variantIndex ? { ...v, sizes: [...v.sizes, emptySize()] } : v
+      prev.map((v) =>
+        v.id === variantId ? { ...v, sizes: [...v.sizes, emptySize()] } : v
       )
     );
 
-  const removeSize = (variantIndex, sizeIndex) =>
+  const removeSize = (variantId, sizeId) =>
     setVariants((prev) =>
-      prev.map((v, i) =>
-        i === variantIndex
-          ? { ...v, sizes: v.sizes.filter((_, si) => si !== sizeIndex) }
+      prev.map((v) =>
+        v.id === variantId
+          ? { ...v, sizes: v.sizes.filter((s) => s.id !== sizeId) }
           : v
       )
     );
 
-  const updateSizeField = (variantIndex, sizeIndex, field, value) =>
+  const updateSizeField = (variantId, sizeId, field, value) =>
     setVariants((prev) =>
-      prev.map((v, i) =>
-        i === variantIndex
+      prev.map((v) =>
+        v.id === variantId
           ? {
-            ...v,
-            sizes: v.sizes.map((s, si) =>
-              si === sizeIndex ? { ...s, [field]: value } : s
-            ),
-          }
+              ...v,
+              sizes: v.sizes.map((s) =>
+                s.id === sizeId ? { ...s, [field]: value } : s
+              ),
+            }
           : v
       )
     );
 
   const onSubmit = (data) => {
     if (!image) {
-      setImageError("صورة الوجبة مطلوبة");
+      setImageError("Product image is required");
       return;
     }
+
+    // Strip internal local IDs before sending to payload
+    const cleanedVariants = variants.map(({ id, sizes, ...rest }) => ({
+      ...rest,
+      sizes: sizes.map(({ id: sizeId, ...sizeRest }) => sizeRest),
+    }));
 
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("description", data.description);
     formData.append("category", data.category);
     formData.append("isActive", data.status === "Active");
-    formData.append("variants", JSON.stringify(variants));
+    formData.append("variants", JSON.stringify(cleanedVariants));
     formData.append("image", image);
 
     dispatch(addProduct(formData)).then((res) => {
@@ -157,9 +165,9 @@ export default function AddProduct({ onDone }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl font-bold text-text sm:text-3xl">إضافة وجبة جديدة</h1>
+        <h1 className="text-2xl font-bold text-text sm:text-3xl">Add Product</h1>
         <p className="mt-1 text-sm text-muted sm:text-base">
-          أضف صنفاً أو وجبة جديدة لقائمة طعام المطعم.
+          Create a new product for your store.
         </p>
       </motion.div>
 
@@ -167,33 +175,34 @@ export default function AddProduct({ onDone }) {
         {/* ================= Left ================= */}
         <div className="space-y-6 lg:col-span-2">
           {/* Basic Information */}
-          <SectionCard icon={<PiTagDuotone />} title="المعلومات الأساسية">
+          <SectionCard icon={<PiTagDuotone />} title="Basic Information">
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-medium text-text">
-                  اسم الوجبة / الطبق
+                  Product Name
                 </label>
                 <input
                   type="text"
-                  placeholder="مثال: بيتزا مارجريتا، برجر لحم مشوي"
+                  placeholder="Oversized Hoodie"
                   {...register("name", { required: true })}
-                  className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${errors.name ? "border-red-500" : "border-border focus:border-accent"
-                    }`}
+                  className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${
+                    errors.name ? "border-red-500" : "border-border focus:border-accent"
+                  }`}
                 />
                 {errors.name && (
                   <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                    <PiWarningCircleDuotone /> اسم الوجبة مطلوب
+                    <PiWarningCircleDuotone /> Product name is required
                   </p>
                 )}
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-text">
-                  الوصف والمكونات
+                  Description
                 </label>
                 <textarea
                   rows={5}
-                  placeholder="اكتب وصفاً للوجبة والمكونات الأساسية..."
+                  placeholder="Write product description..."
                   {...register("description")}
                   className="w-full resize-none rounded-xl border border-border bg-bg p-4 text-text outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 />
@@ -202,16 +211,17 @@ export default function AddProduct({ onDone }) {
           </SectionCard>
 
           {/* Category & Status */}
-          <SectionCard icon={<PiTagDuotone />} title="التصنيف والحالة" delay={0.05}>
+          <SectionCard icon={<PiTagDuotone />} title="Organization" delay={0.05}>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm text-text">القسم</label>
+                <label className="mb-2 block text-sm text-text">Category</label>
                 <select
                   {...register("category", { required: true })}
-                  className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${errors.category ? "border-red-500" : "border-border focus:border-accent"
-                    }`}
+                  className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${
+                    errors.category ? "border-red-500" : "border-border focus:border-accent"
+                  }`}
                 >
-                  <option value="">اختر القسم</option>
+                  <option value="">Select Category</option>
                   {categories?.map((cat) => (
                     <option key={cat._id} value={cat._id}>
                       {cat.name}
@@ -220,26 +230,26 @@ export default function AddProduct({ onDone }) {
                 </select>
                 {errors.category && (
                   <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                    <PiWarningCircleDuotone /> يرجي اختيار القسم
+                    <PiWarningCircleDuotone /> Please select a category
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-text">حالة العرض</label>
+                <label className="mb-2 block text-sm text-text">Status</label>
                 <select
                   {...register("status")}
                   className="w-full rounded-xl border border-border bg-bg px-4 py-3 text-text outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 >
-                  <option value="Active">متاح في المنيو</option>
-                  <option value="Inactive">غير متاح حالياً</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
                 </select>
               </div>
             </div>
           </SectionCard>
 
-          {/* Variants (Flavors + Sizes) */}
-          <SectionCard icon={<PiPaletteDuotone />} title="النكهات والأحجام" delay={0.1}>
+          {/* Variants (Colors + Sizes) */}
+          <SectionCard icon={<PiPaletteDuotone />} title="Colors & Sizes" delay={0.1}>
             <div className="-mt-2 mb-5 flex justify-end">
               <motion.button
                 type="button"
@@ -248,15 +258,15 @@ export default function AddProduct({ onDone }) {
                 onClick={addColor}
                 className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-accent hover:text-accent"
               >
-                <PiPlusBold /> إضافة نكهة / نوع
+                <PiPlusBold /> Add Color
               </motion.button>
             </div>
 
             <div className="space-y-4">
               <AnimatePresence initial={false}>
-                {variants.map((variant, vi) => (
+                {variants.map((variant) => (
                   <motion.div
-                    key={vi}
+                    key={variant.id}
                     layout
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -273,9 +283,9 @@ export default function AddProduct({ onDone }) {
                       />
                       <input
                         type="text"
-                        placeholder="اسم النكهة/الإضافة (مثال: حار، حادق، بدون ثوم)"
+                        placeholder="Color name (e.g. Black)"
                         value={variant.color.name}
-                        onChange={(e) => updateColorName(vi, e.target.value)}
+                        onChange={(e) => updateColorName(variant.id, e.target.value)}
                         className="flex-1 rounded-xl border border-border bg-card px-4 py-2.5 text-text outline-none focus:border-accent"
                       />
                       {variants.length > 1 && (
@@ -283,7 +293,7 @@ export default function AddProduct({ onDone }) {
                           type="button"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => removeColor(vi)}
+                          onClick={() => removeColor(variant.id)}
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-red-400 transition hover:bg-red-400/10"
                         >
                           <PiTrashDuotone size={18} />
@@ -293,9 +303,9 @@ export default function AddProduct({ onDone }) {
 
                     <div className="space-y-3">
                       <AnimatePresence initial={false}>
-                        {variant.sizes.map((size, si) => (
+                        {variant.sizes.map((size) => (
                           <motion.div
-                            key={si}
+                            key={size.id}
                             layout
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -304,44 +314,44 @@ export default function AddProduct({ onDone }) {
                             className="grid grid-cols-2 gap-3 rounded-xl bg-card p-3 sm:grid-cols-3 lg:grid-cols-5"
                           >
                             <input
-                              placeholder="الحجم (صغير/وسط/كبير)"
+                              placeholder="Size (S/M/L)"
                               value={size.size}
-                              onChange={(e) => updateSizeField(vi, si, "size", e.target.value)}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "size", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <input
                               type="number"
-                              placeholder="الكمية المتاحة"
+                              placeholder="Stock"
                               value={size.stock}
-                              onChange={(e) => updateSizeField(vi, si, "stock", +e.target.value)}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "stock", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <input
                               type="number"
-                              placeholder="السعر"
+                              placeholder="Price"
                               value={size.price}
-                              onChange={(e) => updateSizeField(vi, si, "price", +e.target.value)}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "price", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <input
                               type="number"
-                              placeholder="التكلفة"
+                              placeholder="Cost Price"
                               value={size.costPrice}
-                              onChange={(e) => updateSizeField(vi, si, "costPrice", +e.target.value)}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "costPrice", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <div className="col-span-2 flex items-center gap-2 sm:col-span-1">
                               <input
                                 type="number"
-                                placeholder="سعر العرض"
+                                placeholder="Offer Price"
                                 value={size.offerPrice}
-                                onChange={(e) => updateSizeField(vi, si, "offerPrice", +e.target.value)}
+                                onChange={(e) => updateSizeField(variant.id, size.id, "offerPrice", e.target.value)}
                                 className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                               />
                               {variant.sizes.length > 1 && (
                                 <button
                                   type="button"
-                                  onClick={() => removeSize(vi, si)}
+                                  onClick={() => removeSize(variant.id, size.id)}
                                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10"
                                 >
                                   <PiTrashDuotone size={15} />
@@ -355,10 +365,10 @@ export default function AddProduct({ onDone }) {
 
                     <button
                       type="button"
-                      onClick={() => addSize(vi)}
+                      onClick={() => addSize(variant.id)}
                       className="flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
                     >
-                      <PiPlusBold size={14} /> إضافة حجم
+                      <PiPlusBold size={14} /> Add Size
                     </button>
                   </motion.div>
                 ))}
@@ -370,7 +380,7 @@ export default function AddProduct({ onDone }) {
         {/* ================= Right ================= */}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           {/* Upload */}
-          <SectionCard icon={<PiImageDuotone />} title="صورة الوجبة" delay={0.05}>
+          <SectionCard icon={<PiImageDuotone />} title="Product Image" delay={0.05}>
             <label className="group flex h-48 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-bg transition hover:border-accent sm:h-56">
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               {preview ? (
@@ -384,8 +394,8 @@ export default function AddProduct({ onDone }) {
                   <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl text-primary">
                     <PiImageDuotone />
                   </div>
-                  <p className="font-medium text-text">رفع صورة</p>
-                  <p className="mt-2 text-sm text-muted">PNG, JPG حتى 10 ميجابايت</p>
+                  <p className="font-medium text-text">Upload Image</p>
+                  <p className="mt-2 text-sm text-muted">PNG, JPG up to 10MB</p>
                 </div>
               )}
             </label>
@@ -397,20 +407,20 @@ export default function AddProduct({ onDone }) {
           </SectionCard>
 
           {/* Preview */}
-          <SectionCard icon={<PiCurrencyDollarDuotone />} title="معاينة الوجبة" delay={0.1}>
+          <SectionCard icon={<PiCurrencyDollarDuotone />} title="Product Preview" delay={0.1}>
             <div className="overflow-hidden rounded-xl border border-border">
               <div className="flex h-52 items-center justify-center bg-bg sm:h-60">
                 {preview ? (
                   <img src={preview} alt="preview" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-5xl">🍲</span>
+                  <span className="text-5xl">🛍️</span>
                 )}
               </div>
 
               <div className="space-y-2 p-5">
-                <h3 className="font-semibold text-text">{watch("name") || "اسم الوجبة"}</h3>
+                <h3 className="font-semibold text-text">{watch("name") || "Product Name"}</h3>
                 <p className="line-clamp-2 text-sm text-muted">
-                  {watch("description") || "وصف الوجبة والمكونات..."}
+                  {watch("description") || "Product description..."}
                 </p>
                 <span className="block pt-2 text-lg font-bold text-accent">
                   ${variants[0]?.sizes[0]?.price || "0.00"}
@@ -434,7 +444,7 @@ export default function AddProduct({ onDone }) {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
             >
               <PiRocketLaunchDuotone size={18} />
-              {creating ? "جاري النشر..." : "نشر الوجبة في المنيو"}
+              {creating ? "Publishing..." : "Publish Product"}
             </motion.button>
 
             <motion.button
@@ -444,7 +454,7 @@ export default function AddProduct({ onDone }) {
               whileTap={{ scale: 0.98 }}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 font-medium text-text transition hover:bg-bg"
             >
-              رجوع
+              Back
             </motion.button>
           </motion.div>
         </div>
