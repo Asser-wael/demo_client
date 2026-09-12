@@ -17,6 +17,20 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 
+// Currency Component
+function Currency({ amount, className = "" }) {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) {
+    return <span className={className}>NZ$ —</span>;
+  }
+
+  const formatted = Number(amount).toLocaleString("en-NZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return <span className={className}>NZ$ {formatted}</span>;
+}
+
 export default function Orders() {
   const dispatch = useDispatch();
   const { myOrders = [], loading } = useSelector((state) => state.orders);
@@ -50,30 +64,31 @@ export default function Orders() {
     return order.status === selectedStatus;
   });
 
+  // Unified status styling adhering to a warm restaurant palette
   const statusConfig = {
     pending: {
-      label: "Pending",
-      bg: "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
+      label: "Preparing in Kitchen",
+      bg: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400",
       icon: FiClock,
     },
     confirmed: {
-      label: "Confirmed",
-      bg: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
+      label: "Order Confirmed",
+      bg: "bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400",
       icon: FiCheckCircle,
     },
     shipped: {
-      label: "Shipped",
-      bg: "bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400",
+      label: "Out for Delivery",
+      bg: "bg-amber-600/10 text-amber-800 border-amber-600/20 dark:text-amber-300",
       icon: FiTruck,
     },
     delivered: {
-      label: "Delivered",
-      bg: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
+      label: "Served & Delivered",
+      bg: "bg-emerald-600/10 text-emerald-800 border-emerald-600/20 dark:text-emerald-400",
       icon: FiPackage,
     },
     cancelled: {
-      label: "Cancelled",
-      bg: "bg-rose-500/10 text-rose-600 border-rose-500/20 dark:text-rose-400",
+      label: "Cancelled Order",
+      bg: "bg-rose-500/10 text-rose-700 border-rose-500/20 dark:text-rose-400",
       icon: FiXCircle,
     },
   };
@@ -84,7 +99,7 @@ export default function Orders() {
 
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${current.bg}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${current.bg}`}
       >
         <Icon className="w-3.5 h-3.5" />
         {current.label}
@@ -93,97 +108,95 @@ export default function Orders() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] px-4 py-8 md:px-8 text-[var(--text)] font-sans transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[var(--bg)] px-3 py-6 sm:px-6 md:px-8 text-[var(--text)] font-sans transition-colors duration-300">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+        
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[var(--border)] pb-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-[var(--text)]">
-              My Orders
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-tight text-[var(--text)]">
+              My Meal Orders
             </h1>
-            <p className="text-sm text-[var(--muted)] mt-1">
-              Track and review all of your past and active store orders
+            <p className="text-xs sm:text-sm text-[var(--muted)] mt-1">
+              Track your fresh dishes, delivery status, and order history
             </p>
           </div>
           <button
             onClick={() => dispatch(getOrdersUser())}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--border)]/30 transition shadow-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--border)]/30 transition shadow-sm active:scale-95"
           >
             <FiRefreshCw className="w-4 h-4" />
-            Refresh
+            Refresh Status
           </button>
         </div>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="card p-6 flex items-center gap-5 border border-[var(--border)]">
-            <div className="p-3.5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          <div className="card p-5 md:p-6 flex items-center gap-4 border border-[var(--border)] rounded-2xl shadow-sm">
+            <div className="p-3 bg-[var(--primary)]/10 text-[var(--primary)] rounded-xl shrink-0">
               <FiShoppingBag className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">
-                Total Orders
+              <p className="text-[10px] sm:text-xs font-semibold text-[var(--muted)] uppercase tracking-wider">
+                Total Orders Placed
               </p>
-              <h3 className="text-2xl font-serif font-bold text-[var(--text)] mt-1">
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text)] mt-0.5">
                 {totalOrders}{" "}
-                <span className="text-sm font-sans font-normal text-[var(--muted)]">
-                  orders
+                <span className="text-xs sm:text-sm font-sans font-normal text-[var(--muted)]">
+                  meals
                 </span>
               </h3>
             </div>
           </div>
 
-          <div className="card p-6 flex items-center gap-5 border border-[var(--border)]">
-            <div className="p-3.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl">
+          <div className="card p-5 md:p-6 flex items-center gap-4 border border-[var(--border)] rounded-2xl shadow-sm">
+            <div className="p-3 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-xl shrink-0">
               <FiClock className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">
-                Active Orders
+              <p className="text-[10px] sm:text-xs font-semibold text-[var(--muted)] uppercase tracking-wider">
+                Active Kitchen Orders
               </p>
-              <h3 className="text-2xl font-serif font-bold text-[var(--text)] mt-1">
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text)] mt-0.5">
                 {pendingOrders}{" "}
-                <span className="text-sm font-sans font-normal text-[var(--muted)]">
+                <span className="text-xs sm:text-sm font-sans font-normal text-[var(--muted)]">
                   in progress
                 </span>
               </h3>
             </div>
           </div>
 
-          <div className="card p-6 flex items-center gap-5 border border-[var(--border)]">
-            <div className="p-3.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl">
+          <div className="card p-5 md:p-6 flex items-center gap-4 border border-[var(--border)] rounded-2xl shadow-sm sm:col-span-2 lg:col-span-1">
+            <div className="p-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl shrink-0">
               <FiDollarSign className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">
-                Total Investments
+              <p className="text-[10px] sm:text-xs font-semibold text-[var(--muted)] uppercase tracking-wider">
+                Total Food Spend
               </p>
-              <h3 className="text-2xl font-serif font-bold text-[var(--text)] mt-1">
-                {totalSpent.toLocaleString()}{" "}
-                <span className="text-sm font-sans font-normal text-[var(--muted)]">
-                  EGP
-                </span>
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text)] mt-0.5">
+                <Currency amount={totalSpent} />
               </h3>
             </div>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="glass p-2 rounded-2xl flex items-center gap-2 overflow-x-auto border border-[var(--border)] scrollbar-none">
+        <div className="glass p-1.5 sm:p-2 rounded-2xl flex items-center gap-1.5 sm:gap-2 overflow-x-auto border border-[var(--border)] scrollbar-none">
           {[
             { id: "all", label: "All Orders" },
-            { id: "pending", label: "Pending" },
+            { id: "pending", label: "In Kitchen" },
             { id: "confirmed", label: "Confirmed" },
-            { id: "shipped", label: "Shipped" },
+            { id: "shipped", label: "On the Way" },
             { id: "delivered", label: "Delivered" },
             { id: "cancelled", label: "Cancelled" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setSelectedStatus(tab.id)}
-              className={`px-5 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 sm:px-5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition ${
                 selectedStatus === tab.id
-                  ? "btn-primary shadow-md"
+                  ? "btn-primary shadow-sm"
                   : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/40"
               }`}
             >
@@ -193,17 +206,17 @@ export default function Orders() {
         </div>
 
         {/* Orders Table */}
-        <div className="card border border-[var(--border)] overflow-hidden shadow-sm">
+        <div className="card border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[var(--border)]/20 border-b border-[var(--border)] text-[var(--muted)] font-medium text-xs uppercase tracking-wider">
+            <table className="w-full text-left text-sm whitespace-nowrap md:whitespace-normal">
+              <thead className="bg-[var(--border)]/20 border-b border-[var(--border)] text-[var(--muted)] font-medium text-[11px] uppercase tracking-wider">
                 <tr>
-                  <th className="p-4 pl-6">Order Code</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Items</th>
-                  <th className="p-4">Payment</th>
+                  <th className="p-4 pl-6">Receipt #</th>
+                  <th className="p-4">Date & Time</th>
+                  <th className="p-4">Dishes</th>
+                  <th className="p-4">Payment Method</th>
                   <th className="p-4">Total Amount</th>
-                  <th className="p-4">Status</th>
+                  <th className="p-4">Order Status</th>
                   <th className="p-4 pr-6 text-center">Action</th>
                 </tr>
               </thead>
@@ -222,9 +235,9 @@ export default function Orders() {
                     return (
                       <tr
                         key={order._id}
-                        className="hover:bg-[var(--border)]/20 transition-colors"
+                        className="hover:bg-[var(--border)]/10 transition-colors"
                       >
-                        <td className="p-4 pl-6 font-serif font-bold text-base text-[var(--text)]">
+                        <td className="p-4 pl-6 font-serif font-bold text-sm sm:text-base text-[var(--text)]">
                           {orderCode}
                         </td>
                         <td className="p-4 text-[var(--muted)] text-xs">
@@ -233,32 +246,32 @@ export default function Orders() {
                             {formattedDate}
                           </span>
                         </td>
-                        <td className="p-4 text-[var(--muted)]">
+                        <td className="p-4 text-[var(--muted)] text-xs sm:text-sm">
                           {order.items?.length || 0} item(s)
                         </td>
                         <td className="p-4">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text)] bg-[var(--border)]/40 px-2.5 py-1 rounded-lg border border-[var(--border)]">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text)] bg-[var(--border)]/30 px-2.5 py-1 rounded-lg border border-[var(--border)]">
                             {order.paymentMethod === "wallet" ? (
                               <FiCreditCard className="w-3.5 h-3.5 text-[var(--primary)]" />
                             ) : (
                               <FiDollarSign className="w-3.5 h-3.5 text-emerald-600" />
                             )}
                             {order.paymentMethod === "wallet"
-                              ? "E-Wallet"
-                              : "COD"}
+                              ? "Digital Wallet"
+                              : "Cash on Delivery"}
                           </span>
                         </td>
-                        <td className="p-4 font-bold text-[var(--text)]">
-                          {order.totalPrice?.toLocaleString()} EGP
+                        <td className="p-4 font-bold text-[var(--text)] text-xs sm:text-sm">
+                          <Currency amount={order.totalPrice} />
                         </td>
                         <td className="p-4">{getStatusBadge(order.status)}</td>
                         <td className="p-4 pr-6 text-center">
                           <button
                             onClick={() => setSelectedOrder(order)}
-                            className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-xl text-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 transition"
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl text-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20 transition active:scale-95"
                           >
                             <FiEye className="w-3.5 h-3.5" />
-                            View
+                            View Receipt
                           </button>
                         </td>
                       </tr>
@@ -268,9 +281,9 @@ export default function Orders() {
                   <tr>
                     <td
                       colSpan="7"
-                      className="p-12 text-center text-[var(--muted)]"
+                      className="p-12 text-center text-[var(--muted)] text-sm"
                     >
-                      No orders found in this status.
+                      No meal orders found in this category.
                     </td>
                   </tr>
                 )}
@@ -282,16 +295,17 @@ export default function Orders() {
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 md:p-8 space-y-6 relative border border-[var(--border)]">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-5 sm:p-6 md:p-8 space-y-5 md:space-y-6 relative border border-[var(--border)] bg-[var(--bg)]">
+            
             {/* Modal Header */}
             <div className="flex justify-between items-start border-b border-[var(--border)] pb-4">
               <div>
-                <h3 className="text-2xl font-serif font-bold text-[var(--text)]">
-                  Order #{selectedOrder._id.slice(-6).toUpperCase()}
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text)]">
+                  Order Receipt #{selectedOrder._id.slice(-6).toUpperCase()}
                 </h3>
-                <p className="text-xs text-[var(--muted)] mt-0.5">
-                  Placed on{" "}
+                <p className="text-xs text-[var(--muted)] mt-1">
+                  Ordered on{" "}
                   {new Date(selectedOrder.createdAt).toLocaleString("en-US", {
                     dateStyle: "medium",
                     timeStyle: "short",
@@ -300,52 +314,57 @@ export default function Orders() {
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="text-[var(--muted)] hover:text-[var(--text)] p-2 rounded-xl hover:bg-[var(--border)]/40 text-lg transition"
+                className="text-[var(--muted)] hover:text-[var(--text)] p-2 rounded-xl hover:bg-[var(--border)]/40 text-base transition"
+                aria-label="Close Modal"
               >
                 ✕
               </button>
             </div>
 
             {/* Current Status Banner */}
-            <div className="flex items-center justify-between bg-[var(--border)]/20 p-4 rounded-2xl border border-[var(--border)]">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-                Status
+            <div className="flex items-center justify-between bg-[var(--border)]/10 p-3.5 sm:p-4 rounded-2xl border border-[var(--border)]">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                Order Status
               </span>
               <div>{getStatusBadge(selectedOrder.status)}</div>
             </div>
 
             {/* Delivery Address */}
-            <div className="bg-[var(--border)]/20 p-5 rounded-2xl space-y-3 border border-[var(--border)]">
+            <div className="bg-[var(--border)]/10 p-4 sm:p-5 rounded-2xl space-y-3 border border-[var(--border)]">
               <h4 className="text-xs font-bold text-[var(--primary)] uppercase tracking-wider flex items-center gap-2">
                 <FiMapPin className="w-4 h-4" /> Delivery Address
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-[var(--text)]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[var(--text)]">
                 <div>
-                  <span className="text-[var(--muted)] text-xs block">
-                    Recipient
+                  <span className="text-[var(--muted)] text-[11px] block">
+                    Customer Name
                   </span>
                   <span className="font-semibold">
-                    {selectedOrder.shippingAddress?.fullName}
+                    {selectedOrder.shippingAddress?.fullName || "Guest Customer"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--muted)] text-xs block">Phone</span>
+                  <span className="text-[var(--muted)] text-[11px] block">
+                    Contact Phone
+                  </span>
                   <span className="font-semibold">
-                    {selectedOrder.shippingAddress?.phone}
+                    {selectedOrder.shippingAddress?.phone || "N/A"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--muted)] text-xs block">City</span>
+                  <span className="text-[var(--muted)] text-[11px] block">
+                    Area / City
+                  </span>
                   <span className="font-semibold">
-                    {selectedOrder.shippingAddress?.city}
+                    {selectedOrder.shippingAddress?.city || "N/A"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--muted)] text-xs block">
-                    Address
+                  <span className="text-[var(--muted)] text-[11px] block">
+                    Street Address / Table
                   </span>
                   <span className="font-semibold">
-                    {selectedOrder.shippingAddress?.address}
+                    {selectedOrder.shippingAddress?.address || "N/A"}
                   </span>
                 </div>
               </div>
@@ -354,34 +373,34 @@ export default function Orders() {
             {/* Order Items */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider">
-                Items ({selectedOrder.items?.length || 0})
+                Ordered Dishes ({selectedOrder.items?.length || 0})
               </h4>
               <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-2xl overflow-hidden bg-[var(--card)]">
                 {selectedOrder.items?.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-4 flex items-center justify-between gap-4"
+                    className="p-3.5 sm:p-4 flex items-center justify-between gap-3 sm:gap-4"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       {item.image && (
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-14 h-14 object-cover rounded-xl border border-[var(--border)]"
+                          className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-xl border border-[var(--border)] shrink-0"
                         />
                       )}
-                      <div>
-                        <div className="font-semibold text-sm text-[var(--text)]">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-xs sm:text-sm text-[var(--text)] truncate">
                           {item.name}
                         </div>
-                        <div className="text-xs text-[var(--muted)] mt-0.5">
-                          Color: {item.color || "N/A"} | Size:{" "}
-                          {item.size || "N/A"} | Qty: {item.quantity}
+                        <div className="text-[11px] sm:text-xs text-[var(--muted)] mt-0.5">
+                          Variant: {item.color || "Standard"} | Portion:{" "}
+                          {item.size || "Regular"} | Qty: {item.quantity}
                         </div>
                       </div>
                     </div>
-                    <div className="text-sm font-bold text-[var(--text)]">
-                      {(item.price * item.quantity).toLocaleString()} EGP
+                    <div className="text-xs sm:text-sm font-bold text-[var(--text)] shrink-0">
+                      <Currency amount={item.price * item.quantity} />
                     </div>
                   </div>
                 ))}
@@ -391,18 +410,18 @@ export default function Orders() {
             {/* Modal Summary */}
             <div className="border-t border-[var(--border)] pt-4 flex justify-between items-center">
               <div>
-                <span className="text-xs text-[var(--muted)] block uppercase tracking-wider">
+                <span className="text-[10px] sm:text-xs text-[var(--muted)] block uppercase tracking-wider">
                   Total Paid
                 </span>
-                <span className="text-2xl font-serif font-bold text-[var(--text)]">
-                  {selectedOrder.totalPrice?.toLocaleString()} EGP
+                <span className="text-xl sm:text-2xl font-serif font-bold text-[var(--text)]">
+                  <Currency amount={selectedOrder.totalPrice} />
                 </span>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="btn-primary px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md"
+                className="btn-primary px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm active:scale-95 transition"
               >
-                Close
+                Close Receipt
               </button>
             </div>
           </div>
