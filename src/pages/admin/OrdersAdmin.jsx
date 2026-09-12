@@ -1738,7 +1738,7 @@ export default function OrdersAdmin() {
           <StatItem
             label="Total Revenue"
             value={totalRevenue.toLocaleString()}
-            suffix="EGP"
+            suffix="NZ$"
             icon={FiDollarSign}
           />
 
