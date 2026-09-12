@@ -213,7 +213,7 @@ button:active {
    Inputs
 ========================= */
 
-input,
+/* input,
 textarea,
 select {
   width: 100%;
@@ -228,7 +228,7 @@ select {
     border-color 0.25s ease,
     box-shadow 0.25s ease,
     background-color 0.25s ease;
-}
+} */
 
 input::placeholder,
 textarea::placeholder {

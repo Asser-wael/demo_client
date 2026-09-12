@@ -237,19 +237,25 @@ export default function Checkout() {
 
     const res = await dispatch(checkoutOrder(fd));
 
-    if (checkoutOrder.fulfilled.match(res)) {
-      setSubmitted(true);
+    const res = await dispatch(checkoutOrder(fd));
 
-      // Buy Now should NOT clear the cart
+    if (checkoutOrder.fulfilled.match(res)) {
       if (!BuyNowitem) dispatch(clearCart());
 
-      setTimeout(() => navigate("/orders"), 600);
+      if (data.paymentMethod === "stripe") {
+        const orderId = res.payload.order._id;
+        const stripeRes = await dispatch(createStripeSession(orderId));
+        if (createStripeSession.fulfilled.match(stripeRes)) {
+          window.location.href = stripeRes.payload.url; // redirect لصفحة Stripe نفسها
+        } else {
+          setSubmitError("Couldn't start Stripe payment.");
+        }
+      } else {
+        setSubmitted(true);
+        setTimeout(() => navigate("/orders"), 600);
+      }
     } else {
-      setSubmitError(
-        res.payload?.message ||
-        res.error?.message ||
-        "Couldn't place your order. Please try again."
-      );
+      setSubmitError(res.payload?.message || res.error?.message || "Couldn't place your order.");
     }
   };
 
