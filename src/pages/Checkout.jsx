@@ -237,7 +237,6 @@ export default function Checkout() {
 
     const res = await dispatch(checkoutOrder(fd));
 
-    const res = await dispatch(checkoutOrder(fd));
 
     if (checkoutOrder.fulfilled.match(res)) {
       if (!BuyNowitem) dispatch(clearCart());
