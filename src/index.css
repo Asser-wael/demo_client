@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 /* =========================
@@ -17,71 +17,57 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   transition:
-    background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color 0.3s ease,
+    color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
 /* =========================
-   Restaurant Theme
+   Luxury Theme
 ========================= */
 
 :root {
-  /* Background */
-  --bg: #f8f5ef;
-  --card: #fffdf9;
-  --text: #241b16;
-  --muted: #776c64;
-  --border: #e8dfd5;
+  /* Base */
+  --bg: #f8f8f6;
+  --card: #ffffff;
+  --text: #0b0b0b;
+  --muted: #6b6b6b;
+  --border: #e5e5e5;
 
-  /* Restaurant Primary */
-  --primary: #2b211c;
-  --primary-hover: #3b2c24;
-
-  /* Food Accent */
-  --accent: #b85c38;
-  --accent-hover: #9f4829;
-  --accent-light: #f5e6dd;
-
-  /* Secondary */
-  --olive: #68705a;
-  --cream: #f2eadf;
+  /* Burgundy */
+  --primary: #5a0000;
+  --primary-hover: #760000;
+  --accent: #8b1a1a;
+  --accent-light: #f3e5e5;
 
   /* Effects */
-  --shadow: 0 18px 45px -20px rgba(43, 33, 28, 0.18);
-  --glass: rgba(255, 253, 249, 0.78);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.07);
+  --glass: rgba(255, 255, 255, 0.78);
 }
-
-/* =========================
-   Dark Restaurant Theme
-========================= */
 
 .dark {
-  --bg: #15110f;
-  --card: #1d1815;
-  --text: #f6efe7;
-  --muted: #aaa097;
-  --border: #342a24;
+  /* Base */
+  --bg: #080808;
+  --card: #111111;
+  --text: #ffffff;
+  --muted: #a0a0a0;
+  --border: #252525;
 
-  --primary: #f6efe7;
-  --primary-hover: #ffffff;
+  /* Burgundy */
+  --primary: #8b1a1a;
+  --primary-hover: #a52a2a;
+  --accent: #b33a3a;
+  --accent-light: #2a1111;
 
-  --accent: #d4774f;
-  --accent-hover: #e08860;
-  --accent-light: #392018;
-
-  --olive: #929a7d;
-  --cream: #28211c;
-
-  --shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.55);
-  --glass: rgba(29, 24, 21, 0.78);
+  /* Effects */
+  --shadow: 0 25px 80px rgba(0, 0, 0, 0.55);
+  --glass: rgba(17, 17, 17, 0.78);
 }
-
 /* =========================
-   Tailwind Theme Mapping
+   Tailwind Theme
 ========================= */
 
 @theme {
@@ -106,9 +92,9 @@ h5,
 h6,
 .logo,
 .font-serif {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Fraunces", serif;
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
 p,
@@ -118,7 +104,7 @@ button,
 input,
 textarea,
 select {
-  font-family: "DM Sans", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 /* =========================
@@ -131,38 +117,36 @@ a {
 }
 
 /* =========================
-   Glass
+   Luxury Cards
 ========================= */
 
 .glass {
   background: var(--glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+
   border-radius: 20px;
 }
-
-/* =========================
-   Restaurant Cards
-========================= */
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
+
   border-radius: 20px;
+
   box-shadow: var(--shadow);
 
   transition:
-    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.35s ease;
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-  box-shadow: 0 24px 55px -22px rgba(43, 33, 28, 0.28);
+  transform: translateY(-3px);
 }
 
 /* =========================
@@ -171,12 +155,11 @@ a {
 
 button {
   cursor: pointer;
-
   transition:
-    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
 }
 
 button:active {
@@ -185,10 +168,8 @@ button:active {
 
 .btn-primary {
   background: var(--primary);
-  color: var(--bg);
+  color: #fff;
   border: none;
-  font-weight: 600;
-  border-radius: 12px;
 }
 
 .btn-primary:hover {
@@ -196,39 +177,24 @@ button:active {
   transform: translateY(-2px);
 }
 
-.btn-accent {
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  font-weight: 600;
-  border-radius: 12px;
-}
-
-.btn-accent:hover {
-  background: var(--accent-hover);
-  transform: translateY(-2px);
-}
-
 /* =========================
    Inputs
 ========================= */
 
-/* input,
+input,
 textarea,
 select {
   width: 100%;
   background: var(--card);
   color: var(--text);
+
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 16px;
   outline: none;
 
   transition:
     border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    background-color 0.25s ease;
-} */
+    box-shadow 0.25s ease;
+}
 
 input::placeholder,
 textarea::placeholder {
@@ -239,7 +205,9 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-light);
+
+  box-shadow:
+    0 0 0 3px rgba(194, 152, 90, 0.14);
 }
 
 /* =========================
@@ -251,26 +219,12 @@ img {
   display: block;
 }
 
-.food-image {
-  object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.image-container {
-  overflow: hidden;
-  border-radius: 18px;
-}
-
-.image-container:hover .food-image {
-  transform: scale(1.035);
-}
-
 /* =========================
    Scrollbar
 ========================= */
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -278,12 +232,12 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--primary);
   border-radius: 50px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  background: var(--primary-hover);
 }
 
 /* =========================
@@ -291,12 +245,12 @@ img {
 ========================= */
 
 ::selection {
-  background: var(--accent);
+  background: var(--primary);
   color: #fff;
 }
 
 /* =========================
-   Ambient Restaurant Background
+   Luxury Background
 ========================= */
 
 body {
@@ -305,60 +259,51 @@ body {
 
 body::before {
   content: "";
+
   position: fixed;
   inset: 0;
 
   background:
     radial-gradient(
-      circle at 8% 8%,
-      rgba(184, 92, 56, 0.055),
+      circle at 0% 0%,
+      rgba(194, 152, 90, 0.07),
       transparent 30%
     ),
     radial-gradient(
-      circle at 92% 88%,
-      rgba(104, 112, 90, 0.045),
-      transparent 30%
+      circle at 100% 100%,
+      rgba(194, 152, 90, 0.04),
+      transparent 35%
     );
 
   pointer-events: none;
   z-index: -1;
 }
 
-.dark body::before {
-  background:
-    radial-gradient(
-      circle at 8% 8%,
-      rgba(212, 119, 79, 0.07),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 92% 88%,
-      rgba(146, 154, 125, 0.035),
-      transparent 30%
-    );
-}
-
 /* =========================
-   Marquee
+   Marquee Ticker
+   Usage:
+   <div class="marquee">
+     <div class="marquee-track">
+       ...items...   (render the item list TWICE in JSX for a seamless loop)
+     </div>
+   </div>
 ========================= */
 
 .marquee {
   overflow: hidden;
   position: relative;
-
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 10%,
-    #000 90%,
+    #000 8%,
+    #000 92%,
     transparent 100%
   );
-
   mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 10%,
-    #000 90%,
+    #000 8%,
+    #000 92%,
     transparent 100%
   );
 }
@@ -367,9 +312,7 @@ body::before {
   display: flex;
   align-items: center;
   width: max-content;
-
-  animation: marquee 28s linear infinite;
-
+  animation: marquee 26s linear infinite;
   will-change: transform;
 }
 
@@ -381,64 +324,7 @@ body::before {
   from {
     transform: translateX(0);
   }
-
   to {
     transform: translateX(-50%);
-  }
-}
-
-/* =========================
-   Restaurant Utilities
-========================= */
-
-.price {
-  font-family: "DM Sans", sans-serif;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.category-title {
-  font-family: "Playfair Display", Georgia, serif;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.section-label {
-  font-family: "DM Sans", sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-/* =========================
-   Accessibility
-========================= */
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-/* =========================
-   Reduced Motion
-========================= */
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
   }
 }
