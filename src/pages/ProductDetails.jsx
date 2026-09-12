@@ -22,12 +22,26 @@ import {
 } from "../features/cart/cartSlice";
 
 import Loading from "../components/common/Loading";
-import Currency from "../components/company/Currency";
+
+/* =========================================================
+   CURRENCY COMPONENT
+========================================================= */
+
+function Currency({ amount, className = "" }) {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) {
+    return <span className={className}>NZ$ —</span>;
+  }
+
+  const formatted = Number(amount).toLocaleString("en-NZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return <span className={className}>NZ$ {formatted}</span>;
+}
 
 /* =========================================================
    ANIMATION
-   (single orchestrated entrance for the hero, nothing else
-   animates on scroll — keeps the page calm)
 ========================================================= */
 
 const fadeUp = {
@@ -48,7 +62,7 @@ const fadeUp = {
 };
 
 /* =========================================================
-   HELPERS  — unchanged data logic
+   HELPERS
 ========================================================= */
 
 const getSizePrice = (size) => {
@@ -160,13 +174,11 @@ function StarPicker({ value, onChange }) {
 }
 
 /* =========================================================
-   DISH CARD  (was MiniProductCard — internal component only,
-   safe to rename since nothing outside this file imports it)
+   DISH CARD
 ========================================================= */
 
 function DishCard({ item, index }) {
   const navigate = useNavigate();
-
   const { price, oldPrice } = getMinPrice(item);
 
   return (
@@ -200,17 +212,13 @@ function DishCard({ item, index }) {
 
         <div className="flex items-center gap-2">
           {price !== null ? (
-            <span className="text-sm font-semibold text-text">
-              EGP {Number(price).toLocaleString()}
-            </span>
+            <Currency amount={price} className="text-sm font-semibold text-text" />
           ) : (
             <span className="text-sm text-muted">Price unavailable</span>
           )}
 
           {oldPrice !== null && (
-            <span className="text-xs text-muted line-through">
-              EGP {Number(oldPrice).toLocaleString()}
-            </span>
+            <Currency amount={oldPrice} className="text-xs text-muted line-through" />
           )}
         </div>
       </div>
@@ -219,7 +227,7 @@ function DishCard({ item, index }) {
 }
 
 /* =========================================================
-   MENU RAIL  (was ProductRail)
+   MENU RAIL
 ========================================================= */
 
 function MenuRail({ title, subtitle, items }) {
@@ -247,12 +255,11 @@ function MenuRail({ title, subtitle, items }) {
 }
 
 /* =========================================================
-   REVIEWS  (dispatch, state shape, and field names untouched)
+   REVIEWS
 ========================================================= */
 
 function ReviewsSection({ product, productId }) {
   const dispatch = useDispatch();
-
   const user = useSelector((state) => state.auth?.user);
 
   const reviewLoading = useSelector(
@@ -266,7 +273,6 @@ function ReviewsSection({ product, productId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const cleanComment = comment.trim();
 
     if (!rating || !cleanComment || reviewLoading) {
@@ -288,7 +294,6 @@ function ReviewsSection({ product, productId }) {
   };
 
   const averageRating = Number(product?.rating || 0);
-
   const reviewsCount = Number(
     product?.numReviews || reviews.length || 0
   );
@@ -300,8 +305,6 @@ function ReviewsSection({ product, productId }) {
   return (
     <section className="mx-auto max-w-6xl px-6 pb-20">
       <div className="card p-8 md:p-10">
-        {/* Header */}
-
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
           <div>
             <h2 className="font-serif text-2xl text-text">
@@ -318,8 +321,6 @@ function ReviewsSection({ product, productId }) {
             </div>
           </div>
         </div>
-
-        {/* Add Review */}
 
         <div className="mb-8 rounded-2xl border border-border p-6">
           {user ? (
@@ -375,8 +376,6 @@ function ReviewsSection({ product, productId }) {
           )}
         </div>
 
-        {/* Reviews List */}
-
         {!reviews.length ? (
           <p className="text-sm text-muted">
             No reviews yet — be the first to tell us how it was.
@@ -426,8 +425,7 @@ function ReviewsSection({ product, productId }) {
 }
 
 /* =========================================================
-   DISH DETAILS  (export name kept as ProductDetails so no
-   route or import elsewhere in the app needs to change)
+   PRODUCT DETAILS
 ========================================================= */
 
 export default function ProductDetails() {
@@ -441,9 +439,7 @@ export default function ProductDetails() {
   );
 
   const currentProduct = productDetails?.product || null;
-
   const relatedProducts = productDetails?.relatedProducts || [];
-
   const differentProducts = productDetails?.differentProducts || [];
 
   const cartActionLoading = useSelector(selectCartActionLoading);
@@ -452,21 +448,15 @@ export default function ProductDetails() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
-  /* GET PRODUCT */
-
   useEffect(() => {
     if (id) {
       dispatch(getProductDetails(id));
     }
   }, [dispatch, id]);
 
-  /* SCROLL TOP */
-
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
-
-  /* INITIAL VARIANT */
 
   useEffect(() => {
     if (!currentProduct?.variants?.length) {
@@ -491,8 +481,6 @@ export default function ProductDetails() {
     setQuantity(1);
   }, [currentProduct]);
 
-  /* KEEP QUANTITY INSIDE STOCK */
-
   useEffect(() => {
     const stock = Number(selectedSize?.stock || 0);
 
@@ -516,21 +504,12 @@ export default function ProductDetails() {
     );
   }
 
-  /* CURRENT VARIANT DATA */
-
   const stock = Number(selectedSize?.stock || 0);
-
   const isOutOfStock = !selectedSize || stock <= 0;
-
   const price = Number(selectedSize?.price ?? 0);
-
   const offerPrice = Number(selectedSize?.offerPrice ?? 0);
-
   const hasOffer = offerPrice > 0 && offerPrice < price;
-
   const finalPrice = hasOffer ? offerPrice : price;
-
-  /* QUANTITY */
 
   const decreaseQuantity = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
@@ -538,15 +517,11 @@ export default function ProductDetails() {
 
   const increaseQuantity = () => {
     if (isOutOfStock) return;
-
     setQuantity((prev) => Math.min(stock, prev + 1));
   };
 
-  /* CHANGE COLOR (drives the "Preparation" picker below) */
-
   const changeColor = (variant) => {
     if (!variant) return;
-
     setColor(variant);
 
     const firstAvailableSize =
@@ -556,34 +531,23 @@ export default function ProductDetails() {
     setQuantity(1);
   };
 
-  /* CHANGE SIZE (drives the "Portion" picker below) */
-
   const changeSize = (size) => {
     if (!size) return;
-
-    if (Number(size.stock || 0) <= 0) {
-      return;
-    }
+    if (Number(size.stock || 0) <= 0) return;
 
     setSelectedSize(size);
     setQuantity(1);
   };
 
-  /* VALIDATION */
-
   const isValidSelection = Boolean(
     currentProduct?._id &&
-    color?.color?.name &&
-    selectedSize?.size &&
-    !isOutOfStock
+      color?.color?.name &&
+      selectedSize?.size &&
+      !isOutOfStock
   );
 
-  /* ADD TO CART */
-
   const handleAddToCart = () => {
-    if (!isValidSelection) {
-      return;
-    }
+    if (!isValidSelection) return;
 
     dispatch(
       addToCart({
@@ -595,12 +559,8 @@ export default function ProductDetails() {
     );
   };
 
-  /* BUY NOW */
-
   const handleBuyNow = () => {
-    if (!isValidSelection) {
-      return;
-    }
+    if (!isValidSelection) return;
 
     dispatch(
       BuyNowitem({
@@ -609,22 +569,13 @@ export default function ProductDetails() {
           name: currentProduct.name,
           image: currentProduct.image,
         },
-
         productId: currentProduct._id,
-
         name: currentProduct.name,
-
         image: currentProduct.image,
-
-        /* IMPORTANT: send primitive values, NOT objects. */
         color: color.color.name,
-
         size: selectedSize.size,
-
         price: finalPrice,
-
         offerPrice: hasOffer ? offerPrice : null,
-
         quantity,
       })
     );
@@ -632,12 +583,9 @@ export default function ProductDetails() {
     navigate("/checkout");
   };
 
-  /* UI */
-
   return (
     <div className="min-h-screen bg-bg text-text">
       {/* BREADCRUMB */}
-
       <div className="mx-auto max-w-6xl px-6 pt-6">
         <div className="text-sm text-muted">
           Menu / {currentProduct.category?.name || "Dishes"} /{" "}
@@ -646,10 +594,8 @@ export default function ProductDetails() {
       </div>
 
       {/* DISH HERO */}
-
       <section className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 py-8 lg:grid-cols-[1fr_1fr_0.85fr]">
         {/* IMAGE */}
-
         <motion.div
           initial="hidden"
           animate="visible"
@@ -673,7 +619,6 @@ export default function ProductDetails() {
         </motion.div>
 
         {/* DETAILS */}
-
         <motion.div
           initial="hidden"
           animate="visible"
@@ -689,27 +634,22 @@ export default function ProductDetails() {
             {currentProduct.name}
           </h1>
 
-          {/* Rating */}
-
           <div className="mt-4 flex items-center gap-3">
             <StarRating value={currentProduct.rating || 0} />
-
             <span className="text-sm text-muted">
               {currentProduct.numReviews
-                ? `${Number(currentProduct.rating || 0).toFixed(1)} (${currentProduct.numReviews
-                } reviews)`
+                ? `${Number(currentProduct.rating || 0).toFixed(1)} (${
+                    currentProduct.numReviews
+                  } reviews)`
                 : "No ratings yet"}
             </span>
           </div>
-
-          {/* Description */}
 
           <p className="mt-6 max-w-md leading-8 text-muted">
             {currentProduct.description}
           </p>
 
-          {/* PREPARATION (color variants) */}
-
+          {/* PREPARATION */}
           {currentProduct.variants?.length > 0 && (
             <div className="mt-8">
               <h3 className="mb-3 text-sm font-semibold text-text">
@@ -719,11 +659,7 @@ export default function ProductDetails() {
               <div className="flex flex-wrap gap-2">
                 {currentProduct.variants.map((variant, index) => {
                   const colorName = variant?.color?.name;
-
-                  if (!colorName) {
-                    return null;
-                  }
-
+                  if (!colorName) return null;
                   const isSelected = color?.color?.name === colorName;
 
                   return (
@@ -731,10 +667,11 @@ export default function ProductDetails() {
                       key={`${colorName}-${index}`}
                       type="button"
                       onClick={() => changeColor(variant)}
-                      className={`rounded-full border px-4 py-2 text-sm transition-all ${isSelected
+                      className={`rounded-full border px-4 py-2 text-sm transition-all ${
+                        isSelected
                           ? "border-primary bg-primary text-white"
                           : "border-border text-text hover:border-primary"
-                        }`}
+                      }`}
                     >
                       {colorName}
                     </button>
@@ -744,8 +681,7 @@ export default function ProductDetails() {
             </div>
           )}
 
-          {/* PORTION (size variants) */}
-
+          {/* PORTION */}
           {color?.sizes?.length > 0 && (
             <div className="mt-6">
               <h3 className="mb-3 text-sm font-semibold text-text">
@@ -755,9 +691,7 @@ export default function ProductDetails() {
               <div className="flex flex-wrap gap-2">
                 {color.sizes.map((size, index) => {
                   const sizeName = size?.size;
-
                   const isSelected = selectedSize?.size === sizeName;
-
                   const outOfStock = Number(size?.stock || 0) <= 0;
 
                   return (
@@ -766,13 +700,15 @@ export default function ProductDetails() {
                       type="button"
                       disabled={outOfStock}
                       onClick={() => changeSize(size)}
-                      className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${isSelected
+                      className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${
+                        isSelected
                           ? "border-primary bg-primary text-white"
                           : "border-border text-text hover:border-primary"
-                        } ${outOfStock
+                      } ${
+                        outOfStock
                           ? "cursor-not-allowed opacity-40 line-through"
                           : ""
-                        }`}
+                      }`}
                     >
                       {sizeName}
                     </button>
@@ -784,7 +720,6 @@ export default function ProductDetails() {
         </motion.div>
 
         {/* ORDER CARD */}
-
         <motion.div
           initial="hidden"
           animate="visible"
@@ -794,23 +729,15 @@ export default function ProductDetails() {
         >
           <h3 className="mb-5 font-serif text-lg text-text">Your Order</h3>
 
-          {/* Selected Variant */}
-
           <div className="rounded-lg border border-border px-4 py-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted">Preparation</span>
-
-              <span className="font-semibold">
-                {color?.color?.name || "—"}
-              </span>
+              <span className="font-semibold">{color?.color?.name || "—"}</span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
               <span className="text-sm text-muted">Portion</span>
-
-              <span className="font-semibold">
-                {selectedSize?.size || "—"}
-              </span>
+              <span className="font-semibold">{selectedSize?.size || "—"}</span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
@@ -818,16 +745,18 @@ export default function ProductDetails() {
 
               <div className="flex items-center gap-2">
                 {hasOffer && (
-                  <span className="text-sm text-muted line-through">
-                    <Currency amount={price.toLocaleString()} />
-
-                  </span>
+                  <Currency
+                    amount={price}
+                    className="text-sm text-muted line-through"
+                  />
                 )}
 
                 <span className="font-semibold text-primary">
-                  {finalPrice > 0
-                    ? ` ${<Currency amount={finalPrice.toLocaleString()} />}`
-                    : "—"}
+                  {finalPrice > 0 ? (
+                    <Currency amount={finalPrice} />
+                  ) : (
+                    "—"
+                  )}
                 </span>
               </div>
             </div>
@@ -836,8 +765,9 @@ export default function ProductDetails() {
               <span className="text-sm text-muted">Availability</span>
 
               <span
-                className={`inline-flex items-center gap-1 text-xs font-semibold ${!isOutOfStock ? "text-green-600" : "text-red-500"
-                  }`}
+                className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                  !isOutOfStock ? "text-green-600" : "text-red-500"
+                }`}
               >
                 <FiClock className="text-sm" />
                 {!isOutOfStock ? `${stock} left today` : "Sold out today"}
@@ -846,7 +776,6 @@ export default function ProductDetails() {
           </div>
 
           {/* QUANTITY */}
-
           <div className="mt-6">
             <label className="mb-2 block text-sm font-semibold">
               Quantity
@@ -878,7 +807,6 @@ export default function ProductDetails() {
           </div>
 
           {/* ADD TO CART */}
-
           <button
             type="button"
             onClick={handleAddToCart}
@@ -888,12 +816,11 @@ export default function ProductDetails() {
             {cartActionLoading
               ? "Adding..."
               : isOutOfStock
-                ? "Sold Out Today"
-                : "Add to Order"}
+              ? "Sold Out Today"
+              : "Add to Order"}
           </button>
 
           {/* BUY NOW */}
-
           <button
             type="button"
             disabled={!isValidSelection}
@@ -902,8 +829,6 @@ export default function ProductDetails() {
           >
             Order Now
           </button>
-
-          {/* Selection warning */}
 
           {!selectedSize && (
             <p className="mt-3 text-center text-xs text-muted">
@@ -914,7 +839,6 @@ export default function ProductDetails() {
       </section>
 
       {/* ABOUT THE DISH */}
-
       <section className="mx-auto max-w-6xl px-6 pb-16">
         <div className="card p-8 md:p-10">
           <h2 className="font-serif text-3xl text-text">About This Dish</h2>
@@ -926,7 +850,6 @@ export default function ProductDetails() {
       </section>
 
       {/* RELATED */}
-
       <MenuRail
         title="Pairs Well With"
         subtitle="From the same category"
@@ -934,7 +857,6 @@ export default function ProductDetails() {
       />
 
       {/* DIFFERENT */}
-
       <MenuRail
         title="More From Our Menu"
         subtitle="Something different to try"
@@ -942,7 +864,6 @@ export default function ProductDetails() {
       />
 
       {/* REVIEWS */}
-
       <ReviewsSection product={currentProduct} productId={id} />
     </div>
   );
