@@ -15,6 +15,7 @@ import {
 
 import { getProducts } from "../features/products/productSlice";
 import { getCategories } from "../features/category/categorySlice";
+import Currency from "../components/company/Currency";
 
 // ==========================================
 // MOTION CONFIG
