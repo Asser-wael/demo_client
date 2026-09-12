@@ -5,7 +5,10 @@ const useSocket = (token) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setSocket(null);
+      return;
+    }
 
     const socketInstance = io(import.meta.env.VITE_SOCKET_URL, {
       withCredentials: true,
@@ -15,10 +18,10 @@ const useSocket = (token) => {
     });
 
     setSocket(socketInstance);
-console.log("done");
 
     return () => {
       socketInstance.disconnect();
+      setSocket(null);
     };
   }, [token]);
 
