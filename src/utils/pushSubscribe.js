@@ -28,6 +28,8 @@ export async function subscribeToPush() {
     let subscription = await registration.pushManager.getSubscription();
 
     if (!subscription) {
+      console.log(import.meta.env.VITE_VAPID_PUBLIC_KEY);
+      
       const key = urlBase64ToUint8Array(
         import.meta.env.VITE_VAPID_PUBLIC_KEY
       );
