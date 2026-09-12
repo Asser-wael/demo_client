@@ -8,7 +8,6 @@ export const getProducts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get("/products/products");
-      console.log(data.products);
       
       return data.products || [];
     } catch (error) {
