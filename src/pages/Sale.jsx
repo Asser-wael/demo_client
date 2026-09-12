@@ -14,6 +14,7 @@ import {
 
 import { getCategories } from "../features/category/categorySlice";
 import { getProducts } from "../features/products/productSlice";
+import Currency from "../components/company/Currency";
 
 // ==========================================
 // MOTION CONFIG
@@ -135,10 +136,10 @@ function SaleCard({ item, index }) {
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-baseline gap-1.5 sm:gap-2">
             <span className="text-xs sm:text-sm font-bold text-[var(--primary)]">
-              EGP {offer.price}
+              <Currency amount={offer.price}/>
             </span>
             <span className="text-[10px] sm:text-xs text-[var(--muted)] line-through">
-              EGP {offer.oldPrice}
+              <Currency amount={offer.oldPrice}/>
             </span>
           </div>
           <div className="flex items-center gap-1 text-[var(--muted)] text-[10px] sm:text-xs">
