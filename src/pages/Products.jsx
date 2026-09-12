@@ -178,12 +178,13 @@ function ProductCard({ item, index }) {
           <div>
             {oldPrice && (
               <span className="mr-2 text-xs text-[var(--cream)]/80 line-through">
-                EGP {oldPrice}
+                <Currency amount={oldPrice} />
               </span>
             )}
 
             <span className="text-xl font-bold tracking-tight text-white price">
-              EGP {price}
+              <Currency amount={price} />
+
             </span>
           </div>
 
@@ -304,11 +305,10 @@ function FilterPanel({
         <div className="flex flex-col gap-1.5">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`text-left text-sm px-3.5 py-2.5 rounded-xl transition-all ${
-              !selectedCategory
-                ? "bg-[var(--accent-light)] text-[var(--accent)] font-semibold"
-                : "text-[var(--text)] hover:bg-[var(--cream)]"
-            }`}
+            className={`text-left text-sm px-3.5 py-2.5 rounded-xl transition-all ${!selectedCategory
+              ? "bg-[var(--accent-light)] text-[var(--accent)] font-semibold"
+              : "text-[var(--text)] hover:bg-[var(--cream)]"
+              }`}
           >
             All Items
           </button>
@@ -316,11 +316,10 @@ function FilterPanel({
             <button
               key={cat._id}
               onClick={() => setSelectedCategory(cat._id)}
-              className={`text-left text-sm px-3.5 py-2.5 rounded-xl transition-all ${
-                selectedCategory === cat._id
-                  ? "bg-[var(--accent-light)] text-[var(--accent)] font-semibold"
-                  : "text-[var(--text)] hover:bg-[var(--cream)]"
-              }`}
+              className={`text-left text-sm px-3.5 py-2.5 rounded-xl transition-all ${selectedCategory === cat._id
+                ? "bg-[var(--accent-light)] text-[var(--accent)] font-semibold"
+                : "text-[var(--text)] hover:bg-[var(--cream)]"
+                }`}
             >
               {cat.name}
             </button>
@@ -381,11 +380,10 @@ function FilterPanel({
                 <button
                   key={size}
                   onClick={() => toggleSize(size)}
-                  className={`min-w-10 px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all ${
-                    active
-                      ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-sm"
-                      : "border-[var(--border)] bg-[var(--card)] text-[var(--text)] hover:border-[var(--accent)]"
-                  }`}
+                  className={`min-w-10 px-3.5 py-2 text-xs font-semibold rounded-xl border transition-all ${active
+                    ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-sm"
+                    : "border-[var(--border)] bg-[var(--card)] text-[var(--text)] hover:border-[var(--accent)]"
+                    }`}
                 >
                   {size}
                 </button>
@@ -588,11 +586,10 @@ export default function Products() {
                       setSortBy(key);
                       setSortOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-3 text-sm hover:bg-[var(--cream)] transition-colors ${
-                      sortBy === key
-                        ? "text-[var(--accent)] font-bold"
-                        : "text-[var(--text)] font-medium"
-                    }`}
+                    className={`w-full text-left px-4 py-3 text-sm hover:bg-[var(--cream)] transition-colors ${sortBy === key
+                      ? "text-[var(--accent)] font-bold"
+                      : "text-[var(--text)] font-medium"
+                      }`}
                   >
                     {label}
                   </button>

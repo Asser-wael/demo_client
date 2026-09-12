@@ -572,9 +572,9 @@ export default function ProductDetails() {
 
   const isValidSelection = Boolean(
     currentProduct?._id &&
-      color?.color?.name &&
-      selectedSize?.size &&
-      !isOutOfStock
+    color?.color?.name &&
+    selectedSize?.size &&
+    !isOutOfStock
   );
 
   /* ADD TO CART */
@@ -695,9 +695,8 @@ export default function ProductDetails() {
 
             <span className="text-sm text-muted">
               {currentProduct.numReviews
-                ? `${Number(currentProduct.rating || 0).toFixed(1)} (${
-                    currentProduct.numReviews
-                  } reviews)`
+                ? `${Number(currentProduct.rating || 0).toFixed(1)} (${currentProduct.numReviews
+                } reviews)`
                 : "No ratings yet"}
             </span>
           </div>
@@ -731,11 +730,10 @@ export default function ProductDetails() {
                       key={`${colorName}-${index}`}
                       type="button"
                       onClick={() => changeColor(variant)}
-                      className={`rounded-full border px-4 py-2 text-sm transition-all ${
-                        isSelected
+                      className={`rounded-full border px-4 py-2 text-sm transition-all ${isSelected
                           ? "border-primary bg-primary text-white"
                           : "border-border text-text hover:border-primary"
-                      }`}
+                        }`}
                     >
                       {colorName}
                     </button>
@@ -767,15 +765,13 @@ export default function ProductDetails() {
                       type="button"
                       disabled={outOfStock}
                       onClick={() => changeSize(size)}
-                      className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${
-                        isSelected
+                      className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${isSelected
                           ? "border-primary bg-primary text-white"
                           : "border-border text-text hover:border-primary"
-                      } ${
-                        outOfStock
+                        } ${outOfStock
                           ? "cursor-not-allowed opacity-40 line-through"
                           : ""
-                      }`}
+                        }`}
                     >
                       {sizeName}
                     </button>
@@ -822,13 +818,14 @@ export default function ProductDetails() {
               <div className="flex items-center gap-2">
                 {hasOffer && (
                   <span className="text-sm text-muted line-through">
-                    EGP {price.toLocaleString()}
+                    <Currency amount={price.toLocaleString()} />
+
                   </span>
                 )}
 
                 <span className="font-semibold text-primary">
                   {finalPrice > 0
-                    ? `EGP ${finalPrice.toLocaleString()}`
+                    ? ` ${<Currency amount={finalPrice.toLocaleString()} />}`
                     : "—"}
                 </span>
               </div>
@@ -838,9 +835,8 @@ export default function ProductDetails() {
               <span className="text-sm text-muted">Availability</span>
 
               <span
-                className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                  !isOutOfStock ? "text-green-600" : "text-red-500"
-                }`}
+                className={`inline-flex items-center gap-1 text-xs font-semibold ${!isOutOfStock ? "text-green-600" : "text-red-500"
+                  }`}
               >
                 <FiClock className="text-sm" />
                 {!isOutOfStock ? `${stock} left today` : "Sold out today"}
@@ -891,8 +887,8 @@ export default function ProductDetails() {
             {cartActionLoading
               ? "Adding..."
               : isOutOfStock
-              ? "Sold Out Today"
-              : "Add to Order"}
+                ? "Sold Out Today"
+                : "Add to Order"}
           </button>
 
           {/* BUY NOW */}
