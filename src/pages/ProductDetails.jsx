@@ -22,6 +22,7 @@ import {
 } from "../features/cart/cartSlice";
 
 import Loading from "../components/common/Loading";
+import Currency from "../components/company/Currency";
 
 /* =========================================================
    ANIMATION
