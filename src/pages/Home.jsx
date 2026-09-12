@@ -611,10 +611,10 @@ function ProductSwiper({
           reduceMotion
             ? false
             : {
-                delay: 5000,
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true,
-              }
+              delay: 5000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }
         }
         pagination={{
           clickable: true,
@@ -1011,9 +1011,8 @@ export default function Home() {
                   amount: 0.15,
                 }}
                 variants={variant}
-                onClick={() =>
-                  navigate(`/menu?category=${item?._id}`)
-                }
+                onClick={() => navigate(`/collections/${item._id}`)}
+
                 className="
                   group
                   relative
@@ -1586,9 +1585,9 @@ function TrustSection() {
       <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="
+            <div
+              key={i}
+              className="
                   h-12
                   animate-pulse
                   rounded-md
@@ -1596,15 +1595,15 @@ function TrustSection() {
                   border-[var(--color-border-subtle)]
                   bg-[var(--color-bg-surface)]
                 "
-              />
-            ))
+            />
+          ))
           : trustItems.map((item, index) => (
-              <TrustItem
-                key={item?._id || index}
-                item={item}
-                index={index}
-              />
-            ))}
+            <TrustItem
+              key={item?._id || index}
+              item={item}
+              index={index}
+            />
+          ))}
       </div>
     </section>
   );
