@@ -50,7 +50,7 @@ const statusConfig = {
   },
 
   shipped: {
-    label: "Shipped",
+    label: "Out for Delivery",
     color: "text-purple-600 dark:text-purple-400",
     dot: "bg-purple-500",
     icon: FiTruck,
@@ -151,11 +151,12 @@ function StatItem({
             {label}
           </p>
 
-          <div className="mt-2 flex items-baseline gap-1">
+          <div className="mt-2 flex items-baseline gap-1 flex-wrap">
             <span
               className="
-                text-xl
-                sm:text-2xl
+                text-lg
+                sm:text-xl
+                lg:text-2xl
                 font-semibold
                 tracking-tight
                 truncate
@@ -215,7 +216,7 @@ function OrderRow({
 
   const customer =
     order.shippingAddress?.fullName ||
-    "Guest Customer";
+    "Guest Diner";
 
   const phone =
     order.shippingAddress?.phone || "—";
@@ -310,7 +311,7 @@ function OrderRow({
         "
       >
         {itemsCount}{" "}
-        {itemsCount === 1 ? "item" : "items"}
+        {itemsCount === 1 ? "dish" : "dishes"}
       </td>
 
       {/* PAYMENT */}
@@ -332,7 +333,7 @@ function OrderRow({
           )}
 
           {order.paymentMethod === "wallet"
-            ? "E-Wallet"
+            ? "Digital Wallet"
             : "Cash on Delivery"}
         </div>
       </td>
@@ -402,7 +403,7 @@ function OrderRow({
             </option>
 
             <option value="shipped">
-              Shipped
+              Out for Delivery
             </option>
 
             <option value="delivered">
@@ -461,7 +462,7 @@ function MobileOrderCard({
 
   const customer =
     order.shippingAddress?.fullName ||
-    "Guest Customer";
+    "Guest Diner";
 
   const phone =
     order.shippingAddress?.phone || "—";
@@ -469,7 +470,8 @@ function MobileOrderCard({
   return (
     <div
       className="
-        px-4
+        px-3
+        sm:px-4
         py-4
         border-b
         border-[var(--border)]
@@ -484,6 +486,7 @@ function MobileOrderCard({
           items-start
           justify-between
           gap-3
+          flex-wrap
         "
       >
         <div className="min-w-0">
@@ -569,6 +572,7 @@ function MobileOrderCard({
         className="
           grid
           grid-cols-2
+          sm:grid-cols-3
           gap-x-4
           gap-y-3
           mt-4
@@ -586,7 +590,7 @@ function MobileOrderCard({
               text-[var(--muted)]
             "
           >
-            Items
+            Dishes
           </p>
 
           <p className="mt-1 text-sm font-medium">
@@ -615,7 +619,7 @@ function MobileOrderCard({
             "
           >
             {order.paymentMethod === "wallet"
-              ? "E-Wallet"
+              ? "Wallet"
               : "COD"}
           </p>
         </div>
@@ -695,7 +699,7 @@ function MobileOrderCard({
           </option>
 
           <option value="shipped">
-            Shipped
+            Out for Delivery
           </option>
 
           <option value="delivered">
@@ -764,7 +768,7 @@ function OrderModal({
         flex
         items-center
         justify-center
-        p-3
+        p-2
         sm:p-5
       "
       onMouseDown={(e) => {
@@ -919,7 +923,7 @@ function OrderModal({
                 </option>
 
                 <option value="shipped">
-                  Shipped
+                  Out for Delivery
                 </option>
 
                 <option value="delivered">
@@ -933,7 +937,7 @@ function OrderModal({
             </div>
           </section>
 
-          {/* SHIPPING */}
+          {/* DELIVERY */}
           <section>
             <div
               className="
@@ -948,7 +952,7 @@ function OrderModal({
               <FiMapPin className="w-4 h-4 text-[var(--primary)]" />
 
               <h3 className="text-sm font-semibold">
-                Shipping Information
+                Delivery Information
               </h3>
             </div>
 
@@ -963,7 +967,7 @@ function OrderModal({
               "
             >
               <InfoField
-                label="Customer Name"
+                label="Diner Name"
                 value={
                   order.shippingAddress
                     ?.fullName
@@ -1011,7 +1015,7 @@ function OrderModal({
                   <FiCreditCard className="w-4 h-4 text-[var(--primary)]" />
 
                   <h3 className="text-sm font-semibold">
-                    Wallet Payment
+                    Digital Wallet Payment
                   </h3>
                 </div>
 
@@ -1110,7 +1114,7 @@ function OrderModal({
               "
             >
               <h3 className="text-sm font-semibold">
-                Order Items
+                Dishes Ordered
               </h3>
 
               <span
@@ -1119,7 +1123,7 @@ function OrderModal({
                   text-[var(--muted)]
                 "
               >
-                {order.items?.length || 0} items
+                {order.items?.length || 0} dishes
               </span>
             </div>
 
@@ -1134,6 +1138,8 @@ function OrderModal({
                       items-center
                       justify-between
                       gap-4
+                      flex-wrap
+                      sm:flex-nowrap
                     "
                   >
                     <div
@@ -1226,49 +1232,51 @@ function OrderModal({
           {/* TOTAL */}
           <div
             className="
-    pt-5
-    border-t
-    border-[var(--border)]
-    flex
-    items-end
-    justify-between
-    gap-4
-  "
+              pt-5
+              border-t
+              border-[var(--border)]
+              flex
+              flex-col
+              sm:flex-row
+              sm:items-end
+              sm:justify-between
+              gap-4
+            "
           >
             <div>
               <p
                 className="
-        text-[10px]
-        uppercase
-        tracking-[0.12em]
-        text-[var(--muted)]
-      "
+                  text-[10px]
+                  uppercase
+                  tracking-[0.12em]
+                  text-[var(--muted)]
+                "
               >
                 Grand Total
               </p>
 
               <p
                 className="
-        mt-1
-        text-xl
-        sm:text-2xl
-        font-semibold
-      "
+                  mt-1
+                  text-xl
+                  sm:text-2xl
+                  font-semibold
+                "
               >
                 {order.totalPrice?.toLocaleString() || 0}{" "}
                 <span
                   className="
-          text-xs
-          font-normal
-          text-[var(--muted)]
-        "
+                    text-xs
+                    font-normal
+                    text-[var(--muted)]
+                  "
                 >
                   EGP
                 </span>
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-wrap gap-2 w-full sm:w-auto">
               {/* WhatsApp */}
               <button
                 type="button"
@@ -1294,19 +1302,20 @@ function OrderModal({
                   );
                 }}
                 className="
-        h-9
-        w-9
-        rounded-md
-        bg-[#25D366]
-        text-white
-        flex
-        items-center
-        justify-center
-        hover:bg-[#20BD5A]
-        transition
-        shadow-sm
-        hover:shadow-md
-      "
+                  h-9
+                  w-9
+                  rounded-md
+                  bg-[#25D366]
+                  text-white
+                  flex
+                  items-center
+                  justify-center
+                  hover:bg-[#20BD5A]
+                  transition
+                  shadow-sm
+                  hover:shadow-md
+                  shrink-0
+                "
               >
                 <FaWhatsapp className="text-lg" />
               </button>
@@ -1340,16 +1349,18 @@ function OrderModal({
                   }
                 }}
                 className="
-        h-9
-        px-4
-        rounded-md
-        border
-        border-[var(--border)]
-        text-xs
-        font-medium
-        hover:bg-[var(--bg)]
-        transition
-      "
+                  h-9
+                  px-4
+                  rounded-md
+                  border
+                  border-[var(--border)]
+                  text-xs
+                  font-medium
+                  hover:bg-[var(--bg)]
+                  transition
+                  flex-1
+                  sm:flex-none
+                "
               >
                 Print
               </button>
@@ -1359,16 +1370,18 @@ function OrderModal({
                 type="button"
                 onClick={onClose}
                 className="
-        h-9
-        px-4
-        rounded-md
-        border
-        border-[var(--border)]
-        text-xs
-        font-medium
-        hover:bg-[var(--bg)]
-        transition
-      "
+                  h-9
+                  px-4
+                  rounded-md
+                  border
+                  border-[var(--border)]
+                  text-xs
+                  font-medium
+                  hover:bg-[var(--bg)]
+                  transition
+                  flex-1
+                  sm:flex-none
+                "
               >
                 Close
               </button>
@@ -1588,13 +1601,12 @@ export default function OrdersAdmin() {
         w-full
         bg-[var(--bg)]
         text-[var(--text)]
-        px-7
+        px-4
         sm:px-6
         lg:px-8
         py-5
         sm:py-6
         lg:py-8
-        max-sm:-translate-x-7
       "
     >
 
@@ -1649,13 +1661,14 @@ export default function OrdersAdmin() {
 
             <h1
               className="
-                text-2xl
-                sm:text-3xl
+                text-xl
+                sm:text-2xl
+                lg:text-3xl
                 font-semibold
                 tracking-tight
               "
             >
-              Orders
+              Food Orders
             </h1>
 
             <p
@@ -1665,7 +1678,7 @@ export default function OrdersAdmin() {
                 text-[var(--muted)]
               "
             >
-              Manage and track customer orders.
+              Manage and track your restaurant's food orders.
             </p>
           </div>
 
@@ -1796,7 +1809,7 @@ export default function OrdersAdmin() {
                     e.target.value
                   )
                 }
-                placeholder="Search orders..."
+                placeholder="Search by order, diner, or phone..."
                 className="
                   w-full
                   h-10
@@ -1825,6 +1838,8 @@ export default function OrdersAdmin() {
                 overflow-x-auto
                 pb-0.5
                 scrollbar-none
+                -mx-1
+                px-1
               "
             >
               {[
@@ -1842,7 +1857,7 @@ export default function OrdersAdmin() {
                 },
                 {
                   id: "shipped",
-                  label: "Shipped",
+                  label: "Out for Delivery",
                 },
                 {
                   id: "delivered",
@@ -1894,6 +1909,7 @@ export default function OrdersAdmin() {
             items-center
             justify-between
             gap-3
+            flex-wrap
           "
         >
           <p
@@ -1979,7 +1995,7 @@ export default function OrdersAdmin() {
                       text-[var(--muted)]
                     "
                   >
-                    Customer
+                    Diner
                   </th>
 
                   <th
@@ -1994,7 +2010,7 @@ export default function OrdersAdmin() {
                       text-[var(--muted)]
                     "
                   >
-                    Items
+                    Dishes
                   </th>
 
                   <th
@@ -2201,6 +2217,7 @@ export default function OrdersAdmin() {
                 className="
                   py-16
                   text-center
+                  px-4
                 "
               >
                 <FiShoppingBag
