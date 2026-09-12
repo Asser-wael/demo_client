@@ -99,7 +99,7 @@ function App() {
 
       showToast({
         type: "adminOrder",
-        message: `${order.items?.length || 0} items received`,
+        message: `${order.items?.length || 0} dishes received`,
         amount: order.totalPrice,
       });
 
@@ -123,7 +123,7 @@ function App() {
 
         showToast({
           type: "success",
-          message: "Order printed successfully",
+          message: "Order ticket printed successfully",
         });
       } catch (error) {
         console.error(
