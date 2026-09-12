@@ -19,16 +19,16 @@ import { addProduct } from "../../features/products/productSlice";
 
 const emptySize = () => ({
   id: crypto.randomUUID(),
-  size: "", // الحجم (مثال: فردي / عائلي / وسط)
-  stock: "", // الكمية المتاحة
-  price: "", // السعر
-  costPrice: "", // تكلفة الطبق
-  offerPrice: "", // سعر العرض/الخصم
+  size: "", // Size name (e.g., Single / Family / Medium)
+  stock: "", // Available quantity
+  price: "", // Regular Price
+  costPrice: "", // Cost Price
+  offerPrice: "", // Discount/Offer Price
 });
 
 const emptyVariant = () => ({
   id: crypto.randomUUID(),
-  color: { name: "" }, // النكهة / الخيار (مثال: حار / عادي)
+  color: { name: "" }, // Flavor / Option (e.g., Spicy / Regular)
   sizes: [emptySize()],
 });
 
@@ -78,11 +78,11 @@ export default function AddProduct({ onDone }) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setImageError("يجب أن يكون الملف صورة (PNG, JPG)");
+      setImageError("File must be an image (PNG, JPG)");
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setImageError("يجب أن يكون حجم الصورة أقل من 10 ميجابايت");
+      setImageError("Image size must be less than 10MB");
       return;
     }
 
@@ -133,7 +133,7 @@ export default function AddProduct({ onDone }) {
 
   const onSubmit = (data) => {
     if (!image) {
-      setImageError("صورة الوجبة مطلوبة");
+      setImageError("Meal image is required");
       return;
     }
 
@@ -165,25 +165,25 @@ export default function AddProduct({ onDone }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl font-bold text-text sm:text-3xl">إضافة وجبة جديدة</h1>
+        <h1 className="text-2xl font-bold text-text sm:text-3xl">Add New Meal</h1>
         <p className="mt-1 text-sm text-muted sm:text-base">
-          أضف طبقاً أو وجبة جديدة إلى قائمة طعام المطعم.
+          Add a new dish or meal to the restaurant menu.
         </p>
       </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* ================= القسم الأيمن (البيانات الأساسية) ================= */}
+        {/* ================= Left / Main Column (Basic Info & Options) ================= */}
         <div className="space-y-6 lg:col-span-2">
-          {/* المعومات الأساسية */}
-          <SectionCard icon={<PiTagDuotone />} title="معلومات الوجبة">
+          {/* Basic Information */}
+          <SectionCard icon={<PiTagDuotone />} title="Meal Details">
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-medium text-text">
-                  اسم الوجبة / الطبق
+                  Meal / Dish Name
                 </label>
                 <input
                   type="text"
-                  placeholder="مثال: برجر دجاج مشوي"
+                  placeholder="e.g., Grilled Chicken Burger"
                   {...register("name", { required: true })}
                   className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${
                     errors.name ? "border-red-500" : "border-border focus:border-accent"
@@ -191,18 +191,18 @@ export default function AddProduct({ onDone }) {
                 />
                 {errors.name && (
                   <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                    <PiWarningCircleDuotone /> اسم الوجبة مطلوب
+                    <PiWarningCircleDuotone /> Meal name is required
                   </p>
                 )}
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-text">
-                  وصف الوجبة والمكونات
+                  Description & Ingredients
                 </label>
                 <textarea
                   rows={5}
-                  placeholder="اكتب وصفاً للوجبة والمكونات الرئيسية..."
+                  placeholder="Write a description for the meal and main ingredients..."
                   {...register("description")}
                   className="w-full resize-none rounded-xl border border-border bg-bg p-4 text-text outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 />
@@ -210,18 +210,18 @@ export default function AddProduct({ onDone }) {
             </div>
           </SectionCard>
 
-          {/* القسم والحالة */}
-          <SectionCard icon={<PiBowlFoodDuotone />} title="التصنيف والحالة" delay={0.05}>
+          {/* Category & Status */}
+          <SectionCard icon={<PiBowlFoodDuotone />} title="Category & Status" delay={0.05}>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm text-text">قسم الطعام</label>
+                <label className="mb-2 block text-sm text-text">Food Category</label>
                 <select
                   {...register("category", { required: true })}
                   className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${
                     errors.category ? "border-red-500" : "border-border focus:border-accent"
                   }`}
                 >
-                  <option value="">اختر القسم</option>
+                  <option value="">Select Category</option>
                   {categories?.map((cat) => (
                     <option key={cat._id} value={cat._id}>
                       {cat.name}
@@ -230,26 +230,26 @@ export default function AddProduct({ onDone }) {
                 </select>
                 {errors.category && (
                   <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                    <PiWarningCircleDuotone /> يرجى اختيار القسم
+                    <PiWarningCircleDuotone /> Please select a category
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-text">حالة التوفر</label>
+                <label className="mb-2 block text-sm text-text">Availability Status</label>
                 <select
                   {...register("status")}
                   className="w-full rounded-xl border border-border bg-bg px-4 py-3 text-text outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 >
-                  <option value="Active">متاح للطلب</option>
-                  <option value="Inactive">غير متاح حالياً</option>
+                  <option value="Active">Available for order</option>
+                  <option value="Inactive">Currently unavailable</option>
                 </select>
               </div>
             </div>
           </SectionCard>
 
-          {/* الخيارات والأحجام (النكهات والحجم) */}
-          <SectionCard icon={<PiPaletteDuotone />} title="النكهات والأحجام" delay={0.1}>
+          {/* Options & Sizes (Flavors & Sizes) */}
+          <SectionCard icon={<PiPaletteDuotone />} title="Flavors & Sizes" delay={0.1}>
             <div className="-mt-2 mb-5 flex justify-end">
               <motion.button
                 type="button"
@@ -258,7 +258,7 @@ export default function AddProduct({ onDone }) {
                 onClick={addVariant}
                 className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-accent hover:text-accent"
               >
-                <PiPlusBold /> إضافة نكهة / خيار
+                <PiPlusBold /> Add Flavor / Option
               </motion.button>
             </div>
 
@@ -277,7 +277,7 @@ export default function AddProduct({ onDone }) {
                     <div className="flex items-center gap-3">
                       <input
                         type="text"
-                        placeholder="نوع/نكهة الوجبة (مثال: حار، عادي، بدون ثوم)"
+                        placeholder="Meal option/flavor (e.g., Spicy, Regular, No Garlic)"
                         value={variant.color.name}
                         onChange={(e) => updateVariantName(variant.id, e.target.value)}
                         className="flex-1 rounded-xl border border-border bg-card px-4 py-2.5 text-text outline-none focus:border-accent"
@@ -308,28 +308,28 @@ export default function AddProduct({ onDone }) {
                             className="grid grid-cols-2 gap-3 rounded-xl bg-card p-3 sm:grid-cols-3 lg:grid-cols-5"
                           >
                             <input
-                              placeholder="الحجم (فردي/وسط/عائلي)"
+                              placeholder="Size (Single/Medium/Family)"
                               value={size.size}
                               onChange={(e) => updateSizeField(variant.id, size.id, "size", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <input
                               type="number"
-                              placeholder="الكمية المتاحة"
+                              placeholder="Available Stock"
                               value={size.stock}
                               onChange={(e) => updateSizeField(variant.id, size.id, "stock", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <input
                               type="number"
-                              placeholder="السعر"
+                              placeholder="Price"
                               value={size.price}
                               onChange={(e) => updateSizeField(variant.id, size.id, "price", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
                             />
                             <input
                               type="number"
-                              placeholder="التكلفة"
+                              placeholder="Cost Price"
                               value={size.costPrice}
                               onChange={(e) => updateSizeField(variant.id, size.id, "costPrice", e.target.value)}
                               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
@@ -337,7 +337,7 @@ export default function AddProduct({ onDone }) {
                             <div className="col-span-2 flex items-center gap-2 sm:col-span-1">
                               <input
                                 type="number"
-                                placeholder="سعر الخصم"
+                                placeholder="Offer Price"
                                 value={size.offerPrice}
                                 onChange={(e) => updateSizeField(variant.id, size.id, "offerPrice", e.target.value)}
                                 className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
@@ -362,7 +362,7 @@ export default function AddProduct({ onDone }) {
                       onClick={() => addSize(variant.id)}
                       className="flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
                     >
-                      <PiPlusBold size={14} /> إضافة حجم آخر
+                      <PiPlusBold size={14} /> Add Another Size
                     </button>
                   </motion.div>
                 ))}
@@ -371,10 +371,10 @@ export default function AddProduct({ onDone }) {
           </SectionCard>
         </div>
 
-        {/* ================= القسم الأيسر (الصورة والمعاينة) ================= */}
+        {/* ================= Right / Sidebar Column (Image Upload & Preview) ================= */}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-          {/* رفع صورة الوجبة */}
-          <SectionCard icon={<PiImageDuotone />} title="صورة الوجبة" delay={0.05}>
+          {/* Upload Image */}
+          <SectionCard icon={<PiImageDuotone />} title="Meal Image" delay={0.05}>
             <label className="group flex h-48 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-bg transition hover:border-accent sm:h-56">
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               {preview ? (
@@ -388,8 +388,8 @@ export default function AddProduct({ onDone }) {
                   <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl text-primary">
                     <PiImageDuotone />
                   </div>
-                  <p className="font-medium text-text">رفع صورة للوجبة</p>
-                  <p className="mt-2 text-sm text-muted">PNG, JPG حتى 10MB</p>
+                  <p className="font-medium text-text">Upload meal image</p>
+                  <p className="mt-2 text-sm text-muted">PNG, JPG up to 10MB</p>
                 </div>
               )}
             </label>
@@ -400,8 +400,8 @@ export default function AddProduct({ onDone }) {
             )}
           </SectionCard>
 
-          {/* معاينة الكارت */}
-          <SectionCard icon={<PiCurrencyDollarDuotone />} title="معاينة الوجبة" delay={0.1}>
+          {/* Card Preview */}
+          <SectionCard icon={<PiCurrencyDollarDuotone />} title="Meal Preview" delay={0.1}>
             <div className="overflow-hidden rounded-xl border border-border">
               <div className="flex h-52 items-center justify-center bg-bg sm:h-60">
                 {preview ? (
@@ -412,9 +412,9 @@ export default function AddProduct({ onDone }) {
               </div>
 
               <div className="space-y-2 p-5">
-                <h3 className="font-semibold text-text">{watch("name") || "اسم الوجبة"}</h3>
+                <h3 className="font-semibold text-text">{watch("name") || "Meal Name"}</h3>
                 <p className="line-clamp-2 text-sm text-muted">
-                  {watch("description") || "وصف الوجبة والمكونات..."}
+                  {watch("description") || "Meal description and ingredients..."}
                 </p>
                 <span className="block pt-2 text-lg font-bold text-accent">
                   ${variants[0]?.sizes[0]?.price || "0.00"}
@@ -423,7 +423,7 @@ export default function AddProduct({ onDone }) {
             </div>
           </SectionCard>
 
-          {/* زر النشر */}
+          {/* Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -438,7 +438,7 @@ export default function AddProduct({ onDone }) {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
             >
               <PiRocketLaunchDuotone size={18} />
-              {creating ? "جاري النشر..." : "نشر الوجبة في القائمة"}
+              {creating ? "Publishing..." : "Publish Meal to Menu"}
             </motion.button>
 
             <motion.button
@@ -448,7 +448,7 @@ export default function AddProduct({ onDone }) {
               whileTap={{ scale: 0.98 }}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 font-medium text-text transition hover:bg-bg"
             >
-              رجوع
+              Back
             </motion.button>
           </motion.div>
         </div>
