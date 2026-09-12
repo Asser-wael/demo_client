@@ -81,17 +81,17 @@ export default function Products() {
       >
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-            قائمة الطعام
+            Food Menu
           </p>
-          <h1 className="mt-1 text-3xl text-text">جميع الوجبات والأطباق</h1>
-          <p className="mt-1 text-sm text-muted">إدارة وتنظيم الأطباق والأصناف المتاحة في المطعم.</p>
+          <h1 className="mt-1 text-3xl text-text">All Meals & Dishes</h1>
+          <p className="mt-1 text-sm text-muted">Manage and organize available menu items and dishes.</p>
         </div>
         <button
           onClick={() => navigate("add")}
           className="btn-primary flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
         >
           <FaPlus />
-          إضافة وجبة جديدة
+          Add New Meal
         </button>
       </motion.div>
 
@@ -104,7 +104,7 @@ export default function Products() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="البحث عن وجبة..."
+              placeholder="Search for a meal..."
               className="w-full rounded-xl border border-border bg-bg py-3 pl-10 pr-4 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
           </div>
@@ -113,7 +113,7 @@ export default function Products() {
             onChange={(e) => setCategory(e.target.value)}
             className="rounded-xl border border-border bg-bg px-4 py-3 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
           >
-            <option value="">جميع الأقسام</option>
+            <option value="">All Categories</option>
             {categories?.map((c) => (
               <option key={c._id} value={c._id}>
                 {c.name}
@@ -125,9 +125,9 @@ export default function Products() {
             onChange={(e) => setStatus(e.target.value)}
             className="rounded-xl border border-border bg-bg px-4 py-3 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
           >
-            <option value="">جميع الحالات</option>
-            <option value="active">متاح في المنيو</option>
-            <option value="inactive">غير متاح حالياً</option>
+            <option value="">All Statuses</option>
+            <option value="active">Available</option>
+            <option value="inactive">Unavailable</option>
           </select>
           <button
             type="button"
@@ -135,7 +135,7 @@ export default function Products() {
             className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-medium text-text transition-colors hover:bg-bg"
           >
             <FaFilter className="text-xs" />
-            إعادة ضبط
+            Reset
           </button>
         </div>
       </div>
@@ -144,8 +144,8 @@ export default function Products() {
       {filteredProducts.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border bg-card py-20 text-center">
           <FaUtensils className="text-4xl text-muted" />
-          <p className="font-medium text-text">لم يتم العثور على أطباق</p>
-          <p className="text-sm text-muted">جرب تغيير خيارات التصفية أو قم بإضافة وجبة جديدة</p>
+          <p className="font-medium text-text">No dishes found</p>
+          <p className="text-sm text-muted">Try changing your filter settings or add a new meal.</p>
         </div>
       )}
 
@@ -156,13 +156,13 @@ export default function Products() {
             <table className="w-full min-w-[900px]">
               <thead className="border-b border-border">
                 <tr className="text-left text-[11px] uppercase tracking-wider text-muted">
-                  <th className="px-5 py-4 font-semibold">الوجبة / الطبق</th>
-                  <th className="px-5 py-4 font-semibold">القسم</th>
-                  <th className="px-5 py-4 font-semibold">السعر</th>
-                  <th className="px-5 py-4 font-semibold">الكمية المتاحة</th>
-                  <th className="px-5 py-4 font-semibold">الحالة</th>
-                  <th className="px-5 py-4 font-semibold">تاريخ الإضافة</th>
-                  <th className="px-5 py-4 font-semibold">الإجراءات</th>
+                  <th className="px-5 py-4 font-semibold">Meal / Dish</th>
+                  <th className="px-5 py-4 font-semibold">Category</th>
+                  <th className="px-5 py-4 font-semibold">Price</th>
+                  <th className="px-5 py-4 font-semibold">Available Stock</th>
+                  <th className="px-5 py-4 font-semibold">Status</th>
+                  <th className="px-5 py-4 font-semibold">Date Added</th>
+                  <th className="px-5 py-4 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,7 +196,7 @@ export default function Products() {
                             <div className="min-w-0">
                               <h3 className="truncate font-medium text-text">{product.name}</h3>
                               <p className="text-xs text-muted">
-                                كود الوجبة #{product._id?.slice(-6)}
+                                Item ID #{product._id?.slice(-6)}
                               </p>
                             </div>
                           </div>
@@ -219,7 +219,7 @@ export default function Products() {
                                 : "bg-red-500/10 text-red-500"
                             }`}
                           >
-                            {isActive ? "متاح" : "غير متاح"}
+                            {isActive ? "Available" : "Unavailable"}
                           </span>
                         </td>
                         <td className="px-5 py-4 text-muted">
@@ -234,14 +234,14 @@ export default function Products() {
                               className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-text transition-colors hover:bg-bg"
                             >
                               <FaEdit />
-                              تعديل
+                              Edit
                             </button>
                             <button
                               onClick={() => setConfirmDelete(product)}
                               className="flex items-center gap-2 rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/10"
                             >
                               <FaTrash />
-                              حذف
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -291,7 +291,7 @@ export default function Products() {
                               : "bg-red-500/10 text-red-500"
                           }`}
                         >
-                          {isActive ? "متاح" : "غير متاح"}
+                          {isActive ? "Available" : "Unavailable"}
                         </span>
                       </div>
                       <p className="mt-0.5 truncate text-xs text-muted">
@@ -299,7 +299,7 @@ export default function Products() {
                       </p>
                       <div className="mt-2 flex items-center gap-4 text-sm">
                         <span className="font-semibold text-accent">${price}</span>
-                        <span className={stockColor}>الكمية: {stock}</span>
+                        <span className={stockColor}>Qty: {stock}</span>
                       </div>
                     </div>
                   </div>
@@ -308,13 +308,13 @@ export default function Products() {
                       onClick={() => handleEdit(product)}
                       className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border py-2 text-sm text-text transition-colors hover:bg-bg"
                     >
-                      <FaEdit /> تعديل
+                      <FaEdit /> Edit
                     </button>
                     <button
                       onClick={() => setConfirmDelete(product)}
                       className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-500/30 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/10"
                     >
-                      <FaTrash /> حذف
+                      <FaTrash /> Delete
                     </button>
                   </div>
                 </motion.div>
@@ -345,22 +345,22 @@ export default function Products() {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
                 <FaExclamationTriangle className="text-lg text-red-500" />
               </div>
-              <h3 className="mt-4 text-lg text-text">حذف الوجبة؟</h3>
+              <h3 className="mt-4 text-lg text-text">Delete Meal?</h3>
               <p className="mt-2 text-sm text-muted">
-                هل أنت تأكد من رغبتك في حذف "{confirmDelete.name}"؟ لا يمكن التراجع عن هذا الإجراء.
+                Are you sure you want to delete "{confirmDelete.name}"? This action cannot be undone.
               </p>
               <div className="mt-6 flex gap-3">
                 <button
                   onClick={() => setConfirmDelete(null)}
                   className="flex-1 rounded-xl border border-border py-2.5 font-medium text-text transition-colors hover:bg-bg"
                 >
-                  إلغاء
+                  Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(confirmDelete._id)}
                   className="flex-1 rounded-xl bg-red-500 py-2.5 font-medium text-white transition-colors hover:bg-red-600"
                 >
-                  حذف
+                  Delete
                 </button>
               </div>
             </motion.div>
