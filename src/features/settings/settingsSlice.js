@@ -1,10 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-// ==========================================
-// THUNKS
-// ==========================================
-
 export const fetchSettings = createAsyncThunk(
   "settings/fetch",
   async (_, { rejectWithValue }) => {
@@ -12,9 +8,7 @@ export const fetchSettings = createAsyncThunk(
       const { data } = await axiosInstance.get("/settings");
       return data;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to load settings."
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to load settings.");
     }
   }
 );
@@ -26,155 +20,76 @@ export const saveSettings = createAsyncThunk(
       const { data } = await axiosInstance.put("/settings", payload);
       return data;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to save settings."
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to save settings.");
     }
   }
 );
 
-// ==========================================
-// STATE & DEFAULTS
-// ==========================================
+export const resetColorsRemote = createAsyncThunk(
+  "settings/resetColors",
+  async (mode, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.put(`/settings/reset-colors/${mode}`);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Failed to reset colors.");
+    }
+  }
+);
 
+// نفس ألوان الديفولت الموجودة في الباك اند (Settings model) — عشان أول تحميل يطلع متسق
 const defaultColors = {
   light: {
-    bg: "#f7f5f0",
-    card: "#fffcf8",
-    text: "#1a1a1a",
-    muted: "#777777",
-    border: "#e5e1d8",
-    primary: "#b99a5a",
-    primaryHover: "#a8894d",
-    accent: "#c5a45d",
-    accentLight: "#eee4cf",
+    bg: "#f8f8f6", card: "#ffffff", text: "#0b0b0b", muted: "#6b6b6b",
+    border: "#e5e5e5", primary: "#5a0000", primaryHover: "#760000",
+    accent: "#8b1a1a", accentLight: "#f3e5e5",
   },
   dark: {
-    bg: "#0a0a0a",
-    card: "#111111",
-    text: "#f5f5f5",
-    muted: "#999999",
-    border: "#292929",
-    primary: "#c7a65c",
-    primaryHover: "#d1af65",
-    accent: "#d1af65",
-    accentLight: "#2a2418",
+    bg: "#080808", card: "#111111", text: "#ffffff", muted: "#a0a0a0",
+    border: "#252525", primary: "#8b1a1a", primaryHover: "#a52a2a",
+    accent: "#b33a3a", accentLight: "#2a1111",
   },
 };
 
 const initialState = {
   theme: "light",
-  colors: {
-    light: { ...defaultColors.light },
-    dark: { ...defaultColors.dark },
-  },
-  company: {
-    name: "Company",
-  },
-  social: {
-    instagram: "",
-    tiktok: "",
-    facebook: "",
-    whatsapp: "",
-  },
+  colors: { light: { ...defaultColors.light }, dark: { ...defaultColors.dark } },
+  company: { name: "Company" },
+  social: { instagram: "", tiktok: "", facebook: "", whatsapp: "" },
   phone: "",
   status: "idle",
   error: null,
 };
 
-// ==========================================
-// SLICE
-// ==========================================
-
 const settingsSlice = createSlice({
   name: "settings",
   initialState,
   reducers: {
+    // معاينة لحظية فقط قبل الحفظ — مش بتحفظ في الداتابيز
     setColor(state, action) {
       const { mode, key, value } = action.payload;
-
-      if (!state.colors[mode]) {
-        state.colors[mode] = {};
-      }
-
+      if (!state.colors[mode]) state.colors[mode] = {};
       state.colors[mode][key] = value;
     },
-
-    resetColors(state, action) {
-      const mode = action.payload;
-
-      if (mode === "light" || mode === "dark") {
-        state.colors[mode] = {
-          ...defaultColors[mode],
-        };
-      }
-    },
-
-    toggleTheme(state) {
-      state.theme = state.theme === "light" ? "dark" : "light";
-    },
-
     setThemeLocal(state, action) {
       state.theme = action.payload;
     },
-
-    setCompanyName(state, action) {
-      state.company.name = action.payload;
-    },
-
-    setSocial(state, action) {
-      const { key, value } = action.payload;
-
-      if (key in state.social) {
-        state.social[key] = value;
-      }
-    },
-
-    setPhone(state, action) {
-      state.phone = action.payload;
-    },
   },
-
   extraReducers: (builder) => {
     builder
-      // FETCH SETTINGS
-      .addCase(fetchSettings.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(fetchSettings.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        Object.assign(state, action.payload);
-      })
-      .addCase(fetchSettings.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
+      .addCase(fetchSettings.pending, (state) => { state.status = "loading"; state.error = null; })
+      .addCase(fetchSettings.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
+      .addCase(fetchSettings.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; })
 
-      // SAVE SETTINGS
-      .addCase(saveSettings.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(saveSettings.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        Object.assign(state, action.payload);
-      })
-      .addCase(saveSettings.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+      .addCase(saveSettings.pending, (state) => { state.status = "loading"; state.error = null; })
+      .addCase(saveSettings.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
+      .addCase(saveSettings.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; })
+
+      .addCase(resetColorsRemote.pending, (state) => { state.status = "loading"; state.error = null; })
+      .addCase(resetColorsRemote.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
+      .addCase(resetColorsRemote.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; });
   },
 });
 
-export const {
-  setColor,
-  resetColors,
-  toggleTheme,
-  setThemeLocal,
-  setCompanyName,
-  setSocial,
-  setPhone,
-} = settingsSlice.actions;
-
+export const { setColor, setThemeLocal } = settingsSlice.actions;
 export default settingsSlice.reducer;

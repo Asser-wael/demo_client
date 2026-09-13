@@ -1,35 +1,33 @@
-import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { FaMoon, FaSun } from "react-icons/fa";
+import toast from "react-hot-toast";
+
+import { setThemeLocal, saveSettings } from "../../features/settings/settingsSlice.js";
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const dispatch = useDispatch();
+  const theme = useSelector((state) => state.settings.theme);
+  const isDark = theme === "dark";
 
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-      document.documentElement.classList.add("dark");
-      setDark(true);
-    }
-  }, []);
+  const handleToggle = async () => {
+    const newTheme = isDark ? "light" : "dark";
+    dispatch(setThemeLocal(newTheme)); // معاينة فورية
 
-  const toggleTheme = () => {
-    if (dark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setDark(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setDark(true);
+    try {
+      await dispatch(saveSettings({ theme: newTheme })).unwrap();
+    } catch (err) {
+      dispatch(setThemeLocal(theme)); // رجّع القديم لو الحفظ فشل
+      toast.error(err || "تعذر حفظ الثيم");
     }
   };
 
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full bg-card text-text hover:scale-105 transition"
+      onClick={handleToggle}
+      aria-label="Toggle theme"
+      className="p-2 rounded-full bg-[var(--card)] text-[var(--text)] border border-[var(--border)] hover:scale-105 transition"
     >
-      {dark ? <FaSun /> : <FaMoon />}
+      {isDark ? <FaSun /> : <FaMoon />}
     </button>
   );
 }
