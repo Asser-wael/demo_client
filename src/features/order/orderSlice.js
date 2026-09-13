@@ -7,19 +7,19 @@ import { showToast } from "../../utils/showToast.jsx";
 ========================================================= */
 
 export const getCart = createAsyncThunk(
-  "cart/getCart",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axiosInstance.get("/cart");
+    "cart/getCart",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get("/cart");
 
-      return data.cart || data.items || [];
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to fetch cart"
-      );
+            return data.cart || data.items || [];
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to fetch cart"
+            );
+        }
     }
-  }
 );
 
 /* =========================================================
@@ -27,32 +27,32 @@ export const getCart = createAsyncThunk(
 ========================================================= */
 
 export const addToCart = createAsyncThunk(
-  "cart/addToCart",
-  async (
-    { productId, color, size, quantity = 1 },
-    { rejectWithValue }
-  ) => {
-    try {
-      const { data } = await axiosInstance.post("/cart/add", {
-        productId,
-        color,
-        size,
-        quantity,
-      });
+    "cart/addToCart",
+    async (
+        { productId, color, size, quantity = 1 },
+        { rejectWithValue }
+    ) => {
+        try {
+            const { data } = await axiosInstance.post("/cart/add", {
+                productId,
+                color,
+                size,
+                quantity,
+            });
 
-      showToast({
-        type: "success",
-        message: data.message || "Added to order",
-      });
+            showToast({
+                type: "success",
+                message: data.message || "Added to order",
+            });
 
-      return data.cart || data.items;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to add item to cart"
-      );
+            return data.cart || data.items;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to add item to cart"
+            );
+        }
     }
-  }
 );
 
 /* =========================================================
@@ -60,30 +60,30 @@ export const addToCart = createAsyncThunk(
 ========================================================= */
 
 export const updateCartItem = createAsyncThunk(
-  "cart/updateCartItem",
-  async (
-    { productId, color, size, quantity },
-    { rejectWithValue }
-  ) => {
-    try {
-      const { data } = await axiosInstance.put(
-        "/cart/update",
-        {
-          productId,
-          color,
-          size,
-          quantity,
-        }
-      );
+    "cart/updateCartItem",
+    async (
+        { productId, color, size, quantity },
+        { rejectWithValue }
+    ) => {
+        try {
+            const { data } = await axiosInstance.put(
+                "/cart/update",
+                {
+                    productId,
+                    color,
+                    size,
+                    quantity,
+                }
+            );
 
-      return data.cart || data.items;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to update cart"
-      );
+            return data.cart || data.items;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to update cart"
+            );
+        }
     }
-  }
 );
 
 /* =========================================================
@@ -91,36 +91,36 @@ export const updateCartItem = createAsyncThunk(
 ========================================================= */
 
 export const removeFromCart = createAsyncThunk(
-  "cart/removeFromCart",
-  async (
-    { productId, color, size },
-    { rejectWithValue }
-  ) => {
-    try {
-      const { data } = await axiosInstance.delete(
-        "/cart/remove",
-        {
-          data: {
-            productId,
-            color,
-            size,
-          },
+    "cart/removeFromCart",
+    async (
+        { productId, color, size },
+        { rejectWithValue }
+    ) => {
+        try {
+            const { data } = await axiosInstance.delete(
+                "/cart/remove",
+                {
+                    data: {
+                        productId,
+                        color,
+                        size,
+                    },
+                }
+            );
+
+            showToast({
+                type: "success",
+                message: data.message || "Item removed",
+            });
+
+            return data.cart || data.items;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to remove item"
+            );
         }
-      );
-
-      showToast({
-        type: "success",
-        message: data.message || "Item removed",
-      });
-
-      return data.cart || data.items;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to remove item"
-      );
     }
-  }
 );
 
 /* =========================================================
@@ -128,21 +128,21 @@ export const removeFromCart = createAsyncThunk(
 ========================================================= */
 
 export const clearCart = createAsyncThunk(
-  "cart/clearCart",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axiosInstance.delete(
-        "/cart/clear"
-      );
+    "cart/clearCart",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.delete(
+                "/cart/clear"
+            );
 
-      return data.cart || data.items || [];
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to clear cart"
-      );
+            return data.cart || data.items || [];
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                "Failed to clear cart"
+            );
+        }
     }
-  }
 );
 
 /* =========================================================
@@ -150,22 +150,22 @@ export const clearCart = createAsyncThunk(
 ========================================================= */
 
 const initialState = {
-  items: [],
+    items: [],
 
-  loading: false,
+    loading: false,
 
-  actionLoading: false,
+    actionLoading: false,
 
-  error: null,
+    error: null,
 
-  /*
-    Buy Now is local Redux state.
-
-    It is NOT added to the normal cart.
-    It is only used when the user clicks:
-    Product Details -> Order Now -> Checkout
-  */
-  BuyNowitem: null,
+    /*
+      Buy Now is local Redux state.
+  
+      It is NOT added to the normal cart.
+      It is only used when the user clicks:
+      Product Details -> Order Now -> Checkout
+    */
+    BuyNowitem: null,
 };
 
 /* =========================================================
@@ -173,155 +173,160 @@ const initialState = {
 ========================================================= */
 
 const cartSlice = createSlice({
-  name: "cart",
+    name: "cart",
 
-  initialState,
+    initialState,
 
-  reducers: {
-    /* =======================================================
-       SET BUY NOW ITEM
-    ======================================================= */
+    reducers: {
+        /* =======================================================
+           SET BUY NOW ITEM
+        ======================================================= */
 
-    setBuyNowItem: (state, action) => {
-      state.BuyNowitem = action.payload;
+        setBuyNowItem: (state, action) => {
+            state.BuyNowitem = null;
+            state.BuyNowitem = action.payload;
+        },
+
+        /* =======================================================
+           CLEAR BUY NOW ITEM
+        ======================================================= */
+
+        clearBuyNowItem: (state) => {
+            state.BuyNowitem = null;
+        },
+
+        /* =======================================================
+           CLEAR CART ERROR
+        ======================================================= */
+
+        clearCartError: (state) => {
+            state.error = null;
+        },
     },
 
-    /* =======================================================
-       CLEAR BUY NOW ITEM
-    ======================================================= */
+    extraReducers: (builder) => {
+        builder
 
-    clearBuyNowItem: (state) => {
-      state.BuyNowitem = null;
+            /* =====================================================
+               GET CART
+            ===================================================== */
+
+            .addCase(getCart.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+
+            .addCase(getCart.fulfilled, (state, action) => {
+                state.loading = false;
+
+                state.items = Array.isArray(action.payload)
+                    ? action.payload
+                    : [];
+            })
+
+            .addCase(getCart.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            /* =====================================================
+               ADD TO CART
+            ===================================================== */
+
+            .addCase(addToCart.pending, (state) => {
+                state.actionLoading = true;
+                state.error = null;
+            })
+
+            .addCase(addToCart.fulfilled, (state, action) => {
+                state.BuyNowitem = null;
+
+                state.actionLoading = false;
+
+                state.items = Array.isArray(action.payload)
+                    ? action.payload
+                    : state.items;
+            })
+
+            .addCase(addToCart.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+
+            /* =====================================================
+               UPDATE CART
+            ===================================================== */
+
+            .addCase(updateCartItem.pending, (state) => {
+                state.BuyNowitem = null;
+
+                state.actionLoading = true;
+                state.error = null;
+            })
+
+            .addCase(updateCartItem.fulfilled, (state, action) => {
+                state.actionLoading = false;
+
+                state.items = Array.isArray(action.payload)
+                    ? action.payload
+                    : state.items;
+            })
+
+            .addCase(updateCartItem.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+
+            /* =====================================================
+               REMOVE FROM CART
+            ===================================================== */
+
+            .addCase(removeFromCart.pending, (state) => {
+                state.actionLoading = true;
+                state.error = null;
+            })
+
+            .addCase(removeFromCart.fulfilled, (state, action) => {
+                state.actionLoading = false;
+
+                state.items = Array.isArray(action.payload)
+                    ? action.payload
+                    : state.items;
+            })
+
+            .addCase(removeFromCart.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+
+            /* =====================================================
+               CLEAR CART
+            ===================================================== */
+
+            .addCase(clearCart.pending, (state) => {
+                state.actionLoading = true;
+                state.error = null;
+            })
+
+            .addCase(clearCart.fulfilled, (state, action) => {
+                state.actionLoading = false;
+
+                state.items = [];
+
+                /*
+                  Important:
+                  We do NOT clear BuyNowitem here automatically.
+        
+                  Because clearCart() is also used after normal checkout,
+                  and Buy Now is managed separately.
+                */
+            })
+
+            .addCase(clearCart.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            });
     },
-
-    /* =======================================================
-       CLEAR CART ERROR
-    ======================================================= */
-
-    clearCartError: (state) => {
-      state.error = null;
-    },
-  },
-
-  extraReducers: (builder) => {
-    builder
-
-      /* =====================================================
-         GET CART
-      ===================================================== */
-
-      .addCase(getCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-
-      .addCase(getCart.fulfilled, (state, action) => {
-        state.loading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : [];
-      })
-
-      .addCase(getCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      /* =====================================================
-         ADD TO CART
-      ===================================================== */
-
-      .addCase(addToCart.pending, (state) => {
-        state.actionLoading = true;
-        state.error = null;
-      })
-
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : state.items;
-      })
-
-      .addCase(addToCart.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.error = action.payload;
-      })
-
-      /* =====================================================
-         UPDATE CART
-      ===================================================== */
-
-      .addCase(updateCartItem.pending, (state) => {
-        state.actionLoading = true;
-        state.error = null;
-      })
-
-      .addCase(updateCartItem.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : state.items;
-      })
-
-      .addCase(updateCartItem.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.error = action.payload;
-      })
-
-      /* =====================================================
-         REMOVE FROM CART
-      ===================================================== */
-
-      .addCase(removeFromCart.pending, (state) => {
-        state.actionLoading = true;
-        state.error = null;
-      })
-
-      .addCase(removeFromCart.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : state.items;
-      })
-
-      .addCase(removeFromCart.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.error = action.payload;
-      })
-
-      /* =====================================================
-         CLEAR CART
-      ===================================================== */
-
-      .addCase(clearCart.pending, (state) => {
-        state.actionLoading = true;
-        state.error = null;
-      })
-
-      .addCase(clearCart.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        state.items = [];
-
-        /*
-          Important:
-          We do NOT clear BuyNowitem here automatically.
-
-          Because clearCart() is also used after normal checkout,
-          and Buy Now is managed separately.
-        */
-      })
-
-      .addCase(clearCart.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.error = action.payload;
-      });
-  },
 });
 
 /* =========================================================
@@ -329,9 +334,9 @@ const cartSlice = createSlice({
 ========================================================= */
 
 export const {
-  setBuyNowItem,
-  clearBuyNowItem,
-  clearCartError,
+    setBuyNowItem,
+    clearBuyNowItem,
+    clearCartError,
 } = cartSlice.actions;
 
 /* =========================================================
@@ -339,23 +344,23 @@ export const {
 ========================================================= */
 
 export const selectCartItems = (state) =>
-  state.cart.items;
+    state.cart.items;
 
 export const selectCartLoading = (state) =>
-  state.cart.loading;
+    state.cart.loading;
 
 export const selectCartActionLoading = (state) =>
-  state.cart.actionLoading;
+    state.cart.actionLoading;
 
 export const selectCartError = (state) =>
-  state.cart.error;
+    state.cart.error;
 
 /* =========================================================
    BUY NOW SELECTOR
 ========================================================= */
 
 export const selectBuyNowItem = (state) =>
-  state.cart.BuyNowitem;
+    state.cart.BuyNowitem;
 
 /* =========================================================
    EXPORT
