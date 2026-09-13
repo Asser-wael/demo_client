@@ -2,368 +2,342 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 import { showToast } from "../../utils/showToast.jsx";
 
-/* =========================================================
-   GET CART
-========================================================= */
+// ============================================================
+// CHECKOUT
+// ============================================================
 
-export const getCart = createAsyncThunk(
-    "cart/getCart",
-    async (_, { rejectWithValue }) => {
+export const checkoutOrder = createAsyncThunk(
+    "order/checkoutOrder",
+    async (formData, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get("/cart");
-
-            return data.cart || data.items || [];
-        } catch (error) {
-            return rejectWithValue(
-                error.response?.data?.message ||
-                "Failed to fetch cart"
+            const { data } = await axiosInstance.post(
+                "/orders/checkout",
+                formData
             );
-        }
-    }
-);
-
-/* =========================================================
-   ADD TO CART
-========================================================= */
-
-export const addToCart = createAsyncThunk(
-    "cart/addToCart",
-    async (
-        { productId, color, size, quantity = 1 },
-        { rejectWithValue }
-    ) => {
-        try {
-            const { data } = await axiosInstance.post("/cart/add", {
-                productId,
-                color,
-                size,
-                quantity,
-            });
 
             showToast({
                 type: "success",
-                message: data.message || "Added to order",
+                message: data.message,
             });
 
-            return data.cart || data.items;
+            return data.order;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message ||
-                "Failed to add item to cart"
+                    "Failed to create order"
             );
         }
     }
 );
 
-/* =========================================================
-   UPDATE CART ITEM
-========================================================= */
+// ============================================================
+// GET ALL ORDERS - ADMIN
+// ============================================================
 
-export const updateCartItem = createAsyncThunk(
-    "cart/updateCartItem",
-    async (
-        { productId, color, size, quantity },
-        { rejectWithValue }
-    ) => {
+export const getOrders = createAsyncThunk(
+    "order/getOrders",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(
+                "/orders/orders"
+            );
+
+            return data.orders;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                    "Failed to fetch orders"
+            );
+        }
+    }
+);
+
+// ============================================================
+// GET USER ORDERS
+// ============================================================
+
+export const getOrdersUser = createAsyncThunk(
+    "order/getOrdersUser",
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(
+                "/orders/my-orders"
+            );
+
+            return data.orders;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                    "Failed to fetch orders"
+            );
+        }
+    }
+);
+
+// ============================================================
+// GET SINGLE ORDER
+// ============================================================
+
+export const getOrder = createAsyncThunk(
+    "order/getOrder",
+    async (id, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(
+                `/orders/orders/${id}`
+            );
+
+            return data.order;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message ||
+                    "Failed to fetch order"
+            );
+        }
+    }
+);
+
+// ============================================================
+// CHANGE STATUS
+// ============================================================
+
+export const changeOrderStatus = createAsyncThunk(
+    "order/changeOrderStatus",
+    async ({ id, status }, { rejectWithValue }) => {
         try {
             const { data } = await axiosInstance.put(
-                "/cart/update",
-                {
-                    productId,
-                    color,
-                    size,
-                    quantity,
-                }
+                `/orders/changeStatus/${id}`,
+                { status }
             );
 
-            return data.cart || data.items;
+            showToast(data);
+
+            return data.order;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message ||
-                "Failed to update cart"
+                    "Failed to update status"
             );
         }
     }
 );
 
-/* =========================================================
-   REMOVE FROM CART
-========================================================= */
+// ============================================================
+// DELETE ORDER
+// ============================================================
 
-export const removeFromCart = createAsyncThunk(
-    "cart/removeFromCart",
-    async (
-        { productId, color, size },
-        { rejectWithValue }
-    ) => {
+export const deleteOrder = createAsyncThunk(
+    "order/deleteOrder",
+    async (id, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.delete(
-                "/cart/remove",
-                {
-                    data: {
-                        productId,
-                        color,
-                        size,
-                    },
-                }
+            const res = await axiosInstance.delete(
+                `/orders/deleteOrder/${id}`
             );
 
-            showToast({
-                type: "success",
-                message: data.message || "Item removed",
-            });
+            showToast(res.data);
 
-            return data.cart || data.items;
+            return id;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message ||
-                "Failed to remove item"
+                    "Failed to delete order"
             );
         }
     }
 );
 
-/* =========================================================
-   CLEAR CART
-========================================================= */
+// ============================================================
+// SLICE
+// ============================================================
 
-export const clearCart = createAsyncThunk(
-    "cart/clearCart",
-    async (_, { rejectWithValue }) => {
-        try {
-            const { data } = await axiosInstance.delete(
-                "/cart/clear"
-            );
+const orderSlice = createSlice({
+    name: "order",
 
-            return data.cart || data.items || [];
-        } catch (error) {
-            return rejectWithValue(
-                error.response?.data?.message ||
-                "Failed to clear cart"
-            );
-        }
-    }
-);
+    initialState: {
+        orders: [],
+        myOrders: [],
+        order: null,
 
-/* =========================================================
-   INITIAL STATE
-========================================================= */
+        loading: false,
+        actionLoading: false,
+        checkoutLoading: false,
 
-const initialState = {
-    items: [],
-
-    loading: false,
-
-    actionLoading: false,
-
-    error: null,
-
-    /*
-      Buy Now is local Redux state.
-  
-      It is NOT added to the normal cart.
-      It is only used when the user clicks:
-      Product Details -> Order Now -> Checkout
-    */
-    BuyNowitem: null,
-};
-
-/* =========================================================
-   SLICE
-========================================================= */
-
-const cartSlice = createSlice({
-    name: "cart",
-
-    initialState,
+        error: null,
+    },
 
     reducers: {
-        /* =======================================================
-           SET BUY NOW ITEM
-        ======================================================= */
+        // --------------------------------------------------------
+        // Clear current order
+        // --------------------------------------------------------
 
-        setBuyNowItem: (state, action) => {
-            state.BuyNowitem = null;
-            state.BuyNowitem = action.payload;
+        clearOrder: (state) => {
+            state.order = null;
         },
 
-        /* =======================================================
-           CLEAR BUY NOW ITEM
-        ======================================================= */
+        // --------------------------------------------------------
+        // Clear error
+        // --------------------------------------------------------
 
-        clearBuyNowItem: (state) => {
-            state.BuyNowitem = null;
-        },
-
-        /* =======================================================
-           CLEAR CART ERROR
-        ======================================================= */
-
-        clearCartError: (state) => {
+        clearOrderError: (state) => {
             state.error = null;
+        },
+
+        // --------------------------------------------------------
+        // ADD NEW ORDER FROM SOCKET
+        // --------------------------------------------------------
+
+        addOrder: (state, action) => {
+            const newOrder = action.payload;
+
+            // Prevent duplicate orders
+            const exists = state.orders.some(
+                (order) => order._id === newOrder._id
+            );
+
+            if (!exists) {
+                state.orders.unshift(newOrder);
+            }
         },
     },
 
     extraReducers: (builder) => {
         builder
 
-            /* =====================================================
-               GET CART
-            ===================================================== */
+            // ====================================================
+            // CHECKOUT
+            // ====================================================
 
-            .addCase(getCart.pending, (state) => {
+            .addCase(checkoutOrder.pending, (state) => {
+                state.checkoutLoading = true;
+                state.error = null;
+            })
+
+            .addCase(checkoutOrder.fulfilled, (state, action) => {
+                state.checkoutLoading = false;
+                state.order = action.payload;
+            })
+
+            .addCase(checkoutOrder.rejected, (state, action) => {
+                state.checkoutLoading = false;
+                state.error = action.payload;
+            })
+
+            // ====================================================
+            // GET ORDERS
+            // ====================================================
+
+            .addCase(getOrders.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
 
-            .addCase(getCart.fulfilled, (state, action) => {
+            .addCase(getOrders.fulfilled, (state, action) => {
                 state.loading = false;
-
-                state.items = Array.isArray(action.payload)
-                    ? action.payload
-                    : [];
+                state.orders = action.payload;
             })
 
-            .addCase(getCart.rejected, (state, action) => {
+            .addCase(getOrders.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
 
-            /* =====================================================
-               ADD TO CART
-            ===================================================== */
+            // ====================================================
+            // GET USER ORDERS
+            // ====================================================
 
-            .addCase(addToCart.pending, (state) => {
+            .addCase(getOrdersUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+
+            .addCase(getOrdersUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.myOrders = action.payload;
+            })
+
+            .addCase(getOrdersUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // ====================================================
+            // GET SINGLE ORDER
+            // ====================================================
+
+            .addCase(getOrder.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+
+            .addCase(getOrder.fulfilled, (state, action) => {
+                state.loading = false;
+                state.order = action.payload;
+            })
+
+            .addCase(getOrder.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // ====================================================
+            // CHANGE STATUS
+            // ====================================================
+
+            .addCase(changeOrderStatus.pending, (state) => {
                 state.actionLoading = true;
                 state.error = null;
             })
 
-            .addCase(addToCart.fulfilled, (state, action) => {
-                state.BuyNowitem = null;
-
+            .addCase(changeOrderStatus.fulfilled, (state, action) => {
                 state.actionLoading = false;
 
-                state.items = Array.isArray(action.payload)
-                    ? action.payload
-                    : state.items;
+                state.orders = state.orders.map((order) =>
+                    order._id === action.payload._id
+                        ? action.payload
+                        : order
+                );
+
+                if (
+                    state.order?._id ===
+                    action.payload._id
+                ) {
+                    state.order = action.payload;
+                }
             })
 
-            .addCase(addToCart.rejected, (state, action) => {
+            .addCase(changeOrderStatus.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.error = action.payload;
             })
 
-            /* =====================================================
-               UPDATE CART
-            ===================================================== */
+            // ====================================================
+            // DELETE ORDER
+            // ====================================================
 
-            .addCase(updateCartItem.pending, (state) => {
-                state.BuyNowitem = null;
-
+            .addCase(deleteOrder.pending, (state) => {
                 state.actionLoading = true;
                 state.error = null;
             })
 
-            .addCase(updateCartItem.fulfilled, (state, action) => {
+            .addCase(deleteOrder.fulfilled, (state, action) => {
                 state.actionLoading = false;
 
-                state.items = Array.isArray(action.payload)
-                    ? action.payload
-                    : state.items;
+                state.orders = state.orders.filter(
+                    (order) =>
+                        order._id !== action.payload
+                );
             })
 
-            .addCase(updateCartItem.rejected, (state, action) => {
-                state.actionLoading = false;
-                state.error = action.payload;
-            })
-
-            /* =====================================================
-               REMOVE FROM CART
-            ===================================================== */
-
-            .addCase(removeFromCart.pending, (state) => {
-                state.actionLoading = true;
-                state.error = null;
-            })
-
-            .addCase(removeFromCart.fulfilled, (state, action) => {
-                state.actionLoading = false;
-
-                state.items = Array.isArray(action.payload)
-                    ? action.payload
-                    : state.items;
-            })
-
-            .addCase(removeFromCart.rejected, (state, action) => {
-                state.actionLoading = false;
-                state.error = action.payload;
-            })
-
-            /* =====================================================
-               CLEAR CART
-            ===================================================== */
-
-            .addCase(clearCart.pending, (state) => {
-                state.actionLoading = true;
-                state.error = null;
-            })
-
-            .addCase(clearCart.fulfilled, (state, action) => {
-                state.actionLoading = false;
-
-                state.items = [];
-
-                /*
-                  Important:
-                  We do NOT clear BuyNowitem here automatically.
-        
-                  Because clearCart() is also used after normal checkout,
-                  and Buy Now is managed separately.
-                */
-            })
-
-            .addCase(clearCart.rejected, (state, action) => {
+            .addCase(deleteOrder.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.error = action.payload;
             });
     },
 });
 
-/* =========================================================
-   ACTIONS
-========================================================= */
-
 export const {
-    setBuyNowItem,
-    clearBuyNowItem,
-    clearCartError,
-} = cartSlice.actions;
+    clearOrder,
+    clearOrderError,
+    addOrder,
+} = orderSlice.actions;
 
-/* =========================================================
-   SELECTORS
-========================================================= */
-
-export const selectCartItems = (state) =>
-    state.cart.items;
-
-export const selectCartLoading = (state) =>
-    state.cart.loading;
-
-export const selectCartActionLoading = (state) =>
-    state.cart.actionLoading;
-
-export const selectCartError = (state) =>
-    state.cart.error;
-
-/* =========================================================
-   BUY NOW SELECTOR
-========================================================= */
-
-export const selectBuyNowItem = (state) =>
-    state.cart.BuyNowitem;
-
-/* =========================================================
-   EXPORT
-========================================================= */
-
-export default cartSlice.reducer;
+export default orderSlice.reducer;
