@@ -1,8 +1,26 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { motion, AnimatePresence } from "framer-motion";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useDispatch,
+  useSelector,
+} from "react-redux";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  useForm,
+} from "react-hook-form";
+
+import {
+  motion,
+  AnimatePresence,
+} from "framer-motion";
 
 import {
   FiUser,
@@ -22,82 +40,131 @@ import {
 
 import {
   clearCart,
+  clearBuyNowItem,
   getCart,
+  selectBuyNowItem,
   selectCartItems,
   selectCartLoading,
 } from "../features/cart/cartSlice";
 
-import { checkoutOrder } from "../features/order/orderSlice";
+import {
+  checkoutOrder,
+} from "../features/order/orderSlice";
 
 import Currency from "../components/company/Currency";
 
-/* =========================================================
-   Get correct item price
-
-   offerPrice > 0  => offerPrice
-   offerPrice = 0  => price
-========================================================= */
+// =========================================================
+// GET ITEM PRICE
+// =========================================================
 
 const getItemPrice = (item) => {
-  // Buy Now / simple item
-  if (!item?.product?.variants) {
-    const offerPrice = Number(item?.offerPrice || 0);
-    const price = Number(item?.price || 0);
 
-    return offerPrice > 0 ? offerPrice : price;
+  // ==========================================
+  // BUY NOW ITEM
+  // ==========================================
+
+  if (
+    !item?.product?.variants
+  ) {
+    const offerPrice = Number(
+      item?.offerPrice || 0
+    );
+
+    const price = Number(
+      item?.price || 0
+    );
+
+    if (
+      offerPrice > 0 &&
+      offerPrice < price
+    ) {
+      return offerPrice;
+    }
+
+    return price;
   }
 
-  const variant = item.product.variants.find(
-    (v) => v.color?.name === item.color
+  // ==========================================
+  // CART ITEM
+  // ==========================================
+
+  const variant =
+    item.product.variants.find(
+      (v) =>
+        v?.color?.name ===
+        item.color
+    );
+
+  const sizeInfo =
+    variant?.sizes?.find(
+      (s) =>
+        s?.size === item.size
+    );
+
+  const offerPrice = Number(
+    sizeInfo?.offerPrice || 0
   );
 
-  const sizeInfo = variant?.sizes?.find(
-    (s) => s.size === item.size
+  const price = Number(
+    sizeInfo?.price || 0
   );
 
-  const offerPrice = Number(sizeInfo?.offerPrice || 0);
-  const price = Number(sizeInfo?.price || 0);
+  if (
+    offerPrice > 0 &&
+    offerPrice < price
+  ) {
+    return offerPrice;
+  }
 
-  return offerPrice > 0 ? offerPrice : price;
+  return price;
 };
 
-/* =========================================================
-   Field
-========================================================= */
+// =========================================================
+// FIELD
+// =========================================================
 
-const Field = React.forwardRef(
-  ({ icon, error, className = "", ...props }, ref) => (
-    <div>
-      <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">
-          {icon}
-        </span>
+const Field =
+  React.forwardRef(
+    (
+      {
+        icon,
+        error,
+        className = "",
+        ...props
+      },
+      ref
+    ) => (
+      <div>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+            {icon}
+          </span>
 
-        <input
-          ref={ref}
-          {...props}
-          className={`w-full rounded-xl border bg-card px-4 py-3 !pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${
-            error
-              ? "border-red-400 focus:border-red-400 focus:ring-red-400"
-              : "border-border focus:border-primary focus:ring-primary"
-          } ${className}`}
-        />
+          <input
+            ref={ref}
+            {...props}
+            className={`w-full rounded-xl border bg-card px-4 py-3 !pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${
+              error
+                ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+                : "border-border focus:border-primary focus:ring-primary"
+            } ${className}`}
+          />
+        </div>
+
+        {error && (
+          <p className="mt-1.5 text-xs text-red-500">
+            {error.message}
+          </p>
+        )}
       </div>
-
-      {error && (
-        <p className="mt-1.5 text-xs text-red-500">
-          {error.message}
-        </p>
-      )}
-    </div>
-  )
-);
+    )
+  );
 
 Field.displayName = "Field";
 
-/* =========================================================
-   Payment Option
-========================================================= */
+// =========================================================
+// PAYMENT OPTION
+// =========================================================
 
 function PaymentOption({
   active,
@@ -109,50 +176,100 @@ function PaymentOption({
     <motion.button
       type="button"
       onClick={onClick}
-      whileTap={{ scale: 0.97 }}
+      whileTap={{
+        scale: 0.97,
+      }}
       className={`flex flex-col items-center gap-2 rounded-xl border px-4 py-5 text-sm transition ${
         active
           ? "border-primary bg-primary/10 text-primary"
           : "border-border text-muted hover:border-primary/50"
       }`}
     >
-      <span className="text-xl">{icon}</span>
+      <span className="text-xl">
+        {icon}
+      </span>
+
       {title}
     </motion.button>
   );
 }
 
-/* =========================================================
-   Checkout
-========================================================= */
+// =========================================================
+// CHECKOUT
+// =========================================================
 
 export default function Checkout() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch =
+    useDispatch();
 
-  const cartItems = useSelector(selectCartItems);
-  const cartLoading = useSelector(selectCartLoading);
+  const navigate =
+    useNavigate();
 
-  const checkoutLoading = useSelector(
-    (state) => state.orders.checkoutLoading
-  );
+  const cartItems =
+    useSelector(
+      selectCartItems
+    );
 
-  const BuyNowitem = useSelector(
-    (state) => state.cart.BuyNowitem
-  );
+  const cartLoading =
+    useSelector(
+      selectCartLoading
+    );
 
-  const [transferImage, setTransferImage] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-  const [imageError, setImageError] = useState("");
+  // ==========================================
+  // IMPORTANT:
+  // Use selector instead of:
+  // state.cart.BuyNowitem
+  // ==========================================
+
+  const buyNowItem =
+    useSelector(
+      selectBuyNowItem
+    );
+
+  const checkoutLoading =
+    useSelector(
+      (state) =>
+        state.orders
+          .checkoutLoading
+    );
+
+  // ==========================================
+  // LOCAL STATE
+  // ==========================================
+
+  const [
+    transferImage,
+    setTransferImage,
+  ] = useState(null);
+
+  const [preview, setPreview] =
+    useState(null);
+
+  const [submitted, setSubmitted] =
+    useState(false);
+
+  const [
+    submitError,
+    setSubmitError,
+  ] = useState("");
+
+  const [
+    imageError,
+    setImageError,
+  ] = useState("");
+
+  // ==========================================
+  // FORM
+  // ==========================================
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: {
+      errors,
+    },
   } = useForm({
     mode: "onTouched",
 
@@ -168,59 +285,83 @@ export default function Checkout() {
     },
   });
 
-  const paymentMethod = watch("paymentMethod");
-  const isWallet = paymentMethod === "wallet";
+  const paymentMethod =
+    watch("paymentMethod");
 
-  /* =========================================================
-     Checkout Items
-  ========================================================= */
+  const isWallet =
+    paymentMethod ===
+    "wallet";
 
-  const checkoutItems = useMemo(() => {
-    if (BuyNowitem) {
-      return [BuyNowitem];
-    }
+  // ==========================================
+  // CHECKOUT ITEMS
+  // ==========================================
 
-    return cartItems || [];
-  }, [BuyNowitem, cartItems]);
+  const checkoutItems =
+    useMemo(() => {
+      if (buyNowItem) {
+        return [buyNowItem];
+      }
 
-  /* =========================================================
-     Total
-  ========================================================= */
+      return cartItems || [];
+    }, [
+      buyNowItem,
+      cartItems,
+    ]);
+
+  // ==========================================
+  // TOTAL
+  // ==========================================
 
   const total = useMemo(() => {
-    return checkoutItems.reduce((sum, item) => {
-      const price = getItemPrice(item);
-      const quantity = Number(item?.quantity || 1);
+    return checkoutItems.reduce(
+      (sum, item) => {
+        const price =
+          getItemPrice(item);
 
-      return sum + price * quantity;
-    }, 0);
+        const quantity =
+          Number(
+            item?.quantity || 1
+          );
+
+        return (
+          sum +
+          price * quantity
+        );
+      },
+      0
+    );
   }, [checkoutItems]);
 
-  /* =========================================================
-     Get Cart
-  ========================================================= */
+  // ==========================================
+  // GET CART
+  // ==========================================
 
   useEffect(() => {
-    if (!BuyNowitem) {
+    if (!buyNowItem) {
       dispatch(getCart());
     }
-  }, [dispatch, BuyNowitem]);
+  }, [
+    dispatch,
+    buyNowItem,
+  ]);
 
-  /* =========================================================
-     Cleanup Preview
-  ========================================================= */
+  // ==========================================
+  // CLEANUP PREVIEW
+  // ==========================================
 
   useEffect(() => {
     return () => {
       if (preview) {
-        URL.revokeObjectURL(preview);
+        URL.revokeObjectURL(
+          preview
+        );
       }
     };
   }, [preview]);
 
-  /* =========================================================
-     Scroll Top
-  ========================================================= */
+  // ==========================================
+  // SCROLL
+  // ==========================================
 
   useEffect(() => {
     window.scrollTo({
@@ -229,51 +370,78 @@ export default function Checkout() {
     });
   }, []);
 
-  /* =========================================================
-     Payment Method
-  ========================================================= */
+  // ==========================================
+  // PAYMENT METHOD
+  // ==========================================
 
-  const choosePayment = (method) => {
-    setValue("paymentMethod", method, {
-      shouldValidate: true,
-    });
+  const choosePayment = (
+    method
+  ) => {
+    setValue(
+      "paymentMethod",
+      method,
+      {
+        shouldValidate: true,
+      }
+    );
 
     if (method === "cash") {
       setImageError("");
     }
   };
 
-  /* =========================================================
-     Image Upload
-  ========================================================= */
+  // ==========================================
+  // IMAGE
+  // ==========================================
 
-  const handleImage = (e) => {
-    const file = e.target.files?.[0];
+  const handleImage = (
+    e
+  ) => {
+    const file =
+      e.target.files?.[0];
 
     if (!file) return;
 
     if (preview) {
-      URL.revokeObjectURL(preview);
+      URL.revokeObjectURL(
+        preview
+      );
     }
 
     setTransferImage(file);
-    setPreview(URL.createObjectURL(file));
+
+    setPreview(
+      URL.createObjectURL(
+        file
+      )
+    );
+
     setImageError("");
   };
 
-  /* =========================================================
-     Submit
-  ========================================================= */
+  // ==========================================
+  // SUBMIT
+  // ==========================================
 
-  const onSubmit = async (data) => {
-    if (!checkoutItems.length || checkoutLoading) {
+  const onSubmit = async (
+    data
+  ) => {
+    if (
+      !checkoutItems.length ||
+      checkoutLoading
+    ) {
       return;
     }
 
     setSubmitError("");
 
+    // ========================================
+    // WALLET RECEIPT
+    // ========================================
+
     if (
-      data.paymentMethod === "wallet" &&
+      data.paymentMethod ===
+        "wallet" &&
       !transferImage
     ) {
       setImageError(
@@ -283,49 +451,97 @@ export default function Checkout() {
       return;
     }
 
-    const fd = new FormData();
+    // ========================================
+    // FORM DATA
+    // ========================================
 
-    fd.append("fullName", data.fullName);
-    fd.append("phone", data.phone);
-    fd.append("city", data.city);
-    fd.append("address", data.address);
-    fd.append("paymentMethod", data.paymentMethod);
+    const fd =
+      new FormData();
 
-    fd.append("totalPrice", String(total));
+    fd.append(
+      "fullName",
+      data.fullName
+    );
+
+    fd.append(
+      "phone",
+      data.phone
+    );
+
+    fd.append(
+      "city",
+      data.city
+    );
+
+    fd.append(
+      "address",
+      data.address
+    );
+
+    fd.append(
+      "paymentMethod",
+      data.paymentMethod
+    );
+
+    fd.append(
+      "totalPrice",
+      String(total)
+    );
 
     fd.append(
       "isBuyNow",
-      BuyNowitem ? "true" : "false"
+      buyNowItem
+        ? "true"
+        : "false"
+    );
+
+    // ========================================
+    // ITEMS
+    // ========================================
+
+    const items = checkoutItems.map(
+      (item) => ({
+        product:
+          item.product?._id ||
+          item.product,
+
+        name:
+          item.product?.name ||
+          item.name,
+
+        color:
+          item.color,
+
+        size:
+          item.size,
+
+        price:
+          getItemPrice(item),
+
+        quantity:
+          Number(
+            item.quantity || 1
+          ),
+
+        image:
+          item.product?.image ||
+          item.image,
+      })
     );
 
     fd.append(
       "items",
-      JSON.stringify(
-        checkoutItems.map((item) => ({
-          product:
-            item.product?._id || item.product,
-
-          name:
-            item.product?.name || item.name,
-
-          color: item.color,
-
-          size: item.size,
-
-          price: getItemPrice(item),
-
-          quantity: Number(
-            item.quantity || 1
-          ),
-
-          image:
-            item.product?.image ||
-            item.image,
-        }))
-      )
+      JSON.stringify(items)
     );
 
-    if (data.paymentMethod === "wallet") {
+    // ========================================
+    // WALLET DATA
+    // ========================================
+
+    if (
+      data.paymentMethod ===
+      "wallet"
+    ) {
       fd.append(
         "senderName",
         data.senderName
@@ -347,13 +563,36 @@ export default function Checkout() {
       );
     }
 
-    const res = await dispatch(
-      checkoutOrder(fd)
-    );
+    // ========================================
+    // API
+    // ========================================
 
-    if (checkoutOrder.fulfilled.match(res)) {
-      if (!BuyNowitem) {
+    const res =
+      await dispatch(
+        checkoutOrder(fd)
+      );
+
+    // ========================================
+    // SUCCESS
+    // ========================================
+
+    if (
+      checkoutOrder.fulfilled.match(
+        res
+      )
+    ) {
+      // Clear server cart only
+      // when normal cart checkout
+      if (!buyNowItem) {
         dispatch(clearCart());
+      }
+
+      // VERY IMPORTANT:
+      // Clear Buy Now item after success
+      if (buyNowItem) {
+        dispatch(
+          clearBuyNowItem()
+        );
       }
 
       setSubmitted(true);
@@ -361,18 +600,31 @@ export default function Checkout() {
       setTimeout(() => {
         navigate("/orders");
       }, 600);
-    } else {
-      setSubmitError(
-        res.payload?.message ||
-          res.error?.message ||
-          "Couldn't place your order."
-      );
+
+      return;
     }
+
+    // ========================================
+    // ERROR
+    // ========================================
+
+    const errorMessage =
+      typeof res.payload ===
+      "string"
+        ? res.payload
+        : res.payload
+            ?.message ||
+          res.error?.message ||
+          "Couldn't place your order.";
+
+    setSubmitError(
+      errorMessage
+    );
   };
 
-  /* =========================================================
-     Success
-  ========================================================= */
+  // ==========================================
+  // SUCCESS SCREEN
+  // ==========================================
 
   if (submitted) {
     return (
@@ -392,8 +644,12 @@ export default function Checkout() {
           className="card flex flex-col items-center gap-4 px-10 py-14 text-center"
         >
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{
+              scale: 0,
+            }}
+            animate={{
+              scale: 1,
+            }}
             transition={{
               type: "spring",
               stiffness: 200,
@@ -417,9 +673,9 @@ export default function Checkout() {
     );
   }
 
-  /* =========================================================
-     Empty Cart
-  ========================================================= */
+  // ==========================================
+  // EMPTY CART
+  // ==========================================
 
   if (
     !cartLoading &&
@@ -440,7 +696,9 @@ export default function Checkout() {
           <button
             type="button"
             onClick={() =>
-              navigate("/products")
+              navigate(
+                "/products"
+              )
             }
             className="btn-primary rounded-xl px-6 py-3"
           >
@@ -451,15 +709,17 @@ export default function Checkout() {
     );
   }
 
-  /* =========================================================
-     UI
-  ========================================================= */
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
     <div
       dir="ltr"
       className="min-h-screen bg-bg px-4 py-10 md:px-10 lg:px-20"
     >
+      {/* HEADER */}
+
       <motion.div
         initial={{
           opacity: 0,
@@ -484,7 +744,7 @@ export default function Checkout() {
         </p>
       </motion.div>
 
-      {/* Error */}
+      {/* ERROR */}
 
       <AnimatePresence>
         {submitError && (
@@ -514,7 +774,9 @@ export default function Checkout() {
             <button
               type="button"
               onClick={() =>
-                setSubmitError("")
+                setSubmitError(
+                  ""
+                )
               }
               aria-label="Dismiss"
             >
@@ -525,12 +787,15 @@ export default function Checkout() {
       </AnimatePresence>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-        {/* ===================================================
+
+        {/* ===================================
             FORM
-        =================================================== */}
+        =================================== */}
 
         <motion.form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(
+            onSubmit
+          )}
           noValidate
           initial={{
             opacity: 0,
@@ -545,7 +810,8 @@ export default function Checkout() {
           }}
           className="flex flex-col gap-6"
         >
-          {/* Shipping */}
+
+          {/* SHIPPING */}
 
           <div className="card p-6 md:p-8">
             <div className="mb-6 flex items-center gap-2">
@@ -557,56 +823,77 @@ export default function Checkout() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
               <Field
                 icon={<FiUser />}
                 placeholder="Full Name"
-                error={errors.fullName}
-                {...register("fullName", {
-                  required:
-                    "Full name is required",
-                })}
+                error={
+                  errors.fullName
+                }
+                {...register(
+                  "fullName",
+                  {
+                    required:
+                      "Full name is required",
+                  }
+                )}
               />
 
               <Field
                 icon={<FiPhone />}
                 type="tel"
                 placeholder="Phone Number"
-                error={errors.phone}
-                {...register("phone", {
-                  required:
-                    "Phone number is required",
+                error={
+                  errors.phone
+                }
+                {...register(
+                  "phone",
+                  {
+                    required:
+                      "Phone number is required",
 
-                  minLength: {
-                    value: 8,
-                    message:
-                      "Enter a valid phone number",
-                  },
-                })}
+                    minLength: {
+                      value: 8,
+                      message:
+                        "Enter a valid phone number",
+                    },
+                  }
+                )}
               />
 
               <Field
                 icon={<FiHome />}
                 placeholder="City / Region"
-                error={errors.city}
-                {...register("city", {
-                  required:
-                    "City is required",
-                })}
+                error={
+                  errors.city
+                }
+                {...register(
+                  "city",
+                  {
+                    required:
+                      "City is required",
+                  }
+                )}
               />
 
               <Field
                 icon={<FiMapPin />}
                 placeholder="Detailed Address"
-                error={errors.address}
-                {...register("address", {
-                  required:
-                    "Address is required",
-                })}
+                error={
+                  errors.address
+                }
+                {...register(
+                  "address",
+                  {
+                    required:
+                      "Address is required",
+                  }
+                )}
               />
             </div>
           </div>
 
-          {/* Payment */}
+          {/* PAYMENT */}
 
           <div className="card p-6 md:p-8">
             <div className="mb-6 flex items-center gap-2">
@@ -619,32 +906,48 @@ export default function Checkout() {
 
             <input
               type="hidden"
-              {...register("paymentMethod")}
+              {...register(
+                "paymentMethod"
+              )}
             />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
               <PaymentOption
                 active={
-                  paymentMethod === "cash"
+                  paymentMethod ===
+                  "cash"
                 }
-                icon={<FiDollarSign />}
+                icon={
+                  <FiDollarSign />
+                }
                 title="Cash on Delivery"
                 onClick={() =>
-                  choosePayment("cash")
+                  choosePayment(
+                    "cash"
+                  )
                 }
               />
 
               <PaymentOption
                 active={isWallet}
-                icon={<FiCreditCard />}
+                icon={
+                  <FiCreditCard />
+                }
                 title="E-Wallet"
                 onClick={() =>
-                  choosePayment("wallet")
+                  choosePayment(
+                    "wallet"
+                  )
                 }
               />
             </div>
 
-            <AnimatePresence initial={false}>
+            {/* WALLET */}
+
+            <AnimatePresence
+              initial={false}
+            >
               {isWallet && (
                 <motion.div
                   initial={{
@@ -665,8 +968,11 @@ export default function Checkout() {
                   className="overflow-hidden"
                 >
                   <div className="mt-6 grid grid-cols-1 gap-4 border-t border-border pt-6 md:grid-cols-2">
+
                     <Field
-                      icon={<FiUser />}
+                      icon={
+                        <FiUser />
+                      }
                       placeholder="Sender Name"
                       error={
                         errors.senderName
@@ -674,15 +980,18 @@ export default function Checkout() {
                       {...register(
                         "senderName",
                         {
-                          required: isWallet
-                            ? "Sender name is required"
-                            : false,
+                          required:
+                            isWallet
+                              ? "Sender name is required"
+                              : false,
                         }
                       )}
                     />
 
                     <Field
-                      icon={<FiPhone />}
+                      icon={
+                        <FiPhone />
+                      }
                       type="tel"
                       placeholder="Sender Phone Number"
                       error={
@@ -691,15 +1000,18 @@ export default function Checkout() {
                       {...register(
                         "senderPhone",
                         {
-                          required: isWallet
-                            ? "Sender phone is required"
-                            : false,
+                          required:
+                            isWallet
+                              ? "Sender phone is required"
+                              : false,
                         }
                       )}
                     />
 
                     <Field
-                      icon={<FiCreditCard />}
+                      icon={
+                        <FiCreditCard />
+                      }
                       placeholder="Transaction ID"
                       className="md:col-span-2"
                       error={
@@ -708,14 +1020,16 @@ export default function Checkout() {
                       {...register(
                         "transactionId",
                         {
-                          required: isWallet
-                            ? "Transaction ID is required"
-                            : false,
+                          required:
+                            isWallet
+                              ? "Transaction ID is required"
+                              : false,
                         }
                       )}
                     />
 
                     <label className="flex cursor-pointer flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-6 text-center transition hover:border-primary md:col-span-2">
+
                       <input
                         type="file"
                         accept="image/*"
@@ -753,7 +1067,7 @@ export default function Checkout() {
             </AnimatePresence>
           </div>
 
-          {/* Submit */}
+          {/* SUBMIT */}
 
           <motion.button
             type="submit"
@@ -789,9 +1103,9 @@ export default function Checkout() {
           </motion.button>
         </motion.form>
 
-        {/* ===================================================
-            ORDER SUMMARY
-        =================================================== */}
+        {/* ===================================
+            SUMMARY
+        =================================== */}
 
         <motion.aside
           initial={{
@@ -816,24 +1130,27 @@ export default function Checkout() {
           </div>
 
           <div className="flex flex-col gap-4">
+
             {checkoutItems.map(
               (item, i) => {
                 const itemPrice =
-                  getItemPrice(item);
+                  getItemPrice(
+                    item
+                  );
 
-                const quantity = Number(
-                  item.quantity || 1
-                );
+                const quantity =
+                  Number(
+                    item.quantity ||
+                      1
+                  );
 
                 const itemTotal =
-                  itemPrice * quantity;
+                  itemPrice *
+                  quantity;
 
                 return (
                   <motion.div
-                    key={`${
-                      item.product?._id ||
-                      item.product
-                    }-${item.color}-${item.size}-${i}`}
+                    key={`${item.product?._id || item.product}-${item.color}-${item.size}-${i}`}
                     initial={{
                       opacity: 0,
                       y: 8,
@@ -843,17 +1160,22 @@ export default function Checkout() {
                       y: 0,
                     }}
                     transition={{
-                      delay: 0.05 * i,
+                      delay:
+                        0.05 * i,
                     }}
                     className="flex items-center gap-3 border-b border-border pb-4 last:border-0 last:pb-0"
                   >
                     <img
                       src={
-                        item.product?.image ||
+                        item
+                          .product
+                          ?.image ||
                         item.image
                       }
                       alt={
-                        item.product?.name ||
+                        item
+                          .product
+                          ?.name ||
                         item.name
                       }
                       className="h-16 w-16 rounded-lg object-cover"
@@ -861,7 +1183,9 @@ export default function Checkout() {
 
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm text-text">
-                        {item.product?.name ||
+                        {item
+                          .product
+                          ?.name ||
                           item.name}
                       </p>
 
@@ -872,12 +1196,15 @@ export default function Checkout() {
                         {item.size &&
                           `${item.size} · `}
 
-                        × {quantity}
+                        ×{" "}
+                        {quantity}
                       </p>
                     </div>
 
                     <Currency
-                      amount={itemTotal}
+                      amount={
+                        itemTotal
+                      }
                       className="whitespace-nowrap text-sm text-primary"
                     />
                   </motion.div>
@@ -886,7 +1213,9 @@ export default function Checkout() {
             )}
 
             <div className="mt-2 flex items-center justify-between border-t border-border pt-4 text-lg text-text">
-              <span>Total</span>
+              <span>
+                Total
+              </span>
 
               <Currency
                 amount={total}
