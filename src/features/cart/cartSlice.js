@@ -12,13 +12,10 @@ export const getCart = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get("/cart");
-
-      return data.cart || [];
+      return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "An error occurred while loading the cart.";
-
+        error.response?.data?.message || "An error occurred while loading the cart.";
       return rejectWithValue(message);
     }
   }
@@ -27,10 +24,7 @@ export const getCart = createAsyncThunk(
 // POST /cart/add
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async (
-    { productId, color, size, quantity },
-    { rejectWithValue }
-  ) => {
+  async ({ productId, color, size, quantity }, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/cart/add", {
         productId,
@@ -38,23 +32,12 @@ export const addToCart = createAsyncThunk(
         size,
         quantity,
       });
-
-      showToast({
-        type: "success",
-        message: data.message || "Item added to cart.",
-      });
-
-      return data.cart || [];
+      showToast({ type: "success", message: data.message });
+      return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "An error occurred while adding to cart.";
-
-      showToast({
-        type: "error",
-        message,
-      });
-
+        error.response?.data?.message || "An error occurred while adding to cart.";
+      showToast({ type: "error", message });
       return rejectWithValue(message);
     }
   }
@@ -63,10 +46,7 @@ export const addToCart = createAsyncThunk(
 // PUT /cart/update
 export const updateCartItem = createAsyncThunk(
   "cart/updateCartItem",
-  async (
-    { productId, color, size, quantity },
-    { rejectWithValue }
-  ) => {
+  async ({ productId, color, size, quantity }, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.put("/cart/update", {
         productId,
@@ -74,18 +54,11 @@ export const updateCartItem = createAsyncThunk(
         size,
         quantity,
       });
-
-      return data.cart || [];
+      return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "An error occurred while updating the cart.";
-
-      showToast({
-        type: "error",
-        message,
-      });
-
+        error.response?.data?.message || "An error occurred while updating the cart.";
+      showToast({ type: "error", message });
       return rejectWithValue(message);
     }
   }
@@ -94,35 +67,17 @@ export const updateCartItem = createAsyncThunk(
 // DELETE /cart/remove
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
-  async (
-    { productId, color, size },
-    { rejectWithValue }
-  ) => {
+  async ({ productId, color, size }, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.delete("/cart/remove", {
-        data: {
-          productId,
-          color,
-          size,
-        },
+        data: { productId, color, size },
       });
-
-      showToast({
-        type: "success",
-        message: data.message || "Item removed from cart.",
-      });
-
-      return data.cart || [];
+      showToast({ type: "success", message: data.message });
+      return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "An error occurred while removing the item.";
-
-      showToast({
-        type: "error",
-        message,
-      });
-
+        error.response?.data?.message || "An error occurred while removing the item.";
+      showToast({ type: "error", message });
       return rejectWithValue(message);
     }
   }
@@ -134,23 +89,12 @@ export const clearCart = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.delete("/cart/clear");
-
-      showToast({
-        type: "success",
-        message: data.message || "Cart cleared.",
-      });
-
-      return data.cart || [];
+      showToast({ type: "success", message: data.message });
+      return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "An error occurred while clearing the cart.";
-
-      showToast({
-        type: "error",
-        message,
-      });
-
+        error.response?.data?.message || "An error occurred while clearing the cart.";
+      showToast({ type: "error", message });
       return rejectWithValue(message);
     }
   }
@@ -160,12 +104,7 @@ export const clearCart = createAsyncThunk(
 // HELPERS
 // ==========================================
 
-const findItemIndex = (
-  items,
-  productId,
-  color,
-  size
-) =>
+const findItemIndex = (items, productId, color, size) =>
   items.findIndex(
     (item) =>
       (item.product?._id || item.product) === productId &&
@@ -174,180 +113,103 @@ const findItemIndex = (
   );
 
 // ==========================================
-// INITIAL STATE
+// SLICE
 // ==========================================
 
 const initialState = {
   items: [],
-
-  // IMPORTANT:
-  // Always use buyNowItem with lowercase b
   buyNowItem: null,
-
-  loading: false,
-  actionLoading: false,
+  loading: false, // getCart (initial full load)
+  actionLoading: false, // add / update / remove / clear
   error: null,
 };
 
-// ==========================================
-// SLICE
-// ==========================================
-
 const cartSlice = createSlice({
   name: "cart",
-
   initialState,
-
   reducers: {
-    // ======================================
-    // BUY NOW
-    // ======================================
-
     setBuyNowItem: (state, action) => {
       state.buyNowItem = action.payload;
     },
-
     clearBuyNowItem: (state) => {
       state.buyNowItem = null;
     },
-
-    // ======================================
-    // LOCAL QUANTITY
-    // ======================================
-
+    // Optimistic local quantity bump, useful for instant UI feedback
+    // before the updateCartItem thunk resolves
     setLocalQuantity: (state, action) => {
-      const {
-        productId,
-        color,
-        size,
-        quantity,
-      } = action.payload;
-
-      const index = findItemIndex(
-        state.items,
-        productId,
-        color,
-        size
-      );
-
-      if (index !== -1) {
-        state.items[index].quantity = quantity;
-      }
+      const { productId, color, size, quantity } = action.payload;
+      const index = findItemIndex(state.items, productId, color, size);
+      if (index !== -1) state.items[index].quantity = quantity;
     },
-
-    // ======================================
-    // RESET
-    // ======================================
-
-    resetCartState: () => ({
-      ...initialState,
-    }),
+    resetCartState: () => initialState,
   },
-
   extraReducers: (builder) => {
     builder
-
-      // ======================================
       // GET CART
-      // ======================================
-
       .addCase(getCart.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-
       .addCase(getCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : [];
+        state.items = action.payload;
       })
-
       .addCase(getCart.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // ======================================
       // ADD TO CART
-      // ======================================
-
       .addCase(addToCart.pending, (state) => {
         state.actionLoading = true;
         state.error = null;
       })
-
       .addCase(addToCart.fulfilled, (state, action) => {
         state.actionLoading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : [];
+        state.items = action.payload;
       })
-
       .addCase(addToCart.rejected, (state, action) => {
         state.actionLoading = false;
         state.error = action.payload;
       })
 
-      // ======================================
-      // UPDATE CART
-      // ======================================
-
+      // UPDATE CART ITEM
       .addCase(updateCartItem.pending, (state) => {
         state.actionLoading = true;
         state.error = null;
       })
-
       .addCase(updateCartItem.fulfilled, (state, action) => {
         state.actionLoading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : [];
+        state.items = action.payload;
       })
-
       .addCase(updateCartItem.rejected, (state, action) => {
         state.actionLoading = false;
         state.error = action.payload;
       })
 
-      // ======================================
-      // REMOVE
-      // ======================================
-
+      // REMOVE FROM CART
       .addCase(removeFromCart.pending, (state) => {
         state.actionLoading = true;
         state.error = null;
       })
-
       .addCase(removeFromCart.fulfilled, (state, action) => {
         state.actionLoading = false;
-
-        state.items = Array.isArray(action.payload)
-          ? action.payload
-          : [];
+        state.items = action.payload;
       })
-
       .addCase(removeFromCart.rejected, (state, action) => {
         state.actionLoading = false;
         state.error = action.payload;
       })
 
-      // ======================================
-      // CLEAR
-      // ======================================
-
+      // CLEAR CART
       .addCase(clearCart.pending, (state) => {
         state.actionLoading = true;
         state.error = null;
       })
-
       .addCase(clearCart.fulfilled, (state) => {
         state.actionLoading = false;
         state.items = [];
       })
-
       .addCase(clearCart.rejected, (state, action) => {
         state.actionLoading = false;
         state.error = action.payload;
@@ -359,50 +221,17 @@ const cartSlice = createSlice({
 // SELECTORS
 // ==========================================
 
-export const selectCartItems = (state) =>
-  state.cart.items;
-
-export const selectBuyNowItem = (state) =>
-  state.cart.buyNowItem;
-
-export const selectCartLoading = (state) =>
-  state.cart.loading;
-
-export const selectCartActionLoading = (state) =>
-  state.cart.actionLoading;
-
+export const selectCartItems = (state) => state.cart.items;
+export const selectBuyNowItem = (state) => state.cart.buyNowItem;
+export const selectCartLoading = (state) => state.cart.loading;
+export const selectCartActionLoading = (state) => state.cart.actionLoading;
 export const selectCartCount = (state) =>
-  state.cart.items.reduce(
-    (sum, item) =>
-      sum + Number(item.quantity || 0),
-    0
-  );
-
+  state.cart.items.reduce((sum, item) => sum + item.quantity, 0);
 export const selectCartTotal = (state) =>
   state.cart.items.reduce((sum, item) => {
-    const variant = item.product?.variants?.find(
-      (v) => v?.color?.name === item.color
-    );
-
-    const size = variant?.sizes?.find(
-      (s) => s?.size === item.size
-    );
-
-    const price = Number(
-      size?.offerPrice > 0
-        ? size.offerPrice
-        : size?.price || 0
-    );
-
-    return (
-      sum +
-      price * Number(item.quantity || 0)
-    );
+    const price = item.product?.variants?.[0]?.price || 0;
+    return sum + price * item.quantity;
   }, 0);
-
-// ==========================================
-// ACTIONS
-// ==========================================
 
 export const {
   setBuyNowItem,
@@ -410,9 +239,5 @@ export const {
   setLocalQuantity,
   resetCartState,
 } = cartSlice.actions;
-
-// ==========================================
-// REDUCER
-// ==========================================
 
 export default cartSlice.reducer;

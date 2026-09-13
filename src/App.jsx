@@ -16,166 +16,203 @@ import { showToast } from "./utils/showToast.jsx";
 
 import { getUser } from "./features/auth/authSlice.js";
 import { getCart } from "./features/cart/cartSlice.js";
-import {
-  addOrder,
-  getOrdersUser,
-} from "./features/order/orderSlice.js";
+import { addOrder } from "./features/order/orderSlice.js";
+import useApplyTheme from "./hooks/useApplyTheme.js";
+import { fetchSettings } from "./features/settings/settingsSlice.js";
 
 function App() {
+  useApplyTheme();
   const dispatch = useDispatch();
-  const socket = useSocket();
+  const { user, accessToken } = useSelector(
+    (state) => state.auth
+  );
 
-  const { user, accessToken } = useSelector((state) => state.auth);
-  const { orders } = useSelector((state) => state.orders);
+  const socket = useSocket(accessToken);
 
-  // =========================================================
-  // AUTH
-  // =========================================================
+
+  const { orders } = useSelector(
+    (state) => state.orders
+  );
+
+  /* =========================================================
+     AUTH
+  ========================================================= */
 
   useEffect(() => {
     if (!accessToken) return;
-
     dispatch(getUser());
   }, [accessToken, dispatch]);
 
-  // =========================================================
-  // LOAD USER ORDERS
-  // =========================================================
-
-  useEffect(() => {
-    if (!user) return;
-    if (user.role === "admin") return;
-
-    dispatch(getOrdersUser());
-  }, [user, dispatch]);
-
-  // =========================================================
-  // USER ORDER ROOMS
-  // =========================================================
+  /* =========================================================
+     USER ORDER ROOMS
+     
+     Admin doesn't need to join every user order room.
+  ========================================================= */
 
   useEffect(() => {
     if (!socket) return;
+
     if (!user) return;
+
     if (user.role === "admin") return;
+
     if (!orders?.length) return;
 
-    const joinOrderRooms = () => {
-      orders.forEach((order) => {
-        if (!order?._id) return;
+    orders.forEach(({ _id }) => {
+      if (!_id) return;
 
-        socket.emit("userOrder", order._id);
-      });
-    };
+      socket.emit("userOrder", _id);
+    });
+  }, [
+    socket,
+    user?.role,
+    user?._id,
+    orders,
+  ]);
 
-    if (socket.connected) {
-      joinOrderRooms();
-    }
-
-    socket.on("connect", joinOrderRooms);
-
-    return () => {
-      socket.off("connect", joinOrderRooms);
-    };
-  }, [socket, user, orders]);
-
-  // =========================================================
-  // ADMIN: NEW ORDER
-  // =========================================================
+  /* =========================================================
+     NEW ORDER
+  ========================================================= */
 
   const handleNewOrder = useCallback(
     async (order) => {
-      if (!order?._id) return;
+      if (!order?._id) {
+        console.warn(
+          "⚠️ newOrder received without valid order"
+        );
 
-      // This event should only be handled by admin
-      if (user?.role !== "admin") return;
+        return;
+      }
+
+      console.log(
+        "🆕 NEW ORDER RECEIVED:",
+        order
+      );
+
+      /* -----------------------------------------------------
+         SOUND
+      ----------------------------------------------------- */
 
       playSound?.(sounds.newOrder);
 
+      /* -----------------------------------------------------
+         TOAST
+      ----------------------------------------------------- */
+
       showToast({
         type: "adminOrder",
-        message: `${order.items?.length || 0} items received`,
+        message: `${order.items?.length || 0} dishes received`,
         amount: order.totalPrice,
       });
 
+      /* -----------------------------------------------------
+         REDUX
+      ----------------------------------------------------- */
+
       dispatch(addOrder(order));
+
+      /* -----------------------------------------------------
+         PRINT
+      ----------------------------------------------------- */
 
       try {
         await printOrder(order);
 
+        console.log(
+          "✅ Order printed successfully:",
+          order._id
+        );
+
         showToast({
           type: "success",
-          message: "Order printed successfully",
+          message: "Order ticket printed successfully",
         });
       } catch (error) {
-        console.error("Print order error:", error);
+        console.error(
+          "❌ Order printing failed:",
+          error
+        );
 
         showToast({
           type: "error",
-          message: "Order received, but printing failed",
+          message:
+            "Order received, but printing failed",
         });
       }
     },
-    [dispatch, user?.role]
+    [dispatch]
   );
 
-  // =========================================================
-  // LOW STOCK
-  // =========================================================
+  /* =========================================================
+     LOW STOCK
+  ========================================================= */
 
-  const handleWarning = useCallback(
-    (data) => {
-      if (!data) return;
+  const handleWarning = useCallback((data) => {
+    if (!data) return;
 
-      if (user?.role !== "admin") return;
+    playSound?.(sounds.lowStock);
 
-      playSound?.(sounds.lowStock);
+    showToast({
+      type: "lowStock",
+      message: `${data.name} is running low on stock (${data.color
+        } - ${data.size})`,
+    });
+  }, []);
 
-      showToast({
-        type: "lowStock",
-        message: `${data.name} is running low on stock (${data.color} - ${data.size})`,
-      });
-    },
-    [user?.role]
-  );
+  /* =========================================================
+     ORDER STATUS
+  ========================================================= */
 
-  // =========================================================
-  // ORDER STATUS
-  // =========================================================
+  const handleOrderStatus = useCallback((data) => {
+    if (!data) return;
 
-  const handleOrderStatus = useCallback(
-    (data) => {
-      if (!data) return;
+    playSound?.(sounds.orderStatus);
 
-      // Only normal users should receive customer order updates
-      if (user?.role === "admin") return;
+    showToast({
+      type: "orderStatus",
+      message:
+        data.body ||
+        `Order status updated to ${data.status}`,
+    });
+  }, []);
 
-      playSound?.(sounds.orderStatus);
-
-      showToast({
-        type: "orderStatus",
-        message:
-          data.body ||
-          `Order status updated to ${data.status}`,
-      });
-    },
-    [user?.role]
-  );
-
-  // =========================================================
-  // SOCKET EVENTS
-  // =========================================================
+  /* =========================================================
+     SOCKET EVENTS
+  ========================================================= */
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("newOrder", handleNewOrder);
-    socket.on("warning", handleWarning);
-    socket.on("orderStatus", handleOrderStatus);
+    socket.on(
+      "newOrder",
+      handleNewOrder
+    );
+
+    socket.on(
+      "warning",
+      handleWarning
+    );
+
+    socket.on(
+      "orderStatus",
+      handleOrderStatus
+    );
 
     return () => {
-      socket.off("newOrder", handleNewOrder);
-      socket.off("warning", handleWarning);
-      socket.off("orderStatus", handleOrderStatus);
+      socket.off(
+        "newOrder",
+        handleNewOrder
+      );
+
+      socket.off(
+        "warning",
+        handleWarning
+      );
+
+      socket.off(
+        "orderStatus",
+        handleOrderStatus
+      );
     };
   }, [
     socket,
@@ -184,17 +221,18 @@ function App() {
     handleOrderStatus,
   ]);
 
-  // =========================================================
-  // CART
-  // =========================================================
+  /* =========================================================
+     CART
+  ========================================================= */
 
   useEffect(() => {
+    if (!user) return;
     dispatch(getCart());
   }, [dispatch]);
 
-  // =========================================================
-  // PUSH NOTIFICATIONS
-  // =========================================================
+  /* =========================================================
+     PUSH NOTIFICATIONS
+  ========================================================= */
 
   useEffect(() => {
     if (!user) return;
@@ -202,32 +240,28 @@ function App() {
     subscribeToPush();
   }, [user]);
 
-  // =========================================================
-  // ADMIN ROOM
-  // =========================================================
-
+  /* =========================================================
+     ADMIN SOCKET ROOM
+  ========================================================= */
+  useEffect(() => {
+    dispatch(fetchSettings());
+  }, [dispatch]);
   useEffect(() => {
     if (!socket) return;
+
     if (user?.role !== "admin") return;
 
-    const joinAdminRoom = () => {
-      socket.emit("admin");
-    };
+    socket.emit("admin");
 
-    if (socket.connected) {
-      joinAdminRoom();
-    }
 
-    socket.on("connect", joinAdminRoom);
+  }, [
+    socket,
+    user?.role,
+  ]);
 
-    return () => {
-      socket.off("connect", joinAdminRoom);
-    };
-  }, [socket, user?.role]);
-
-  // =========================================================
-  // UI
-  // =========================================================
+  /* =========================================================
+     UI
+  ========================================================= */
 
   return (
     <>
