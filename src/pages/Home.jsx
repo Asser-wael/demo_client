@@ -601,6 +601,7 @@ function ProductSwiper({
         .map((product) => product?.id || product)
         .filter((product) => product?._id)
     : [];
+console.log(products);
 
   if (!normalizedProducts.length) {
     return (
