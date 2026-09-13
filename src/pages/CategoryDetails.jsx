@@ -7,12 +7,28 @@ import {
   FiArrowLeft,
   FiStar,
   FiFilter,
-  FiPackage,
   FiChevronDown,
 } from "react-icons/fi";
+import { MdOutlineRestaurantMenu } from "react-icons/md";
 
 import { getCategories } from "../features/category/categorySlice";
 import { getProducts } from "../features/products/productSlice";
+
+// ==========================================
+// CURRENCY COMPONENT
+// ==========================================
+function Currency({ amount, className = "" }) {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) {
+    return <span className={className}>NZ$ —</span>;
+  }
+
+  const formatted = Number(amount).toLocaleString("en-NZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return <span className={className}>NZ$ {formatted}</span>;
+}
 
 // ==========================================
 // MOTION CONFIG
@@ -48,29 +64,28 @@ function getPriceInfo(item) {
     return {
       price: hasOffer ? firstSize.offerPrice : firstSize.price,
       oldPrice: hasOffer ? firstSize.price : null,
-      size: firstSize.size,
+      portion: firstSize.size,
     };
   }
 
   return {
-    price: item?.price ?? "—",
+    price: item?.price ?? null,
     oldPrice: item?.oldPrice ?? null,
-    size: null,
+    portion: null,
   };
 }
 
 function getCategoryId(product) {
-  // يدعم الحالتين: category كـ id نص، أو category كـ object فيه _id
   return product?.category?._id || product?.category || null;
 }
 
 // ==========================================
-// PRODUCT CARD
+// DISH / MENU ITEM CARD
 // ==========================================
 function ProductCard({ item, index }) {
   const navigate = useNavigate();
-  const { price, oldPrice, size } = getPriceInfo(item);
-  const swatches = item?.variants?.slice(0, 5) ?? [];
+  const { price, oldPrice, portion } = getPriceInfo(item);
+  const options = item?.variants?.slice(0, 5) ?? [];
 
   return (
     <motion.div
@@ -84,7 +99,7 @@ function ProductCard({ item, index }) {
       onClick={() => navigate(`/products/${item._id}`)}
       className="card group flex flex-col overflow-hidden cursor-pointer"
     >
-      <div className="relative w-full aspect-[4/5] overflow-hidden">
+      <div className="relative w-full aspect-[4/3] overflow-hidden">
         <img
           src={item.image}
           alt={item.name}
@@ -97,9 +112,9 @@ function ProductCard({ item, index }) {
           {item.name}
         </span>
 
-        {swatches.length > 0 && (
+        {options.length > 0 && (
           <div className="flex items-center gap-1.5 mt-0.5">
-            {swatches.map((variant, i) => (
+            {options.map((variant, i) => (
               <span
                 key={variant.color?.hex ?? i}
                 title={variant.color?.name}
@@ -112,24 +127,26 @@ function ProductCard({ item, index }) {
 
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold text-[var(--text)]">
-              EGP {price}
-            </span>
+            <Currency
+              amount={price}
+              className="text-sm font-bold text-[var(--text)]"
+            />
             {oldPrice && (
-              <span className="text-xs text-[var(--muted)] line-through">
-                EGP {oldPrice}
-              </span>
+              <Currency
+                amount={oldPrice}
+                className="text-xs text-[var(--muted)] line-through"
+              />
             )}
           </div>
           <div className="flex items-center gap-1 text-[var(--muted)] text-xs">
             <FiStar className="text-[var(--primary)] fill-current" />
-            {item.rating ?? "4.8"}
+            {item.rating ?? "4.9"}
           </div>
         </div>
 
-        {size && (
+        {portion && (
           <span className="text-[11px] text-[var(--muted)]">
-            Available from size {size}
+            Serving size: {portion}
           </span>
         )}
       </div>
@@ -153,18 +170,20 @@ export default function CategoryDetails() {
   );
 
   const [sortOpen, setSortOpen] = useState(false);
-  const [sortBy, setSortBy] = useState("default"); // default | priceLow | priceHigh
+  const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
     dispatch(getCategories());
     dispatch(getProducts());
   }, [dispatch]);
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   }, []);
+
   const category = useMemo(
     () => categories?.find((cat) => cat._id === id),
     [categories, id]
@@ -187,7 +206,7 @@ export default function CategoryDetails() {
   }, [products, id, sortBy]);
 
   const sortLabels = {
-    default: "Default",
+    default: "Recommended",
     priceLow: "Price: Low to High",
     priceHigh: "Price: High to Low",
   };
@@ -196,7 +215,7 @@ export default function CategoryDetails() {
 
   return (
     <div className="w-full">
-      {/* ===== CATEGORY HERO ===== */}
+      {/* ===== MENU CATEGORY HERO ===== */}
       <section
         className="
         relative min-h-[260px] sm:min-h-[340px]
@@ -210,7 +229,7 @@ export default function CategoryDetails() {
           backgroundColor: !category?.image ? "var(--card)" : undefined,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
 
         <div className="relative z-10 w-full px-6 sm:px-10 py-8 flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2">
@@ -219,16 +238,16 @@ export default function CategoryDetails() {
               className="flex items-center gap-2 text-xs font-semibold tracking-wide text-white/80 hover:text-white transition-colors w-fit"
             >
               <FiArrowLeft className="text-sm" />
-              Back to Collections
+              Back to Menu Categories
             </button>
 
             <h1 className="logo text-3xl sm:text-5xl font-bold text-white">
-              {category?.name || "Collection"}
+              {category?.name || "Menu Category"}
             </h1>
 
             <span className="text-xs sm:text-sm text-white/70">
-              {filteredProducts.length} product
-              {filteredProducts.length !== 1 && "s"}
+              {filteredProducts.length} dish
+              {filteredProducts.length !== 1 && "es"} available
             </span>
           </div>
         </div>
@@ -239,7 +258,7 @@ export default function CategoryDetails() {
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
             <FiFilter className="text-[var(--primary)]" />
-            <span>Showing all items</span>
+            <span>Exploring menu items</span>
           </div>
 
           {/* Sort Dropdown */}
@@ -285,14 +304,14 @@ export default function CategoryDetails() {
         </div>
       </section>
 
-      {/* ===== PRODUCTS GRID ===== */}
+      {/* ===== DISHES GRID ===== */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-24">
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-[4/5] rounded-2xl bg-[var(--border)] animate-pulse"
+                className="aspect-[4/3] rounded-2xl bg-[var(--border)] animate-pulse"
               />
             ))}
           </div>
@@ -303,15 +322,15 @@ export default function CategoryDetails() {
             transition={{ duration: 0.4 }}
             className="flex flex-col items-center justify-center py-24 text-center"
           >
-            <FiPackage className="text-4xl text-[var(--muted)] mb-4" />
+            <MdOutlineRestaurantMenu className="text-5xl text-[var(--muted)] mb-4" />
             <span className="logo text-xl font-semibold text-[var(--text)]">
-              No products in this collection yet
+              No dishes found in this menu section
             </span>
             <button
               onClick={() => navigate("/products")}
               className="flex items-center gap-2 mt-6 text-sm font-semibold text-[var(--primary)] hover:gap-3 transition-all"
             >
-              Browse all products
+              Browse full menu
               <FiArrowUpRight />
             </button>
           </motion.div>
