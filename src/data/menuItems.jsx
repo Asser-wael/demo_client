@@ -7,6 +7,7 @@ import {
   PiStarDuotone,
   PiShieldCheckDuotone,
   PiArrowLeftDuotone,
+  PiLayoutDuotone
 } from "react-icons/pi";
 
 export const menuItems = [
@@ -16,6 +17,7 @@ export const menuItems = [
   { id: 4, title: "Categories", icon: <PiTagDuotone />, to: "/admin/categories" },
   { id: 5, title: "Users", icon: <PiUsersDuotone />, to: "/admin/users" },
   { id: 6, title: "Popular", icon: <PiStarDuotone />, to: "/admin/popular" },
-  { id: 7, title: "Trust Page", icon: <PiShieldCheckDuotone />, to: "/admin/trust" },
-  { id: 8, title: "Back to Store", icon: <PiArrowLeftDuotone />, to: "/" },
+  { id: 7, title: "Website Shape", icon: <PiLayoutDuotone />, to: "/admin/websiteShape" },
+  { id: 8, title: "Trust Page", icon: <PiShieldCheckDuotone />, to: "/admin/trust" },
+  { id: 9, title: "Back to Store", icon: <PiArrowLeftDuotone />, to: "/" },
 ];
