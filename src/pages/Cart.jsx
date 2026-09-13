@@ -125,7 +125,7 @@ export default function Cart() {
 
   useEffect(() => {
     dispatch(getCart())
-  }, [items]);
+  }, [dispatch]);
   useEffect(() => {
     window.scrollTo({
       top: 0,
