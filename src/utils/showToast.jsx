@@ -522,6 +522,7 @@ const ToastCard = ({
           {/* Moving Shine */}
           <motion.div
             className="absolute inset-0"
+            onClick={() => toast.dismiss(t.id)}
             style={{
               background: `
                 linear-gradient(
@@ -567,7 +568,7 @@ const ToastCard = ({
               uppercase
               tracking-[0.12em]
             "
-            onClick={() => toast.dismiss(t.id)}
+            
             style={{
               color: activeAccent,
             }}
