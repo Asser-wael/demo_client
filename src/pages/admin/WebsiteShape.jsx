@@ -10,22 +10,22 @@ import {
 } from "../../features/settings/settingsSlice.js";
 
 const COLOR_FIELDS = [
-  { key: "bg", label: "خلفية الموقع" },
-  { key: "card", label: "خلفية الكروت" },
-  { key: "text", label: "لون النص" },
-  { key: "muted", label: "نص باهت" },
-  { key: "border", label: "لون الحدود" },
-  { key: "primary", label: "اللون الأساسي" },
-  { key: "primaryHover", label: "اللون الأساسي (Hover)" },
-  { key: "accent", label: "لون مميز" },
-  { key: "accentLight", label: "لون مميز فاتح" },
+  { key: "bg", label: "Website Background" },
+  { key: "card", label: "Card Background" },
+  { key: "text", label: "Text Color" },
+  { key: "muted", label: "Muted Text" },
+  { key: "border", label: "Border Color" },
+  { key: "primary", label: "Primary Color" },
+  { key: "primaryHover", label: "Primary (Hover)" },
+  { key: "accent", label: "Accent Color" },
+  { key: "accentLight", label: "Light Accent" },
 ];
 
 const SOCIAL_FIELDS = [
-  { key: "instagram", label: "رابط انستجرام", placeholder: "https://instagram.com/your-page" },
-  { key: "tiktok", label: "رابط تيك توك", placeholder: "https://tiktok.com/@your-handle" },
-  { key: "facebook", label: "رابط فيسبوك", placeholder: "https://facebook.com/your-page" },
-  { key: "whatsapp", label: "رقم واتساب (بالكود الدولي)", placeholder: "201227675757" },
+  { key: "instagram", label: "Instagram Link", placeholder: "https://instagram.com/your-page" },
+  { key: "tiktok", label: "TikTok Link", placeholder: "https://tiktok.com/@your-handle" },
+  { key: "facebook", label: "Facebook Link", placeholder: "https://facebook.com/your-page" },
+  { key: "whatsapp", label: "WhatsApp Number (with country code)", placeholder: "201227675757" },
 ];
 
 export default function WebsiteShape() {
@@ -34,37 +34,37 @@ export default function WebsiteShape() {
   const isSaving = status === "loading";
 
   const [mode, setMode] = useState("light");
-  const [name, setName] = useState(company.name || "");
+  const [name, setName] = useState(company?.name || "");
   const [phoneInput, setPhoneInput] = useState(phone || "");
   const [socialInput, setSocialInput] = useState(social || {});
 
-  // زامن الحقول المحلية مع اللي راجع من السيرفر بعد الـ fetch
-  useEffect(() => setName(company.name || ""), [company.name]);
+  // Sync local state with server state when store updates
+  useEffect(() => setName(company?.name || ""), [company?.name]);
   useEffect(() => setPhoneInput(phone || ""), [phone]);
   useEffect(() => setSocialInput(social || {}), [social]);
 
-  const activePalette = colors[mode] || {};
+  const activePalette = colors?.[mode] || {};
 
   const runSave = async (payload, successMsg) => {
     try {
       await dispatch(saveSettings(payload)).unwrap();
       toast.success(successMsg);
     } catch (err) {
-      toast.error(err || "حصل خطأ أثناء الحفظ");
+      toast.error(err || "An error occurred while saving");
     }
   };
 
   const handleColorChange = (key, value) => dispatch(setColor({ mode, key, value }));
 
   const handleSaveColors = () =>
-    runSave({ colors: { [mode]: colors[mode] } }, "تم حفظ الألوان بنجاح");
+    runSave({ colors: { [mode]: colors[mode] } }, "Colors saved successfully");
 
   const handleResetColors = async () => {
     try {
       await dispatch(resetColorsRemote(mode)).unwrap();
-      toast.success("تم استرجاع الألوان الافتراضية");
+      toast.success("Default colors restored successfully");
     } catch (err) {
-      toast.error(err || "تعذر استرجاع الألوان الافتراضية");
+      toast.error(err || "Failed to restore default colors");
     }
   };
 
@@ -73,39 +73,41 @@ export default function WebsiteShape() {
     dispatch(setThemeLocal(newTheme));
     try {
       await dispatch(saveSettings({ theme: newTheme })).unwrap();
-      toast.success("تم تحديث الثيم");
+      toast.success("Theme updated successfully");
     } catch (err) {
       dispatch(setThemeLocal(theme));
-      toast.error(err || "تعذر حفظ الثيم");
+      toast.error(err || "Failed to save theme");
     }
   };
 
   const handleSaveCompany = () =>
-    runSave({ company: { name: name.trim() || "Company" } }, "تم تحديث اسم الشركة");
+    runSave({ company: { name: name.trim() || "Company" } }, "Company name updated");
 
   const handleSaveSocial = () => {
     const cleaned = Object.fromEntries(
       Object.entries(socialInput).map(([k, v]) => [k, (v || "").trim()])
     );
-    runSave({ social: cleaned }, "تم تحديث روابط السوشيال ميديا");
+    runSave({ social: cleaned }, "Social links updated");
   };
 
-  const handleSavePhone = () => runSave({ phone: phoneInput.trim() }, "تم تحديث رقم الهاتف");
+  const handleSavePhone = () => runSave({ phone: phoneInput.trim() }, "Phone number updated");
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6 text-[var(--text)]">
       <div className="border-b border-[var(--border)] pb-5">
-        <h1 className="text-3xl font-bold tracking-tight">شكل الموقع والهوية</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">تحكم في ألوان الموقع، الثيم، وبيانات الشركة.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Appearance & Branding</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">
+          Manage website colors, theme, and company details.
+        </p>
       </div>
 
       {/* THEME */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold">الثيم الحالي</h2>
+            <h2 className="text-xl font-semibold">Current Theme</h2>
             <p className="text-sm text-[var(--muted)] mt-1">
-              الوضع الحالي: <span className="font-semibold uppercase text-[var(--primary)]">{theme}</span>
+              Active mode: <span className="font-semibold uppercase text-[var(--primary)]">{theme}</span>
             </p>
           </div>
           <button
@@ -113,7 +115,7 @@ export default function WebsiteShape() {
             onClick={handleToggleTheme}
             className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 transition-colors"
           >
-            {isSaving ? "جاري الحفظ..." : `التحويل إلى ${theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}`}
+            {isSaving ? "Saving..." : `Switch to ${theme === "dark" ? "Light Mode" : "Dark Mode"}`}
           </button>
         </div>
       </section>
@@ -122,8 +124,10 @@ export default function WebsiteShape() {
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold">لوحة الألوان</h2>
-            <p className="text-sm text-[var(--muted)] mt-1">تحكم في ألوان الوضعين الفاتح والداكن بشكل منفصل.</p>
+            <h2 className="text-xl font-semibold">Color Palette</h2>
+            <p className="text-sm text-[var(--muted)] mt-1">
+              Customize light and dark mode color palettes independently.
+            </p>
           </div>
           <div className="flex rounded-xl bg-[var(--bg)] p-1 border border-[var(--border)]">
             {["light", "dark"].map((m) => (
@@ -131,10 +135,12 @@ export default function WebsiteShape() {
                 key={m}
                 onClick={() => setMode(m)}
                 className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-all ${
-                  mode === m ? "bg-[var(--primary)] text-white" : "text-[var(--muted)] hover:text-[var(--text)]"
+                  mode === m
+                    ? "bg-[var(--primary)] text-white"
+                    : "text-[var(--muted)] hover:text-[var(--text)]"
                 }`}
               >
-                {m === "light" ? "فاتح" : "داكن"}
+                {m === "light" ? "Light" : "Dark"}
               </button>
             ))}
           </div>
@@ -165,14 +171,14 @@ export default function WebsiteShape() {
             onClick={handleResetColors}
             className="text-xs font-medium text-[var(--muted)] hover:text-[var(--primary)] transition-colors"
           >
-            استرجاع الألوان الافتراضية ({mode === "light" ? "فاتح" : "داكن"})
+            Reset to default colors ({mode === "light" ? "Light" : "Dark"})
           </button>
           <button
             disabled={isSaving}
             onClick={handleSaveColors}
             className="rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 transition-colors"
           >
-            {isSaving ? "جاري الحفظ..." : "حفظ الألوان"}
+            {isSaving ? "Saving..." : "Save Colors"}
           </button>
         </div>
       </section>
@@ -180,15 +186,15 @@ export default function WebsiteShape() {
       {/* COMPANY */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">بيانات الشركة</h2>
-          <p className="text-sm text-[var(--muted)] mt-1">اسم المتجر الظاهر للعملاء.</p>
+          <h2 className="text-xl font-semibold">Company Details</h2>
+          <p className="text-sm text-[var(--muted)] mt-1">The store name displayed to customers.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="اسم الشركة"
+            placeholder="Company Name"
             className="flex-1 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none"
           />
           <button
@@ -196,7 +202,7 @@ export default function WebsiteShape() {
             onClick={handleSaveCompany}
             className="rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 transition-colors"
           >
-            {isSaving ? "جاري الحفظ..." : "حفظ"}
+            {isSaving ? "Saving..." : "Save Name"}
           </button>
         </div>
       </section>
@@ -204,8 +210,8 @@ export default function WebsiteShape() {
       {/* SOCIAL */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">روابط السوشيال ميديا</h2>
-          <p className="text-sm text-[var(--muted)] mt-1">اربط حسابات المتجر.</p>
+          <h2 className="text-xl font-semibold">Social Media Links</h2>
+          <p className="text-sm text-[var(--muted)] mt-1">Link your official store accounts.</p>
         </div>
         <div className="space-y-4">
           {SOCIAL_FIELDS.map(({ key, label, placeholder }) => (
@@ -226,15 +232,15 @@ export default function WebsiteShape() {
           onClick={handleSaveSocial}
           className="rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 transition-colors"
         >
-          {isSaving ? "جاري الحفظ..." : "حفظ الروابط"}
+          {isSaving ? "Saving..." : "Save Links"}
         </button>
       </section>
 
       {/* PHONE */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">رقم التواصل</h2>
-          <p className="text-sm text-[var(--muted)] mt-1">الرقم الأساسي للدعم.</p>
+          <h2 className="text-xl font-semibold">Contact Phone</h2>
+          <p className="text-sm text-[var(--muted)] mt-1">Primary phone number for support.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
@@ -249,7 +255,7 @@ export default function WebsiteShape() {
             onClick={handleSavePhone}
             className="rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50 transition-colors"
           >
-            {isSaving ? "جاري الحفظ..." : "حفظ الرقم"}
+            {isSaving ? "Saving..." : "Save Phone"}
           </button>
         </div>
       </section>
