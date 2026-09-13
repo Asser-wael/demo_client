@@ -29,12 +29,38 @@ export const saveSettings = createAsyncThunk(
   }
 );
 
+const defaultColors = {
+  light: {
+    bg: "#f7f5f0",
+    card: "#fffcf8",
+    text: "#1a1a1a",
+    muted: "#777777",
+    border: "#e5e1d8",
+    primary: "#b99a5a",
+    primaryHover: "#a8894d",
+    accent: "#c5a45d",
+    accentLight: "#eee4cf",
+  },
+
+  dark: {
+    bg: "#0a0a0a",
+    card: "#111111",
+    text: "#f5f5f5",
+    muted: "#999999",
+    border: "#292929",
+    primary: "#c7a65c",
+    primaryHover: "#d1af65",
+    accent: "#d1af65",
+    accentLight: "#2a2418",
+  },
+};
+
 const initialState = {
   theme: "light",
 
   colors: {
-    light: {},
-    dark: {},
+    light: { ...defaultColors.light },
+    dark: { ...defaultColors.dark },
   },
 
   company: {
@@ -61,20 +87,23 @@ const settingsSlice = createSlice({
 
   reducers: {
     setColor(state, action) {
-      const { theme, key, value } = action.payload;
+      const { mode, key, value } = action.payload;
 
-      if (!state.colors[theme]) {
-        state.colors[theme] = {};
+      if (!state.colors[mode]) {
+        state.colors[mode] = {};
       }
 
-      state.colors[theme][key] = value;
+      state.colors[mode][key] = value;
     },
 
-    resetColors(state) {
-      state.colors = {
-        light: {},
-        dark: {},
-      };
+    resetColors(state, action) {
+      const mode = action.payload;
+
+      if (mode === "light" || mode === "dark") {
+        state.colors[mode] = {
+          ...defaultColors[mode],
+        };
+      }
     },
 
     toggleTheme(state) {
