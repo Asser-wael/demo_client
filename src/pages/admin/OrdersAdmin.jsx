@@ -644,7 +644,7 @@ function MobileOrderCard({
               font-semibold
             "
           >
-            <Currency amount={order.totalPrice}/>nnnn
+            <Currency amount={order.totalPrice} />
           </p>
         </div>
       </div>
@@ -1222,7 +1222,7 @@ function OrderModal({
                         (item.price || 0) *
                         (item.quantity || 0)
                       ).toLocaleString()}{" "}
-                      EGP
+                      NZ
                     </p>
                   </div>
                 )
@@ -1264,7 +1264,8 @@ function OrderModal({
                   font-semibold
                 "
               >
-                {order.totalPrice?.toLocaleString() || 0}{" "}
+                <Currency amount={order.totalPrice} />
+
                 <span
                   className="
                     text-xs
