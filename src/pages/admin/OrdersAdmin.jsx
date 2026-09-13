@@ -29,6 +29,7 @@ import {
 } from "../../features/order/orderSlice";
 import { printOrder } from "../../utils/printOrder";
 import { showToast } from "../../utils/showToast";
+import Currency from "../../components/company/Currency";
 
 // ============================================================
 // STATUS CONFIG
@@ -643,7 +644,7 @@ function MobileOrderCard({
               font-semibold
             "
           >
-            {order.totalPrice?.toLocaleString() || 0} EGP
+            <Currency amount={order.totalPrice}/>
           </p>
         </div>
       </div>
