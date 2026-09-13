@@ -11,6 +11,7 @@ import {
 import { logoutUser } from '../features/auth/authSlice';
 import { IoIosNotifications } from "react-icons/io";
 import ThemeToggle from "../components/common/ToggleButton";
+import Name from '../components/company/Name';
 
 
 export default function AdminLayout() {
@@ -39,7 +40,7 @@ export default function AdminLayout() {
                 exit={{ opacity: 0 }}
                 className="font-serif text-lg italic"
               >
-                LUXORA
+                <Name/>
               </motion.h1>
             )}
           </AnimatePresence>
