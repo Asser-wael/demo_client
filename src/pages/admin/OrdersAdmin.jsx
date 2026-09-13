@@ -350,7 +350,7 @@ function OrderRow({
           whitespace-nowrap
         "
       >
-        {order.totalPrice?.toLocaleString() || 0} EGP
+        <Currency amount={order.totalPrice} />
       </td>
 
       {/* STATUS */}
@@ -1218,11 +1218,12 @@ function OrderModal({
                         whitespace-nowrap
                       "
                     >
-                      {(
-                        (item.price || 0) *
-                        (item.quantity || 0)
-                      ).toLocaleString()}{" "}
-                      NZ
+                      <Currency
+                        amount={
+                          (item.price || 0) *
+                          (item.quantity || 0)
+                        }
+                      />
                     </p>
                   </div>
                 )
@@ -1265,16 +1266,6 @@ function OrderModal({
                 "
               >
                 <Currency amount={order.totalPrice} />
-
-                <span
-                  className="
-                    text-xs
-                    font-normal
-                    text-[var(--muted)]
-                  "
-                >
-                  NZ
-                </span>
               </p>
             </div>
 
@@ -1298,7 +1289,7 @@ function OrderModal({
                   const cleanPhone = String(phone).replace(/\D/g, "");
 
                   window.open(
-                    `https://wa.me/2${cleanPhone}`,
+                    `https://wa.me/${cleanPhone}`,
                     "_blank",
                     "noopener,noreferrer"
                   );
@@ -1740,7 +1731,7 @@ export default function OrdersAdmin() {
           <StatItem
             label="Total Revenue"
             value={totalRevenue.toLocaleString()}
-            suffix="NZ$"
+            suffix="NZD"
             icon={FiDollarSign}
           />
 
