@@ -244,7 +244,7 @@ export default function Cart() {
                     <motion.img
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
-                      src={item.product.image}
+                      src={item.product?.image}
                       alt={item.product.name}
                       className="w-full h-full object-cover"
                     />
