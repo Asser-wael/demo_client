@@ -15,10 +15,10 @@ import {
   addReview,
 } from "../features/products/productSlice";
 
-import {
-  addToCart,
-  BuyNowitem,
-  selectCartActionLoading,
+import { 
+  addToCart, 
+  selectBuyNowItem, // Changed from BuyNowitem
+  selectCartActionLoading 
 } from "../features/cart/cartSlice";
 
 import Loading from "../components/common/Loading";
