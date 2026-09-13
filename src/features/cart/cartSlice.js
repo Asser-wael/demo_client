@@ -12,11 +12,10 @@ export const getCart = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get("/cart");
-      
       return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message || "حدث خطأ أثناء تحميل السلة";
+        error.response?.data?.message || "An error occurred while loading the cart.";
       return rejectWithValue(message);
     }
   }
@@ -37,7 +36,7 @@ export const addToCart = createAsyncThunk(
       return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message || "حدث خطأ أثناء الإضافة إلى السلة";
+        error.response?.data?.message || "An error occurred while adding to cart.";
       showToast({ type: "error", message });
       return rejectWithValue(message);
     }
@@ -58,7 +57,7 @@ export const updateCartItem = createAsyncThunk(
       return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message || "حدث خطأ أثناء تحديث السلة";
+        error.response?.data?.message || "An error occurred while updating the cart.";
       showToast({ type: "error", message });
       return rejectWithValue(message);
     }
@@ -77,7 +76,7 @@ export const removeFromCart = createAsyncThunk(
       return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message || "حدث خطأ أثناء حذف المنتج";
+        error.response?.data?.message || "An error occurred while removing the item.";
       showToast({ type: "error", message });
       return rejectWithValue(message);
     }
@@ -94,7 +93,7 @@ export const clearCart = createAsyncThunk(
       return data.cart;
     } catch (error) {
       const message =
-        error.response?.data?.message || "حدث خطأ أثناء تفريغ السلة";
+        error.response?.data?.message || "An error occurred while clearing the cart.";
       showToast({ type: "error", message });
       return rejectWithValue(message);
     }
@@ -119,7 +118,7 @@ const findItemIndex = (items, productId, color, size) =>
 
 const initialState = {
   items: [],
-  BuyNowitem: null,
+  buyNowItem: null,
   loading: false, // getCart (initial full load)
   actionLoading: false, // add / update / remove / clear
   error: null,
@@ -127,17 +126,16 @@ const initialState = {
 
 const cartSlice = createSlice({
   name: "cart",
-
   initialState,
   reducers: {
-    // optimistic local quantity bump, useful for instant UI feedback
+    setBuyNowItem: (state, action) => {
+      state.buyNowItem = action.payload;
+    },
+    clearBuyNowItem: (state) => {
+      state.buyNowItem = null;
+    },
+    // Optimistic local quantity bump, useful for instant UI feedback
     // before the updateCartItem thunk resolves
-    BuyNowitem: (state, action) => {
-      state.BuyNowitem = action.payload
-    },
-    clearBuyNowitem: (state, action) => {
-      state.BuyNowitem = null
-    },
     setLocalQuantity: (state, action) => {
       const { productId, color, size, quantity } = action.payload;
       const index = findItemIndex(state.items, productId, color, size);
@@ -224,6 +222,7 @@ const cartSlice = createSlice({
 // ==========================================
 
 export const selectCartItems = (state) => state.cart.items;
+export const selectBuyNowItem = (state) => state.cart.buyNowItem;
 export const selectCartLoading = (state) => state.cart.loading;
 export const selectCartActionLoading = (state) => state.cart.actionLoading;
 export const selectCartCount = (state) =>
@@ -234,6 +233,11 @@ export const selectCartTotal = (state) =>
     return sum + price * item.quantity;
   }, 0);
 
-export const { setLocalQuantity, resetCartState,BuyNowitem
-,clearBuyNowitem } = cartSlice.actions;
+export const {
+  setBuyNowItem,
+  clearBuyNowItem,
+  setLocalQuantity,
+  resetCartState,
+} = cartSlice.actions;
+
 export default cartSlice.reducer;

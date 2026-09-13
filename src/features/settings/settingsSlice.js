@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
+// ==========================================
+// THUNKS
+// ==========================================
+
 export const fetchSettings = createAsyncThunk(
   "settings/fetch",
   async (_, { rejectWithValue }) => {
@@ -9,7 +13,7 @@ export const fetchSettings = createAsyncThunk(
       return data;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data?.message || "فشل تحميل الإعدادات"
+        err.response?.data?.message || "Failed to load settings."
       );
     }
   }
@@ -23,11 +27,15 @@ export const saveSettings = createAsyncThunk(
       return data;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data?.message || "فشل حفظ الإعدادات"
+        err.response?.data?.message || "Failed to save settings."
       );
     }
   }
 );
+
+// ==========================================
+// STATE & DEFAULTS
+// ==========================================
 
 const defaultColors = {
   light: {
@@ -41,7 +49,6 @@ const defaultColors = {
     accent: "#c5a45d",
     accentLight: "#eee4cf",
   },
-
   dark: {
     bg: "#0a0a0a",
     card: "#111111",
@@ -57,34 +64,31 @@ const defaultColors = {
 
 const initialState = {
   theme: "light",
-
   colors: {
     light: { ...defaultColors.light },
     dark: { ...defaultColors.dark },
   },
-
   company: {
-    name: "company",
+    name: "Company",
   },
-
   social: {
     instagram: "",
     tiktok: "",
     facebook: "",
     whatsapp: "",
   },
-
   phone: "",
-
   status: "idle",
   error: null,
 };
 
+// ==========================================
+// SLICE
+// ==========================================
+
 const settingsSlice = createSlice({
   name: "settings",
-
   initialState,
-
   reducers: {
     setColor(state, action) {
       const { mode, key, value } = action.payload;
@@ -133,33 +137,29 @@ const settingsSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+      // FETCH SETTINGS
       .addCase(fetchSettings.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-
       .addCase(fetchSettings.fulfilled, (state, action) => {
         state.status = "succeeded";
-
         Object.assign(state, action.payload);
       })
-
       .addCase(fetchSettings.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
 
+      // SAVE SETTINGS
       .addCase(saveSettings.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-
       .addCase(saveSettings.fulfilled, (state, action) => {
         state.status = "succeeded";
-
         Object.assign(state, action.payload);
       })
-
       .addCase(saveSettings.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
