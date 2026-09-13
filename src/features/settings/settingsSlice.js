@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosInstance from "../../utils/axiosInstance.js"; // عدّل المسار حسب مكانه عندك
+import axiosInstance from "../../api/axiosInstance"; 
 
 export const fetchSettings = createAsyncThunk(
   "settings/fetch",
