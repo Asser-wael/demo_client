@@ -29,7 +29,7 @@ import {
 
 import { checkoutOrder } from "../features/order/orderSlice";
 
-import Currency from "../components/common/Currency";
+import Currency from "../components/company/Currency";
 
 /* =========================================================
    Get correct item price
