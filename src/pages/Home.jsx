@@ -594,7 +594,15 @@ function ProductSwiper({
   showNewTag = false,
   reduceMotion,
 }) {
-  if (!products?.length) {
+  const navigate = useNavigate();
+
+  const normalizedProducts = Array.isArray(products)
+    ? products
+        .map((product) => product?.id || product)
+        .filter((product) => product?._id)
+    : [];
+
+  if (!normalizedProducts.length) {
     return (
       <div
         className="
@@ -639,32 +647,25 @@ function ProductSwiper({
         observeParents
         className="home-products-swiper !overflow-visible !pb-14"
       >
-        {products.map((raw, index) => {
-          const item = raw?.id || raw;
-
-          if (!item?._id) return null;
-
-          return (
-            <SwiperSlide
-              key={item._id}
-              className="!h-auto"
-            >
-              <div className="h-full">
-                <MenuCard
-                  item={item}
-                  index={index}
-                  badgeLabel={badgeLabel}
-                  showNewTag={showNewTag}
-                />
-              </div>
-            </SwiperSlide>
-          );
-        })}
+        {normalizedProducts.map((item, index) => (
+          <SwiperSlide
+            key={item._id}
+            className="!h-auto"
+          >
+            <div className="h-full">
+              <MenuCard
+                item={item}
+                index={index}
+                badgeLabel={badgeLabel}
+                showNewTag={showNewTag}
+              />
+            </div>
+          </SwiperSlide>
+        ))}
       </Swiper>
     </div>
   );
 }
-
 // ============================================================
 // HOME PAGE
 // ============================================================
