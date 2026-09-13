@@ -65,6 +65,8 @@ function App() {
       if (!_id) return;
 
       socket.emit("userOrder", _id);
+      console.log("done");
+      
     });
   }, [
     socket,
