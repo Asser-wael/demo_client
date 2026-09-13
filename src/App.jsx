@@ -248,9 +248,7 @@ function App() {
   /* =========================================================
      ADMIN SOCKET ROOM
   ========================================================= */
-  useEffect(() => {
-    dispatch(fetchSettings());
-  }, [dispatch]);
+
   useEffect(() => {
     if (!socket) return;
 
