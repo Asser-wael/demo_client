@@ -736,7 +736,7 @@ function Navbar() {
             >
               <FiShoppingCart />
 
-              <CartBadge count={user?.cart} />
+              <CartBadge count={user?.cart?.length || 0} />
             </Link>
           </motion.div>
         </div>
