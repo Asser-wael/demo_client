@@ -1273,7 +1273,7 @@ function OrderModal({
                     text-[var(--muted)]
                   "
                 >
-                  EGP
+                  NZ
                 </span>
               </p>
             </div>
