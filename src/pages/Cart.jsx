@@ -124,7 +124,7 @@ export default function Cart() {
   };
 
   useEffect(() => {
-dispatch(getCart())
+    dispatch(getCart())
   }, [items]);
   useEffect(() => {
     window.scrollTo({
@@ -257,7 +257,7 @@ dispatch(getCart())
                         <h3 className="text-base sm:text-lg font-bold text-amber-950 truncate">
                           {item.product.name}
                         </h3>
-                        
+
                         {/* Mobile Remove Button */}
                         <motion.button
                           whileHover={{ scale: 1.1 }}

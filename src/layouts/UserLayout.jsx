@@ -564,7 +564,9 @@ function Navbar() {
                 >
                   <Link
                     to={link.path}
+                    onClick={() => closeDrawer()}
                     className={navItemBase}
+
                   >
                     <Icon className="text-[13px] transition-transform duration-300 group-hover:-translate-y-0.5" />
 

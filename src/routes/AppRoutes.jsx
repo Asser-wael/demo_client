@@ -147,7 +147,7 @@ export const router = createBrowserRouter([
       // =========================
       {
         element: <PrivateRoute />,
-        errorElement: <AppError />,
+        // errorElement: <AppError />,
         children: [
           {
             path: "cart",
@@ -181,7 +181,7 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: <AdminRoute />,
-    errorElement: <AppError />,
+    // errorElement: <AppError />,
     children: [
       {
         element: <AdminLayout />,
