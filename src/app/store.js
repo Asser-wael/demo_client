@@ -13,7 +13,7 @@ import dashboardReducer from "../features/dashboard/dashboardSlice";
 import popularReducer from "../features/popular/popularSlice.js";
 import trustReducer from "../features/trust/trustSlice.js";
 import accountReducer from "../features/account/accountSlice";
-import settingsReducer from "./features/settings/settingsSlice.js";
+import settingsReducer from "../features/settings/settingsSlice.js";
 
 export const store = configureStore({
   reducer: {
