@@ -17,10 +17,11 @@ import { showToast } from "./utils/showToast.jsx";
 import { getUser } from "./features/auth/authSlice.js";
 import { getCart } from "./features/cart/cartSlice.js";
 import { addOrder } from "./features/order/orderSlice.js";
+import useApplyTheme from "./hooks/useApplyTheme.js";
 
 function App() {
+  useApplyTheme();
   const dispatch = useDispatch();
-
   const { user, accessToken } = useSelector(
     (state) => state.auth
   );
@@ -241,7 +242,9 @@ function App() {
   /* =========================================================
      ADMIN SOCKET ROOM
   ========================================================= */
-
+  useEffect(() => {
+    dispatch(fetchSettings());
+  }, [dispatch]);
   useEffect(() => {
     if (!socket) return;
 

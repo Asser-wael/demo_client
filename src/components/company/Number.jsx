@@ -1,7 +1,11 @@
-import React from 'react'
+import { useSelector } from "react-redux";
 
 export default function Number() {
+  const phone = useSelector((state) => state.settings.phone);
+
   return (
-    <div>01227675757</div>
-  )
+    <a href={`tel:${phone}`} className="hover:text-primary transition">
+      {phone}
+    </a>
+  );
 }

@@ -55,7 +55,7 @@ const AdminNotifications = lazy(() =>
 );
 const Popular = lazy(() => import("../pages/admin/Popular"));
 const Trust = lazy(() => import("../pages/admin/Trust"));
-
+const WebsiteShape = lazy(() => import("../pages/admin/WebsiteShape.jsx"));
 // =========================
 // Loading
 // =========================
@@ -230,7 +230,10 @@ export const router = createBrowserRouter([
             path: "popular",
             element: Loadable(Popular),
           },
-
+          {
+            path: "websiteShape",
+            element: Loadable(WebsiteShape),
+          },
           {
             path: "trust",
             element: Loadable(Trust),

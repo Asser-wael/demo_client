@@ -8,14 +8,14 @@ import { getUser } from "../features/auth/authSlice";
 const AdminRoute = () => {
   const { accessToken, user, userLoading } = useSelector((state) => state.auth);
 
-  // if (userLoading)
-  //   return <Loading />;
+  if (userLoading)
+    return <Loading />;
 
-  // if (!user)
-  //   return <Loading />;
+  if (!user)
+    return <Loading />;
 
-  // if (user.role !== "admin")
-  //   return <Navigate to="/" replace />;
+  if (user.role !== "admin")
+    return <Navigate to="/" replace />;
 
 
   return <Outlet />;

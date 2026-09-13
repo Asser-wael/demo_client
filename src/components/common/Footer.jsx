@@ -8,7 +8,7 @@ import { FiArrowUp, FiShoppingBag, FiUser } from "react-icons/fi";
 import Name from "../company/Name";
 import Number from "../company/Number";
 import Whatsapp from "../company/whatsapp";
-import Instgrame from "../company/Instgrame";
+import Instgrame from "../company/Social";
 import GoogleMaps from "../company/googleMaps";
 
 export default function Footer() {

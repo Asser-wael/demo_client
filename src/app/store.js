@@ -13,13 +13,15 @@ import dashboardReducer from "../features/dashboard/dashboardSlice";
 import popularReducer from "../features/popular/popularSlice.js";
 import trustReducer from "../features/trust/trustSlice.js";
 import accountReducer from "../features/account/accountSlice";
+import settingsReducer from "./features/settings/settingsSlice.js";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    
+
     products: productReducer,
     categories: categoryReducer,
-    
+
     cart: cartReducer,
     orders: orderReducer,
     
@@ -33,8 +35,9 @@ export const store = configureStore({
     
     // User notifications
     userNotifications: userNotificationReducer,
-
     
+    settings: settingsReducer,
+
     account: accountReducer,
   },
 });
