@@ -11,6 +11,7 @@ export const getPopularProducts = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const { data } = await axiosInstance.get("/popular");
+console.log(data.products );
 
             return data.products || [];
         } catch (error) {
