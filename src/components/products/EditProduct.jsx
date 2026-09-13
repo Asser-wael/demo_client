@@ -5,31 +5,31 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import {
   PiImageDuotone,
-  PiBowlFoodDuotone,
+  PiPaletteDuotone,
   PiPlusBold,
   PiTrashDuotone,
   PiTagDuotone,
   PiCurrencyDollarDuotone,
   PiRocketLaunchDuotone,
   PiWarningCircleDuotone,
-  PiTimerDuotone,
-  PiFlameDuotone,
+  PiBowlFoodDuotone,
 } from "react-icons/pi";
 import { getCategories } from "../../features/category/categorySlice";
-import { updateProduct, clearEditid } from "../../features/products/productSlice";
+import { clearEditid, updateProduct } from "../../features/products/productSlice";
 
-const emptyPortion = () => ({
-  size: "", // e.g., Regular, Medium, Large, Half, Full
-  price: "",
-  costPrice: "",
-  offerPrice: "",
-  prepTime: "", // in minutes
-  calories: "", // in kcal
+const emptySize = () => ({
+  id: crypto.randomUUID(),
+  size: "", // Size name (e.g., Single / Family / Medium)
+  stock: "", // Available quantity
+  price: "", // Regular Price
+  costPrice: "", // Cost Price
+  offerPrice: "", // Discount/Offer Price
 });
 
-const emptyAddon = () => ({
-  name: "", // e.g., Extra Cheese
-  price: "",
+const emptyVariant = () => ({
+  id: crypto.randomUUID(),
+  color: { name: "" }, // Flavor / Option (e.g., Spicy / Regular)
+  sizes: [emptySize()],
 });
 
 const SectionCard = ({ icon, title, children, delay = 0 }) => (
@@ -49,7 +49,7 @@ const SectionCard = ({ icon, title, children, delay = 0 }) => (
   </motion.div>
 );
 
-export default function EditMenuItem() {
+export default function EditProduct({ onDone }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -61,10 +61,9 @@ export default function EditMenuItem() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [imageError, setImageError] = useState("");
-  const [portions, setPortions] = useState([emptyPortion()]);
-  const [addons, setAddons] = useState([]);
+  const [variants, setVariants] = useState([emptyVariant()]);
 
-  const menuItem = products?.find((i) => i._id === editid);
+  const product = products?.find((i) => i._id === editid);
 
   useEffect(() => {
     dispatch(getCategories());
@@ -79,53 +78,50 @@ export default function EditMenuItem() {
   }, [preview]);
 
   useEffect(() => {
-    if (!menuItem) return;
+    if (!product) return;
 
-    setImage(menuItem.image);
-    setPreview(menuItem.image);
+    setImage(product.image);
+    setPreview(product.image);
 
-    if (menuItem.portions && menuItem.portions.length > 0) {
-      setPortions(
-        menuItem.portions.map((p) => ({
-          size: p.size || "",
-          price: p.price || "",
-          costPrice: p.costPrice || "",
-          offerPrice: p.offerPrice || "",
-          prepTime: p.prepTime || "",
-          calories: p.calories || "",
-        }))
-      );
-    }
-
-    if (menuItem.addons && menuItem.addons.length > 0) {
-      setAddons(
-        menuItem.addons.map((a) => ({
-          name: a.name || "",
-          price: a.price || "",
-        }))
-      );
-    }
+    setVariants(
+      (product.variants && product.variants.length > 0)
+        ? product.variants.map((variant) => ({
+            id: crypto.randomUUID(),
+            color: {
+              name: variant.color?.name || "",
+            },
+            sizes: (variant.sizes && variant.sizes.length > 0)
+              ? variant.sizes.map((size) => ({
+                  id: crypto.randomUUID(),
+                  size: size.size || "",
+                  stock: size.stock ?? "",
+                  price: size.price ?? "",
+                  costPrice: size.costPrice ?? "",
+                  offerPrice: size.offerPrice ?? "",
+                }))
+              : [emptySize()],
+          }))
+        : [emptyVariant()]
+    );
 
     reset({
-      name: menuItem.name || "",
-      description: menuItem.description || "",
-      category: menuItem.category?._id || menuItem.category || "",
-      status: menuItem.isActive ? "Active" : "Unavailable",
-      isSpicy: menuItem.isSpicy || false,
-      isVegetarian: menuItem.isVegetarian || false,
+      name: product.name || "",
+      description: product.description || "",
+      category: product.category?._id || product.category || "",
+      status: product.isActive ? "Active" : "Inactive",
     });
-  }, [menuItem, reset]);
+  }, [product, reset]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setImageError("File must be an image");
+      setImageError("File must be an image (PNG, JPG)");
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setImageError("Image must be under 10MB");
+      setImageError("Image size must be less than 10MB");
       return;
     }
 
@@ -134,48 +130,69 @@ export default function EditMenuItem() {
     setPreview(URL.createObjectURL(file));
   };
 
-  /* Portion handlers */
-  const addPortion = () => setPortions((prev) => [...prev, emptyPortion()]);
-  const removePortion = (index) => setPortions((prev) => prev.filter((_, i) => i !== index));
-  const updatePortionField = (index, field, value) => {
-    setPortions((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, [field]: value } : p))
-    );
-  };
+  const addVariant = () => setVariants((prev) => [...prev, emptyVariant()]);
 
-  /* Add-on handlers */
-  const addAddon = () => setAddons((prev) => [...prev, emptyAddon()]);
-  const removeAddon = (index) => setAddons((prev) => prev.filter((_, i) => i !== index));
-  const updateAddonField = (index, field, value) => {
-    setAddons((prev) =>
-      prev.map((a, i) => (i === index ? { ...a, [field]: value } : a))
+  const removeVariant = (id) =>
+    setVariants((prev) => prev.filter((v) => v.id !== id));
+
+  const updateVariantName = (id, value) =>
+    setVariants((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, color: { name: value } } : v))
     );
-  };
+
+  const addSize = (variantId) =>
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId ? { ...v, sizes: [...v.sizes, emptySize()] } : v
+      )
+    );
+
+  const removeSize = (variantId, sizeId) =>
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId
+          ? { ...v, sizes: v.sizes.filter((s) => s.id !== sizeId) }
+          : v
+      )
+    );
+
+  const updateSizeField = (variantId, sizeId, field, value) =>
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === variantId
+          ? {
+              ...v,
+              sizes: v.sizes.map((s) =>
+                s.id === sizeId ? { ...s, [field]: value } : s
+              ),
+            }
+          : v
+      )
+    );
 
   const onSubmit = (data) => {
     if (!image) {
-      setImageError("Item image is required");
+      setImageError("Meal image is required");
       return;
     }
+
+    const cleanedVariants = variants.map(({ id, sizes, ...rest }) => ({
+      ...rest,
+      sizes: sizes.map(({ id: sizeId, ...sizeRest }) => sizeRest),
+    }));
 
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("description", data.description);
     formData.append("category", data.category);
     formData.append("isActive", data.status === "Active");
-    formData.append("isSpicy", data.isSpicy);
-    formData.append("isVegetarian", data.isVegetarian);
-    formData.append("portions", JSON.stringify(portions));
-    formData.append("addons", JSON.stringify(addons));
-
-    if (image instanceof File) {
-      formData.append("image", image);
-    }
+    formData.append("variants", JSON.stringify(cleanedVariants));
+    formData.append("image", image);
 
     dispatch(updateProduct({ editid, formData })).then((res) => {
       if (!res.error) {
         dispatch(clearEditid());
-        navigate(-1);
+        onDone ? onDone() : navigate("/admin/products");
       }
     });
   };
@@ -188,25 +205,25 @@ export default function EditMenuItem() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl font-bold text-text sm:text-3xl">Edit Menu Item</h1>
+        <h1 className="text-2xl font-bold text-text sm:text-3xl">Edit Meal</h1>
         <p className="mt-1 text-sm text-muted sm:text-base">
-          Update pricing, portions, and details for this menu item.
+          Update the meal details or pricing for your menu.
         </p>
       </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column */}
+        {/* ================= Left / Main Column ================= */}
         <div className="space-y-6 lg:col-span-2">
-          {/* General Information */}
-          <SectionCard icon={<PiBowlFoodDuotone />} title="General Information">
+          {/* Basic Information */}
+          <SectionCard icon={<PiTagDuotone />} title="Meal Details">
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-medium text-text">
-                  Item Name
+                  Meal / Dish Name
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Signature Truffle Burger"
+                  placeholder="e.g., Grilled Chicken Burger"
                   {...register("name", { required: true })}
                   className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${
                     errors.name ? "border-red-500" : "border-border focus:border-accent"
@@ -214,7 +231,7 @@ export default function EditMenuItem() {
                 />
                 {errors.name && (
                   <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                    <PiWarningCircleDuotone /> Item name is required
+                    <PiWarningCircleDuotone /> Meal name is required
                   </p>
                 )}
               </div>
@@ -224,39 +241,20 @@ export default function EditMenuItem() {
                   Description & Ingredients
                 </label>
                 <textarea
-                  rows={4}
-                  placeholder="Describe ingredients, allergens, or special instructions..."
+                  rows={5}
+                  placeholder="Write a description for the meal and main ingredients..."
                   {...register("description")}
                   className="w-full resize-none rounded-xl border border-border bg-bg p-4 text-text outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 />
               </div>
-
-              <div className="flex flex-wrap gap-6 pt-2">
-                <label className="flex items-center gap-2 text-sm text-text cursor-pointer">
-                  <input
-                    type="checkbox"
-                    {...register("isSpicy")}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-accent"
-                  />
-                  Spicy Item 🌶️
-                </label>
-                <label className="flex items-center gap-2 text-sm text-text cursor-pointer">
-                  <input
-                    type="checkbox"
-                    {...register("isVegetarian")}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-accent"
-                  />
-                  Vegetarian 🌱
-                </label>
-              </div>
             </div>
           </SectionCard>
 
-          {/* Menu Category & Availability */}
-          <SectionCard icon={<PiTagDuotone />} title="Menu Organization" delay={0.05}>
+          {/* Category & Status */}
+          <SectionCard icon={<PiBowlFoodDuotone />} title="Category & Status" delay={0.05}>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm text-text">Menu Category</label>
+                <label className="mb-2 block text-sm text-text">Food Category</label>
                 <select
                   {...register("category", { required: true })}
                   className={`w-full rounded-xl border bg-bg px-4 py-3 text-text outline-none transition focus:ring-2 focus:ring-accent/20 ${
@@ -278,145 +276,133 @@ export default function EditMenuItem() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-text">Status</label>
+                <label className="mb-2 block text-sm text-text">Availability Status</label>
                 <select
                   {...register("status")}
                   className="w-full rounded-xl border border-border bg-bg px-4 py-3 text-text outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
                 >
-                  <option value="Active">Active (Available)</option>
-                  <option value="Unavailable">Out of Stock / Unavailable</option>
+                  <option value="Active">Available for order</option>
+                  <option value="Inactive">Currently unavailable</option>
                 </select>
               </div>
             </div>
           </SectionCard>
 
-          {/* Portions & Pricing */}
-          <SectionCard icon={<PiCurrencyDollarDuotone />} title="Portions & Pricing" delay={0.1}>
+          {/* Options & Sizes (Flavors & Sizes) */}
+          <SectionCard icon={<PiPaletteDuotone />} title="Flavors & Sizes" delay={0.1}>
             <div className="-mt-2 mb-5 flex justify-end">
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={addPortion}
+                onClick={addVariant}
                 className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-accent hover:text-accent"
               >
-                <PiPlusBold /> Add Portion Variant
+                <PiPlusBold /> Add Flavor / Option
               </motion.button>
             </div>
 
             <div className="space-y-4">
               <AnimatePresence initial={false}>
-                {portions.map((portion, pi) => (
+                {variants.map((variant) => (
                   <motion.div
-                    key={pi}
+                    key={variant.id}
                     layout
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.25 }}
-                    className="space-y-3 rounded-xl border border-border bg-bg/40 p-4"
+                    className="space-y-4 rounded-xl border border-border bg-bg/40 p-4"
                   >
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                    <div className="flex items-center gap-3">
                       <input
-                        placeholder="Portion (e.g. Medium / 500g)"
-                        value={portion.size}
-                        onChange={(e) => updatePortionField(pi, "size", e.target.value)}
-                        className="col-span-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent sm:col-span-1"
+                        type="text"
+                        placeholder="Meal option/flavor (e.g., Spicy, Regular, No Garlic)"
+                        value={variant.color.name}
+                        onChange={(e) => updateVariantName(variant.id, e.target.value)}
+                        className="flex-1 rounded-xl border border-border bg-card px-4 py-2.5 text-text outline-none focus:border-accent"
                       />
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Price ($)"
-                        value={portion.price}
-                        onChange={(e) => updatePortionField(pi, "price", e.target.value)}
-                        className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent"
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Cost Price ($)"
-                        value={portion.costPrice}
-                        onChange={(e) => updatePortionField(pi, "costPrice", e.target.value)}
-                        className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Prep Time (mins)"
-                        value={portion.prepTime}
-                        onChange={(e) => updatePortionField(pi, "prepTime", e.target.value)}
-                        className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Calories (kcal)"
-                        value={portion.calories}
-                        onChange={(e) => updatePortionField(pi, "calories", e.target.value)}
-                        className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent"
-                      />
-                      <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-1">
-                        {portions.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removePortion(pi)}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10"
-                          >
-                            <PiTrashDuotone size={18} />
-                          </button>
-                        )}
-                      </div>
+                      {variants.length > 1 && (
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => removeVariant(variant.id)}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-red-400 transition hover:bg-red-400/10"
+                        >
+                          <PiTrashDuotone size={18} />
+                        </motion.button>
+                      )}
                     </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </SectionCard>
 
-          {/* Add-ons / Customizations */}
-          <SectionCard icon={<PiPlusBold />} title="Add-ons & Extras" delay={0.15}>
-            <div className="-mt-2 mb-5 flex justify-end">
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={addAddon}
-                className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-accent hover:text-accent"
-              >
-                <PiPlusBold /> Add Extra Ingredient
-              </motion.button>
-            </div>
+                    <div className="space-y-3">
+                      <AnimatePresence initial={false}>
+                        {variant.sizes.map((size) => (
+                          <motion.div
+                            key={size.id}
+                            layout
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="grid grid-cols-2 gap-3 rounded-xl bg-card p-3 sm:grid-cols-3 lg:grid-cols-5"
+                          >
+                            <input
+                              placeholder="Size (Single/Medium/Family)"
+                              value={size.size}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "size", e.target.value)}
+                              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+                            />
+                            <input
+                              type="number"
+                              placeholder="Stock"
+                              value={size.stock}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "stock", +e.target.value)}
+                              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+                            />
+                            <input
+                              type="number"
+                              placeholder="Price"
+                              value={size.price}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "price", +e.target.value)}
+                              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+                            />
+                            <input
+                              type="number"
+                              placeholder="Cost Price"
+                              value={size.costPrice}
+                              onChange={(e) => updateSizeField(variant.id, size.id, "costPrice", +e.target.value)}
+                              className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+                            />
+                            <div className="col-span-2 flex items-center gap-2 sm:col-span-1">
+                              <input
+                                type="number"
+                                placeholder="Offer Price"
+                                value={size.offerPrice}
+                                onChange={(e) => updateSizeField(variant.id, size.id, "offerPrice", +e.target.value)}
+                                className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+                              />
+                              {variant.sizes.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeSize(variant.id, size.id)}
+                                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10"
+                                >
+                                  <PiTrashDuotone size={15} />
+                                </button>
+                              )}
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
 
-            <div className="space-y-3">
-              <AnimatePresence initial={false}>
-                {addons.map((addon, ai) => (
-                  <motion.div
-                    key={ai}
-                    layout
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-bg/40 p-3"
-                  >
-                    <input
-                      placeholder="Add-on Name (e.g. Extra Cheese)"
-                      value={addon.name}
-                      onChange={(e) => updateAddonField(ai, "name", e.target.value)}
-                      className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent"
-                    />
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Price ($)"
-                      value={addon.price}
-                      onChange={(e) => updateAddonField(ai, "price", e.target.value)}
-                      className="w-32 rounded-lg border border-border bg-card px-3 py-2 text-sm text-text outline-none focus:border-accent"
-                    />
                     <button
                       type="button"
-                      onClick={() => removeAddon(ai)}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10"
+                      onClick={() => addSize(variant.id)}
+                      className="flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
                     >
-                      <PiTrashDuotone size={16} />
+                      <PiPlusBold size={14} /> Add Size
                     </button>
                   </motion.div>
                 ))}
@@ -425,24 +411,24 @@ export default function EditMenuItem() {
           </SectionCard>
         </div>
 
-        {/* Right Column */}
+        {/* ================= Right Column ================= */}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           {/* Upload Image */}
-          <SectionCard icon={<PiImageDuotone />} title="Item Photo" delay={0.05}>
+          <SectionCard icon={<PiImageDuotone />} title="Meal Image" delay={0.05}>
             <label className="group flex h-48 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-bg transition hover:border-accent sm:h-56">
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               {preview ? (
                 <img
                   src={preview}
-                  alt="Food preview"
+                  alt="preview"
                   className="h-full w-full object-cover transition group-hover:scale-105"
                 />
               ) : (
                 <div className="text-center">
                   <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl text-primary">
-                    <PiImageDuotone />
+                    <PiBowlFoodDuotone />
                   </div>
-                  <p className="font-medium text-text">Upload Dish Image</p>
+                  <p className="font-medium text-text">Upload Image</p>
                   <p className="mt-2 text-sm text-muted">PNG, JPG up to 10MB</p>
                 </div>
               )}
@@ -454,45 +440,30 @@ export default function EditMenuItem() {
             )}
           </SectionCard>
 
-          {/* Menu Card Preview */}
-          <SectionCard icon={<PiCurrencyDollarDuotone />} title="Menu Card Preview" delay={0.1}>
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="flex h-48 items-center justify-center bg-bg sm:h-52">
+          {/* Meal Preview */}
+          <SectionCard icon={<PiCurrencyDollarDuotone />} title="Meal Preview" delay={0.1}>
+            <div className="overflow-hidden rounded-xl border border-border">
+              <div className="flex h-52 items-center justify-center bg-bg sm:h-60">
                 {preview ? (
-                  <img src={preview} alt="Dish Preview" className="h-full w-full object-cover" />
+                  <img src={preview} alt="preview" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-5xl">🍔</span>
                 )}
               </div>
 
-              <div className="space-y-2 p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-text">{watch("name") || "Dish Name"}</h3>
-                  <span className="text-base font-bold text-accent">
-                    ${portions[0]?.price || "0.00"}
-                  </span>
-                </div>
+              <div className="space-y-2 p-5">
+                <h3 className="font-semibold text-text">{watch("name") || "Meal Name"}</h3>
                 <p className="line-clamp-2 text-sm text-muted">
-                  {watch("description") || "Delicious dish description..."}
+                  {watch("description") || "Meal description and ingredients..."}
                 </p>
-
-                <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-muted">
-                  {portions[0]?.prepTime && (
-                    <span className="flex items-center gap-1">
-                      <PiTimerDuotone /> {portions[0].prepTime} mins
-                    </span>
-                  )}
-                  {portions[0]?.calories && (
-                    <span className="flex items-center gap-1">
-                      <PiFlameDuotone /> {portions[0].calories} kcal
-                    </span>
-                  )}
-                </div>
+                <span className="block pt-2 text-lg font-bold text-accent">
+                  ${variants[0]?.sizes[0]?.price || "0.00"}
+                </span>
               </div>
             </div>
           </SectionCard>
 
-          {/* Publish / Action Buttons */}
+          {/* Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -507,7 +478,7 @@ export default function EditMenuItem() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
             >
               <PiRocketLaunchDuotone size={18} />
-              {updating ? "Saving Changes..." : "Save Menu Item"}
+              {updating ? "Updating..." : "Update Meal"}
             </motion.button>
 
             <motion.button
@@ -516,11 +487,11 @@ export default function EditMenuItem() {
               whileTap={{ scale: 0.98 }}
               onClick={() => {
                 dispatch(clearEditid());
-                navigate(-1);
+                onDone ? onDone() : navigate(-1);
               }}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 font-medium text-text transition hover:bg-bg"
             >
-              Cancel
+              Back
             </motion.button>
           </motion.div>
         </div>
