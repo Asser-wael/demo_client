@@ -292,8 +292,6 @@ function MenuCard({
         hover:shadow-[var(--shadow)]
       "
     >
-      {/* IMAGE */}
-
       <div
         className="
           relative
@@ -341,8 +339,6 @@ function MenuCard({
           "
         />
 
-        {/* BADGES */}
-
         <div className="absolute left-3 top-3 z-10 flex flex-col items-start gap-2">
           {showNewTag && (
             <span
@@ -384,8 +380,6 @@ function MenuCard({
           )}
         </div>
 
-        {/* FAVORITE */}
-
         <button
           type="button"
           onClick={(e) => e.stopPropagation()}
@@ -414,8 +408,6 @@ function MenuCard({
         >
           <FiHeart className="text-sm" />
         </button>
-
-        {/* IMAGE INFO */}
 
         <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-5">
           <div className="mb-1 flex items-center gap-2">
@@ -469,8 +461,6 @@ function MenuCard({
         </div>
       </div>
 
-      {/* CONTENT */}
-
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         {item?.description && (
           <p
@@ -485,8 +475,6 @@ function MenuCard({
             {item.description}
           </p>
         )}
-
-        {/* SIZES */}
 
         {sizeBadges.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-1.5">
@@ -512,8 +500,6 @@ function MenuCard({
             ))}
           </div>
         )}
-
-        {/* FOOTER */}
 
         <div
           className="
@@ -594,14 +580,11 @@ function ProductSwiper({
   showNewTag = false,
   reduceMotion,
 }) {
-  const navigate = useNavigate();
-
   const normalizedProducts = Array.isArray(products)
     ? products
         .map((product) => product?.id || product)
         .filter((product) => product?._id)
     : [];
-console.log(products);
 
   if (!normalizedProducts.length) {
     return (
@@ -667,6 +650,7 @@ console.log(products);
     </div>
   );
 }
+
 // ============================================================
 // HOME PAGE
 // ============================================================
@@ -681,8 +665,10 @@ export default function Home() {
     loading: categoriesLoading,
   } = useSelector((state) => state.categories);
 
+  // IMPORTANT:
+  // popularSlice stores the data in state.popular.products
   const {
-    popularProducts,
+    products: popularProducts,
     loading: popularLoading,
   } = useSelector((state) => state.popular);
 
@@ -718,9 +704,7 @@ export default function Home() {
         antialiased
       "
     >
-      {/* ======================================================
-          HERO
-      ====================================================== */}
+      {/* HERO */}
 
       <section className="mx-auto max-w-[1280px] px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:px-10 lg:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
@@ -910,9 +894,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ======================================================
-          KITCHEN NOTES
-      ====================================================== */}
+      {/* KITCHEN NOTES */}
 
       <section
         className="
@@ -977,15 +959,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ======================================================
-          TRUST
-      ====================================================== */}
+      {/* TRUST */}
 
       <TrustSection />
 
-      {/* ======================================================
-          CATEGORIES
-      ====================================================== */}
+      {/* CATEGORIES */}
 
       <section className="mx-auto max-w-[1280px] px-5 py-20 sm:px-8 lg:px-10">
         <SectionHeader
@@ -1023,7 +1001,9 @@ export default function Home() {
                   amount: 0.15,
                 }}
                 variants={variant}
-                onClick={() => navigate(`/collections/${item._id}`)}
+                onClick={() =>
+                  navigate(`/collections/${item._id}`)
+                }
                 className="
                   group
                   relative
@@ -1108,9 +1088,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* ======================================================
-          POPULAR
-      ====================================================== */}
+      {/* POPULAR */}
 
       <section className="mx-auto max-w-[1280px] px-5 pb-20 sm:px-8 lg:px-10">
         <SectionHeader
@@ -1144,9 +1122,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* ======================================================
-          EDITORIAL
-      ====================================================== */}
+      {/* EDITORIAL */}
 
       <section className="px-5 pb-20 sm:px-8 lg:px-10">
         <div
@@ -1236,9 +1212,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ======================================================
-          NEW ARRIVALS
-      ====================================================== */}
+      {/* NEW ARRIVALS */}
 
       <section className="mx-auto max-w-[1280px] px-5 pb-24 sm:px-8 lg:px-10">
         <SectionHeader
@@ -1259,8 +1233,7 @@ export default function Home() {
                   border
                   border-[var(--border)]
                   bg-[var(--card)]
-                "
-              />
+                />
             ))}
           </div>
         ) : (
@@ -1272,9 +1245,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* ======================================================
-          PHILOSOPHY
-      ====================================================== */}
+      {/* PHILOSOPHY */}
 
       <section
         className="
@@ -1326,9 +1297,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ======================================================
-          NEWSLETTER
-      ====================================================== */}
+      {/* NEWSLETTER */}
 
       <section
         className="
@@ -1406,10 +1375,6 @@ export default function Home() {
           </form>
         </div>
       </section>
-
-      {/* ======================================================
-          SWIPER GLOBAL STYLES
-      ====================================================== */}
 
       <style>{`
         .home-products-swiper {
