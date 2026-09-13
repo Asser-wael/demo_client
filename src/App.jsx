@@ -16,37 +16,40 @@ import { showToast } from "./utils/showToast.jsx";
 
 import { getUser } from "./features/auth/authSlice.js";
 import { getCart } from "./features/cart/cartSlice.js";
-import { addOrder } from "./features/order/orderSlice.js";
-import useApplyTheme from "./hooks/useApplyTheme.js";
-import { fetchSettings } from "./features/settings/settingsSlice.js";
+import { addOrder, getOrdersUser } from "./features/order/orderSlice.js";
 
 function App() {
-  useApplyTheme();
   const dispatch = useDispatch();
+
+  const socket = useSocket();
+
   const { user, accessToken } = useSelector(
     (state) => state.auth
   );
-
-  const socket = useSocket(accessToken);
-
 
   const { orders } = useSelector(
     (state) => state.orders
   );
 
   /* =========================================================
-     AUTH
+     AUTH & USER ORDERS
   ========================================================= */
 
   useEffect(() => {
     if (!accessToken) return;
+
     dispatch(getUser());
   }, [accessToken, dispatch]);
 
+  // جلب الطلبات للمستخدم العادي ليتسنى له الانضمام للـ Rooms
+  useEffect(() => {
+    if (user && user.role !== "admin") {
+      dispatch(getOrdersUser());
+    }
+  }, [dispatch, user]);
+
   /* =========================================================
      USER ORDER ROOMS
-     
-     Admin doesn't need to join every user order room.
   ========================================================= */
 
   useEffect(() => {
@@ -84,71 +87,44 @@ function App() {
         return;
       }
 
+      console.log(
+        "🆕 NEW ORDER RECEIVED:",
+        order
+      );
 
-      if (user?.role == "user") {
+      playSound?.(sounds.newOrder);
 
-        socket.emit("userOrder" , order)
-        showToast({
-          type: "info",
-          message: `started`,
-          amount: order.totalPrice,
-        });
+      showToast({
+        type: "adminOrder",
+        message: `${order.items?.length || 0} items received`,
+        amount: order.totalPrice,
+      });
 
-      } else {
+      dispatch(addOrder(order));
+
+      try {
+        await printOrder(order);
+
         console.log(
-          "🆕 NEW ORDER RECEIVED:",
-          order
+          "✅ Order printed successfully:",
+          order._id
         );
-        /* -----------------------------------------------------
-        SOUND
-        ----------------------------------------------------- */
-
-        playSound?.(sounds.newOrder);
-
-        /* -----------------------------------------------------
-        TOAST
-        ----------------------------------------------------- */
 
         showToast({
-          type: "adminOrder",
-          message: `${order.items?.length || 0} dishes received`,
-          amount: order.totalPrice,
+          type: "success",
+          message: "Order printed successfully",
         });
+      } catch (error) {
+        console.error(
+          "❌ Order printing failed:",
+          error
+        );
 
-        /* -----------------------------------------------------
-        REDUX
-        ----------------------------------------------------- */
-
-        dispatch(addOrder(order));
-
-        /* -----------------------------------------------------
-        PRINT
-        ----------------------------------------------------- */
-
-        try {
-          await printOrder(order);
-
-          console.log(
-            "✅ Order printed successfully:",
-            order._id
-          );
-
-          showToast({
-            type: "success",
-            message: "Order ticket printed successfully",
-          });
-        } catch (error) {
-          console.error(
-            "❌ Order printing failed:",
-            error
-          );
-
-          showToast({
-            type: "error",
-            message:
-              "Order received, but printing failed",
-          });
-        }
+        showToast({
+          type: "error",
+          message:
+            "Order received, but printing failed",
+        });
       }
     },
     [dispatch]
@@ -237,7 +213,6 @@ function App() {
   ========================================================= */
 
   useEffect(() => {
-    if (!user) return;
     dispatch(getCart());
   }, [dispatch]);
 
@@ -254,17 +229,13 @@ function App() {
   /* =========================================================
      ADMIN SOCKET ROOM
   ========================================================= */
-  useEffect(() => {
-    dispatch(fetchSettings());
-  }, [dispatch]);
+
   useEffect(() => {
     if (!socket) return;
 
     if (user?.role !== "admin") return;
 
     socket.emit("admin");
-
-
   }, [
     socket,
     user?.role,
