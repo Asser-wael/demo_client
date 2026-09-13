@@ -25,6 +25,8 @@ import {
   getCart,
   selectCartItems,
   selectCartLoading,
+  selectBuyNowItem,
+  clearBuyNowItem,
 } from "../features/cart/cartSlice";
 
 import { checkoutOrder } from "../features/order/orderSlice";
@@ -76,11 +78,10 @@ const Field = React.forwardRef(
         <input
           ref={ref}
           {...props}
-          className={`w-full rounded-xl border bg-card px-4 py-3 !pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${
-            error
-              ? "border-red-400 focus:border-red-400 focus:ring-red-400"
-              : "border-border focus:border-primary focus:ring-primary"
-          } ${className}`}
+          className={`w-full rounded-xl border bg-card px-4 py-3 !pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${error
+            ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+            : "border-border focus:border-primary focus:ring-primary"
+            } ${className}`}
         />
       </div>
 
@@ -110,11 +111,10 @@ function PaymentOption({
       type="button"
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
-      className={`flex flex-col items-center gap-2 rounded-xl border px-4 py-5 text-sm transition ${
-        active
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border text-muted hover:border-primary/50"
-      }`}
+      className={`flex flex-col items-center gap-2 rounded-xl border px-4 py-5 text-sm transition ${active
+        ? "border-primary bg-primary/10 text-primary"
+        : "border-border text-muted hover:border-primary/50"
+        }`}
     >
       <span className="text-xl">{icon}</span>
       {title}
@@ -137,9 +137,7 @@ export default function Checkout() {
     (state) => state.orders.checkoutLoading
   );
 
-  const BuyNowitem = useSelector(
-    (state) => state.cart.BuyNowitem
-  );
+  const BuyNowitem = useSelector(selectBuyNowItem);
 
   const [transferImage, setTransferImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -354,6 +352,8 @@ export default function Checkout() {
     if (checkoutOrder.fulfilled.match(res)) {
       if (!BuyNowitem) {
         dispatch(clearCart());
+      } else {
+        dispatch(clearBuyNowItem());
       }
 
       setSubmitted(true);
@@ -364,8 +364,8 @@ export default function Checkout() {
     } else {
       setSubmitError(
         res.payload?.message ||
-          res.error?.message ||
-          "Couldn't place your order."
+        res.error?.message ||
+        "Couldn't place your order."
       );
     }
   };
@@ -830,10 +830,9 @@ export default function Checkout() {
 
                 return (
                   <motion.div
-                    key={`${
-                      item.product?._id ||
+                    key={`${item.product?._id ||
                       item.product
-                    }-${item.color}-${item.size}-${i}`}
+                      }-${item.color}-${item.size}-${i}`}
                     initial={{
                       opacity: 0,
                       y: 8,
