@@ -20,16 +20,10 @@ import { addOrder, getOrdersUser } from "./features/order/orderSlice.js";
 
 function App() {
   const dispatch = useDispatch();
-
   const socket = useSocket();
 
-  const { user, accessToken } = useSelector(
-    (state) => state.auth
-  );
-
-  const { orders } = useSelector(
-    (state) => state.orders
-  );
+  const { user, accessToken } = useSelector((state) => state.auth);
+  const { orders } = useSelector((state) => state.orders);
 
   /* =========================================================
      AUTH & USER ORDERS
@@ -37,11 +31,10 @@ function App() {
 
   useEffect(() => {
     if (!accessToken) return;
-
     dispatch(getUser());
   }, [accessToken, dispatch]);
 
-  // جلب الطلبات للمستخدم العادي ليتسنى له الانضمام للـ Rooms
+  // جلب طلبات المستخدم العادي عند تسجيل الدخول
   useEffect(() => {
     if (user && user.role !== "admin") {
       dispatch(getOrdersUser());
@@ -53,46 +46,22 @@ function App() {
   ========================================================= */
 
   useEffect(() => {
-    if (!socket) return;
-
-    if (!user) return;
-
-    if (user.role === "admin") return;
-
-    if (!orders?.length) return;
+    if (!socket || !user || user.role === "admin" || !orders?.length) return;
 
     orders.forEach(({ _id }) => {
-      if (!_id) return;
-
-      socket.emit("userOrder", _id);
-      console.log("done");
-      
+      if (_id) {
+        socket.emit("userOrder", _id);
+      }
     });
-  }, [
-    socket,
-    user?.role,
-    user?._id,
-    orders,
-  ]);
+  }, [socket, user, orders]);
 
   /* =========================================================
-     NEW ORDER
+     SOCKET HANDLERS
   ========================================================= */
 
   const handleNewOrder = useCallback(
     async (order) => {
-      if (!order?._id) {
-        console.warn(
-          "⚠️ newOrder received without valid order"
-        );
-
-        return;
-      }
-
-      console.log(
-        "🆕 NEW ORDER RECEIVED:",
-        order
-      );
+      if (!order?._id) return;
 
       playSound?.(sounds.newOrder);
 
@@ -106,35 +75,19 @@ function App() {
 
       try {
         await printOrder(order);
-
-        console.log(
-          "✅ Order printed successfully:",
-          order._id
-        );
-
         showToast({
           type: "success",
           message: "Order printed successfully",
         });
       } catch (error) {
-        console.error(
-          "❌ Order printing failed:",
-          error
-        );
-
         showToast({
           type: "error",
-          message:
-            "Order received, but printing failed",
+          message: "Order received, but printing failed",
         });
       }
     },
     [dispatch]
   );
-
-  /* =========================================================
-     LOW STOCK
-  ========================================================= */
 
   const handleWarning = useCallback((data) => {
     if (!data) return;
@@ -143,14 +96,9 @@ function App() {
 
     showToast({
       type: "lowStock",
-      message: `${data.name} is running low on stock (${data.color
-        } - ${data.size})`,
+      message: `${data.name} is running low on stock (${data.color} - ${data.size})`,
     });
   }, []);
-
-  /* =========================================================
-     ORDER STATUS
-  ========================================================= */
 
   const handleOrderStatus = useCallback((data) => {
     if (!data) return;
@@ -159,72 +107,38 @@ function App() {
 
     showToast({
       type: "orderStatus",
-      message:
-        data.body ||
-        `Order status updated to ${data.status}`,
+      message: data.body || `Order status updated to ${data.status}`,
     });
   }, []);
 
   /* =========================================================
-     SOCKET EVENTS
+     LISTEN TO SOCKET EVENTS
   ========================================================= */
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on(
-      "newOrder",
-      handleNewOrder
-    );
-
-    socket.on(
-      "warning",
-      handleWarning
-    );
-
-    socket.on(
-      "orderStatus",
-      handleOrderStatus
-    );
+    socket.on("newOrder", handleNewOrder);
+    socket.on("warning", handleWarning);
+    socket.on("orderStatus", handleOrderStatus);
 
     return () => {
-      socket.off(
-        "newOrder",
-        handleNewOrder
-      );
-
-      socket.off(
-        "warning",
-        handleWarning
-      );
-
-      socket.off(
-        "orderStatus",
-        handleOrderStatus
-      );
+      socket.off("newOrder", handleNewOrder);
+      socket.off("warning", handleWarning);
+      socket.off("orderStatus", handleOrderStatus);
     };
-  }, [
-    socket,
-    handleNewOrder,
-    handleWarning,
-    handleOrderStatus,
-  ]);
+  }, [socket, handleNewOrder, handleWarning, handleOrderStatus]);
 
   /* =========================================================
-     CART
+     CART & PUSH NOTIFICATIONS
   ========================================================= */
 
   useEffect(() => {
     dispatch(getCart());
   }, [dispatch]);
 
-  /* =========================================================
-     PUSH NOTIFICATIONS
-  ========================================================= */
-
   useEffect(() => {
     if (!user) return;
-
     subscribeToPush();
   }, [user]);
 
@@ -233,15 +147,9 @@ function App() {
   ========================================================= */
 
   useEffect(() => {
-    if (!socket) return;
-
-    if (user?.role !== "admin") return;
-
+    if (!socket || user?.role !== "admin") return;
     socket.emit("admin");
-  }, [
-    socket,
-    user?.role,
-  ]);
+  }, [socket, user?.role]);
 
   /* =========================================================
      UI
