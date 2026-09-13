@@ -18,7 +18,8 @@ import {
 import { 
   addToCart, 
   selectBuyNowItem, // Changed from BuyNowitem
-  selectCartActionLoading 
+  selectCartActionLoading, 
+  setBuyNowItem
 } from "../features/cart/cartSlice";
 
 import Loading from "../components/common/Loading";
@@ -563,7 +564,7 @@ export default function ProductDetails() {
     if (!isValidSelection) return;
 
     dispatch(
-      BuyNowitem({
+      setBuyNowItem({
         product: {
           _id: currentProduct._id,
           name: currentProduct.name,
