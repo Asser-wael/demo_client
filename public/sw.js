@@ -1,28 +1,17 @@
-
 self.addEventListener("push", (event) => {
   const data = event.data?.json() || {};
 
   const options = {
-    body: data.body,
+    body: data.body || "",
     icon: "/notification-badge.png",
     badge: "/notification-badge.png",
-    // صورة كبيرة اختيارية
-    image: data.image || undefined,
 
-    // اهتزاز على الأجهزة التي تدعمه
-    vibrate: [200, 100, 200],
-
-    // يمنع تجميع الإشعارات المختلفة
-    tag: data.tag || "default-notification",
-
-    // لو true يفضل ظاهر لحد ما المستخدم يتفاعل معه
-    requireInteraction: false,
-
-    // بيانات إضافية نقدر نستخدمها عند الضغط
     data: {
       url: data.url || "/orders",
       orderId: data.orderId || null,
     },
+
+    tag: data.tag || "notification",
 
     actions: [
       {
@@ -47,23 +36,24 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const action = event.action;
-  const url = event.notification.data?.url || "/";
-
-  if (action === "close") {
+  if (event.action === "close") {
     return;
   }
+
+  const url = event.notification.data?.url || "/orders";
 
   event.waitUntil(
     clients.matchAll({
       type: "window",
       includeUncontrolled: true,
     }).then((clientList) => {
-      for (const client of clientList) {
-        if ("focus" in client) {
-          client.navigate(url);
-          return client.focus();
-        }
+      const client = clientList.find(
+        (client) => client.url.startsWith(self.location.origin)
+      );
+
+      if (client) {
+        client.navigate(url);
+        return client.focus();
       }
 
       return clients.openWindow(url);
