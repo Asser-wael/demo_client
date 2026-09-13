@@ -564,9 +564,8 @@ function Navbar() {
                 >
                   <Link
                     to={link.path}
-                    onClick={() => closeDrawer()}
+                    onClick={closeDrawer}
                     className={navItemBase}
-
                   >
                     <Icon className="text-[13px] transition-transform duration-300 group-hover:-translate-y-0.5" />
 
@@ -575,11 +574,11 @@ function Navbar() {
                     {link.label === "Sale" && (
                       <span
                         className="
-                          ml-0.5
-                          h-1.5 w-1.5
-                          rounded-full
-                          bg-[var(--primary)]
-                        "
+        ml-0.5
+        h-1.5 w-1.5
+        rounded-full
+        bg-[var(--primary)]
+      "
                       />
                     )}
                   </Link>
@@ -641,10 +640,9 @@ function Navbar() {
                 className={`
                   ${iconBtnBase}
                   gap-1
-                  ${
-                    accountOpen
-                      ? "bg-[var(--bg)] text-[var(--text)]"
-                      : ""
+                  ${accountOpen
+                    ? "bg-[var(--bg)] text-[var(--text)]"
+                    : ""
                   }
                 `}
               >
