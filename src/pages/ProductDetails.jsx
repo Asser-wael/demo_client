@@ -33,26 +33,15 @@ function Currency({ amount, className = "" }) {
     amount === undefined ||
     isNaN(Number(amount))
   ) {
-    return (
-      <span className={className}>
-        NZ$ —
-      </span>
-    );
+    return <span className={className}>NZ$ —</span>;
   }
 
-  const formatted = Number(amount).toLocaleString(
-    "en-NZ",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }
-  );
+  const formatted = Number(amount).toLocaleString("en-NZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
-  return (
-    <span className={className}>
-      NZ$ {formatted}
-    </span>
-  );
+  return <span className={className}>NZ$ {formatted}</span>;
 }
 
 /* =========================================================
@@ -60,11 +49,7 @@ function Currency({ amount, className = "" }) {
 ========================================================= */
 
 const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 14,
-  },
-
+  hidden: { opacity: 0, y: 14 },
   visible: (index = 0) => ({
     opacity: 1,
     y: 0,
@@ -86,14 +71,8 @@ const getSizePrice = (size) => {
   const price = Number(size.price ?? 0);
   const offerPrice = Number(size.offerPrice ?? 0);
 
-  if (
-    offerPrice > 0 &&
-    offerPrice < price
-  ) {
-    return offerPrice;
-  }
-
-  return price;
+  // Offer موجود لو offerPrice > 0
+  return offerPrice > 0 ? offerPrice : price;
 };
 
 const getMinPrice = (product) => {
@@ -106,79 +85,49 @@ const getMinPrice = (product) => {
   });
 
   if (!sizes.length) {
-    return {
-      price: null,
-      oldPrice: null,
-    };
+    return { price: null, oldPrice: null };
   }
 
   let cheapest = sizes[0];
 
   sizes.forEach((size) => {
-    const currentPrice =
-      getSizePrice(size);
-
-    const cheapestPrice =
-      getSizePrice(cheapest);
+    const currentPrice = getSizePrice(size);
+    const cheapestPrice = getSizePrice(cheapest);
 
     if (currentPrice < cheapestPrice) {
       cheapest = size;
     }
   });
 
-  const price = Number(
-    cheapest?.price ?? 0
-  );
+  const price = Number(cheapest?.price ?? 0);
+  const offerPrice = Number(cheapest?.offerPrice ?? 0);
 
-  const offerPrice = Number(
-    cheapest?.offerPrice ?? 0
-  );
-
-  if (
-    offerPrice > 0 &&
-    offerPrice < price
-  ) {
-    return {
-      price: offerPrice,
-      oldPrice: price,
-    };
+  // offerPrice > 0 => فيه عرض
+  if (offerPrice > 0) {
+    return { price: offerPrice, oldPrice: price };
   }
 
-  return {
-    price,
-    oldPrice: null,
-  };
+  return { price, oldPrice: null };
 };
 
 /* =========================================================
    STAR RATING
 ========================================================= */
 
-function StarRating({
-  value = 0,
-  size = "text-base",
-}) {
-  const roundedValue = Math.round(
-    Number(value) || 0
-  );
+function StarRating({ value = 0, size = "text-base" }) {
+  const roundedValue = Math.round(Number(value) || 0);
 
   return (
     <div
       className={`flex items-center gap-0.5 text-primary ${size}`}
       aria-label={`Rating ${roundedValue} out of 5`}
     >
-      {[1, 2, 3, 4, 5].map(
-        (star) => (
-          <FiStar
-            key={star}
-            className={
-              star <= roundedValue
-                ? "fill-current"
-                : ""
-            }
-          />
-        )
-      )}
+      {[1, 2, 3, 4, 5].map((star) => (
+        <FiStar
+          key={star}
+          className={star <= roundedValue ? "fill-current" : ""}
+        />
+      ))}
     </div>
   );
 }
@@ -187,49 +136,28 @@ function StarRating({
    STAR PICKER
 ========================================================= */
 
-function StarPicker({
-  value,
-  onChange,
-}) {
+function StarPicker({ value, onChange }) {
   const [hover, setHover] = useState(0);
 
   return (
     <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map(
-        (star) => {
-          const active =
-            star <=
-            (hover || value);
+      {[1, 2, 3, 4, 5].map((star) => {
+        const active = star <= (hover || value);
 
-          return (
-            <button
-              key={star}
-              type="button"
-              aria-label={`Rate ${star} star${
-                star > 1 ? "s" : ""
-              }`}
-              onClick={() =>
-                onChange(star)
-              }
-              onMouseEnter={() =>
-                setHover(star)
-              }
-              onMouseLeave={() =>
-                setHover(0)
-              }
-              className="text-2xl text-primary transition-transform hover:scale-110"
-            >
-              <FiStar
-                className={
-                  active
-                    ? "fill-current"
-                    : ""
-                }
-              />
-            </button>
-          );
-        }
-      )}
+        return (
+          <button
+            key={star}
+            type="button"
+            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+            onClick={() => onChange(star)}
+            onMouseEnter={() => setHover(star)}
+            onMouseLeave={() => setHover(0)}
+            className="text-2xl text-primary transition-transform hover:scale-110"
+          >
+            <FiStar className={active ? "fill-current" : ""} />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -238,41 +166,26 @@ function StarPicker({
    DISH CARD
 ========================================================= */
 
-function DishCard({
-  item,
-  index,
-}) {
+function DishCard({ item, index }) {
   const navigate = useNavigate();
 
-  const {
-    price,
-    oldPrice,
-  } = getMinPrice(item);
+  const { price, oldPrice } = getMinPrice(item);
 
   return (
     <motion.div
       custom={index}
       initial="hidden"
       whileInView="visible"
-      viewport={{
-        once: true,
-        amount: 0.3,
-      }}
+      viewport={{ once: true, amount: 0.3 }}
       variants={fadeUp}
-      onClick={() =>
-        navigate(
-          `/products/${item._id}`
-        )
-      }
+      onClick={() => navigate(`/products/${item._id}`)}
       className="card group flex w-48 flex-shrink-0 cursor-pointer flex-col overflow-hidden sm:w-56"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-bg">
         {item?.image ? (
           <img
             src={item.image}
-            alt={
-              item.name || "Dish"
-            }
+            alt={item.name || "Dish"}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         ) : (
@@ -294,9 +207,7 @@ function DishCard({
               className="text-sm font-semibold text-text"
             />
           ) : (
-            <span className="text-sm text-muted">
-              Price unavailable
-            </span>
+            <span className="text-sm text-muted">Price unavailable</span>
           )}
 
           {oldPrice !== null && (
@@ -315,42 +226,23 @@ function DishCard({
    MENU RAIL
 ========================================================= */
 
-function MenuRail({
-  title,
-  subtitle,
-  items,
-}) {
-  if (
-    !Array.isArray(items) ||
-    !items.length
-  ) {
+function MenuRail({ title, subtitle, items }) {
+  if (!Array.isArray(items) || !items.length) {
     return null;
   }
 
   return (
     <section className="mx-auto max-w-6xl px-6 pb-16">
       <div className="mb-6 flex items-baseline justify-between gap-4 border-b border-border pb-4">
-        <h2 className="font-serif text-2xl text-text">
-          {title}
-        </h2>
+        <h2 className="font-serif text-2xl text-text">{title}</h2>
 
-        {subtitle && (
-          <p className="text-sm text-muted">
-            {subtitle}
-          </p>
-        )}
+        {subtitle && <p className="text-sm text-muted">{subtitle}</p>}
       </div>
 
       <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2 scrollbar-thin">
-        {items.map(
-          (item, index) => (
-            <DishCard
-              key={item._id}
-              item={item}
-              index={index}
-            />
-          )
-        )}
+        {items.map((item, index) => (
+          <DishCard key={item._id} item={item} index={index} />
+        ))}
       </div>
     </section>
   );
@@ -360,45 +252,26 @@ function MenuRail({
    REVIEWS
 ========================================================= */
 
-function ReviewsSection({
-  product,
-  productId,
-}) {
+function ReviewsSection({ product, productId }) {
   const dispatch = useDispatch();
 
-  const user = useSelector(
-    (state) => state.auth?.user
+  const user = useSelector((state) => state.auth?.user);
+
+  const reviewLoading = useSelector(
+    (state) => state.products?.reviewLoading
   );
 
-  const reviewLoading =
-    useSelector(
-      (state) =>
-        state.products?.reviewLoading
-    );
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
 
-  const [rating, setRating] =
-    useState(0);
-
-  const [comment, setComment] =
-    useState("");
-
-  const reviews = Array.isArray(
-    product?.reviews
-  )
-    ? product.reviews
-    : [];
+  const reviews = Array.isArray(product?.reviews) ? product.reviews : [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const cleanComment =
-      comment.trim();
+    const cleanComment = comment.trim();
 
-    if (
-      !rating ||
-      !cleanComment ||
-      reviewLoading
-    ) {
+    if (!rating || !cleanComment || reviewLoading) {
       return;
     }
 
@@ -410,24 +283,16 @@ function ReviewsSection({
       })
     );
 
-    if (
-      addReview.fulfilled.match(
-        result
-      )
-    ) {
+    if (addReview.fulfilled.match(result)) {
       setRating(0);
       setComment("");
     }
   };
 
-  const averageRating = Number(
-    product?.rating || 0
-  );
+  const averageRating = Number(product?.rating || 0);
 
   const reviewsCount = Number(
-    product?.numReviews ||
-      reviews.length ||
-      0
+    product?.numReviews || reviews.length || 0
   );
 
   return (
@@ -440,18 +305,11 @@ function ReviewsSection({
             </h2>
 
             <div className="mt-3 flex items-center gap-2">
-              <StarRating
-                value={averageRating}
-              />
+              <StarRating value={averageRating} />
 
               <span className="text-sm text-muted">
-                {averageRating.toFixed(
-                  1
-                )}{" "}
-                · {reviewsCount}{" "}
-                {reviewsCount === 1
-                  ? "review"
-                  : "reviews"}
+                {averageRating.toFixed(1)} · {reviewsCount}{" "}
+                {reviewsCount === 1 ? "review" : "reviews"}
               </span>
             </div>
           </div>
@@ -459,23 +317,13 @@ function ReviewsSection({
 
         <div className="mb-8 rounded-2xl border border-border p-6">
           {user ? (
-            <form
-              onSubmit={
-                handleSubmit
-              }
-              className="flex flex-col gap-4"
-            >
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-text">
                   Rate this dish
                 </label>
 
-                <StarPicker
-                  value={rating}
-                  onChange={
-                    setRating
-                  }
-                />
+                <StarPicker value={rating} onChange={setRating} />
               </div>
 
               <div>
@@ -485,11 +333,7 @@ function ReviewsSection({
 
                 <textarea
                   value={comment}
-                  onChange={(e) =>
-                    setComment(
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => setComment(e.target.value)}
                   rows={3}
                   maxLength={1000}
                   placeholder="How was the taste, portion, and presentation?"
@@ -497,31 +341,24 @@ function ReviewsSection({
                 />
 
                 <div className="mt-1 text-right text-xs text-muted">
-                  {comment.length}
-                  /1000
+                  {comment.length}/1000
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={
-                  reviewLoading ||
-                  !rating ||
-                  !comment.trim()
+                  reviewLoading || !rating || !comment.trim()
                 }
                 className="btn-primary self-start rounded-xl px-6 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {reviewLoading
-                  ? "Submitting..."
-                  : "Submit Review"}
+                {reviewLoading ? "Submitting..." : "Submit Review"}
               </button>
             </form>
           ) : (
             <div className="flex flex-col items-start gap-3">
               <p className="text-sm text-muted">
-                Sign in to share
-                your experience
-                with this dish.
+                Sign in to share your experience with this dish.
               </p>
 
               <Link
@@ -536,9 +373,7 @@ function ReviewsSection({
 
         {!reviews.length ? (
           <p className="text-sm text-muted">
-            No reviews yet — be
-            the first to tell us
-            how it was.
+            No reviews yet — be the first to tell us how it was.
           </p>
         ) : (
           <div className="flex flex-col divide-y divide-border">
@@ -546,12 +381,8 @@ function ReviewsSection({
               .slice()
               .sort(
                 (a, b) =>
-                  new Date(
-                    b.createdAt || 0
-                  ) -
-                  new Date(
-                    a.createdAt || 0
-                  )
+                  new Date(b.createdAt || 0) -
+                  new Date(a.createdAt || 0)
               )
               .map((review) => (
                 <div
@@ -565,10 +396,7 @@ function ReviewsSection({
 
                     <div>
                       <span className="block text-sm font-semibold text-text">
-                        {review.name ||
-                          review.user
-                            ?.name ||
-                          "Guest"}
+                        {review.name || review.user?.name || "Guest"}
                       </span>
 
                       <span className="text-xs text-muted">
@@ -582,9 +410,7 @@ function ReviewsSection({
 
                     <div className="ml-auto">
                       <StarRating
-                        value={
-                          review.rating
-                        }
+                        value={review.rating}
                         size="text-sm"
                       />
                     </div>
@@ -612,39 +438,20 @@ export default function ProductDetails() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const {
-    productDetails,
-    detailsLoading,
-  } = useSelector(
+  const { productDetails, detailsLoading } = useSelector(
     (state) => state.products
   );
 
-  const currentProduct =
-    productDetails?.product || null;
+  const currentProduct = productDetails?.product || null;
 
-  const relatedProducts =
-    productDetails?.relatedProducts ||
-    [];
+  const relatedProducts = productDetails?.relatedProducts || [];
+  const differentProducts = productDetails?.differentProducts || [];
 
-  const differentProducts =
-    productDetails?.differentProducts ||
-    [];
+  const cartActionLoading = useSelector(selectCartActionLoading);
 
-  const cartActionLoading =
-    useSelector(
-      selectCartActionLoading
-    );
-
-  const [color, setColor] =
-    useState(null);
-
-  const [
-    selectedSize,
-    setSelectedSize,
-  ] = useState(null);
-
-  const [quantity, setQuantity] =
-    useState(1);
+  const [color, setColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   // =========================================================
   // GET PRODUCT
@@ -652,10 +459,7 @@ export default function ProductDetails() {
 
   useEffect(() => {
     if (!id) return;
-
-    dispatch(
-      getProductDetails(id)
-    );
+    dispatch(getProductDetails(id));
   }, [dispatch, id]);
 
   // =========================================================
@@ -663,10 +467,7 @@ export default function ProductDetails() {
   // =========================================================
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
   // =========================================================
@@ -674,45 +475,25 @@ export default function ProductDetails() {
   // =========================================================
 
   useEffect(() => {
-    if (
-      !currentProduct?.variants
-        ?.length
-    ) {
+    if (!currentProduct?.variants?.length) {
       setColor(null);
       setSelectedSize(null);
       setQuantity(1);
-
       return;
     }
 
     const firstAvailableVariant =
-      currentProduct.variants.find(
-        (variant) =>
-          variant?.sizes?.some(
-            (size) =>
-              Number(
-                size?.stock || 0
-              ) > 0
-          )
-      ) ||
-      currentProduct.variants[0];
+      currentProduct.variants.find((variant) =>
+        variant?.sizes?.some((size) => Number(size?.stock || 0) > 0)
+      ) || currentProduct.variants[0];
 
     const firstAvailableSize =
       firstAvailableVariant?.sizes?.find(
-        (size) =>
-          Number(
-            size?.stock || 0
-          ) > 0
+        (size) => Number(size?.stock || 0) > 0
       ) || null;
 
-    setColor(
-      firstAvailableVariant
-    );
-
-    setSelectedSize(
-      firstAvailableSize
-    );
-
+    setColor(firstAvailableVariant);
+    setSelectedSize(firstAvailableSize);
     setQuantity(1);
   }, [currentProduct]);
 
@@ -721,9 +502,7 @@ export default function ProductDetails() {
   // =========================================================
 
   useEffect(() => {
-    const stock = Number(
-      selectedSize?.stock || 0
-    );
+    const stock = Number(selectedSize?.stock || 0);
 
     if (stock <= 0) {
       setQuantity(1);
@@ -731,13 +510,7 @@ export default function ProductDetails() {
     }
 
     setQuantity((prev) =>
-      Math.min(
-        Math.max(
-          Number(prev) || 1,
-          1
-        ),
-        stock
-      )
+      Math.min(Math.max(Number(prev) || 1, 1), stock)
     );
   }, [selectedSize]);
 
@@ -757,49 +530,27 @@ export default function ProductDetails() {
   // PRICE
   // =========================================================
 
-  const stock = Number(
-    selectedSize?.stock || 0
-  );
+  const stock = Number(selectedSize?.stock || 0);
+  const isOutOfStock = !selectedSize || stock <= 0;
 
-  const isOutOfStock =
-    !selectedSize ||
-    stock <= 0;
+  const price = Number(selectedSize?.price ?? 0);
+  const offerPrice = Number(selectedSize?.offerPrice ?? 0);
 
-  const price = Number(
-    selectedSize?.price ?? 0
-  );
-
-  const offerPrice = Number(
-    selectedSize?.offerPrice ?? 0
-  );
-
-  const hasOffer =
-    offerPrice > 0 &&
-    offerPrice < price;
-
-  const finalPrice = hasOffer
-    ? offerPrice
-    : price;
+  // ✅ العرض موجود بمجرد ما offerPrice > 0
+  const hasOffer = offerPrice > 0;
+  const finalPrice = hasOffer ? offerPrice : price;
 
   // =========================================================
   // QUANTITY
   // =========================================================
 
   const decreaseQuantity = () => {
-    setQuantity((prev) =>
-      Math.max(1, prev - 1)
-    );
+    setQuantity((prev) => Math.max(1, prev - 1));
   };
 
   const increaseQuantity = () => {
     if (isOutOfStock) return;
-
-    setQuantity((prev) =>
-      Math.min(
-        stock,
-        prev + 1
-      )
-    );
+    setQuantity((prev) => Math.min(stock, prev + 1));
   };
 
   // =========================================================
@@ -813,16 +564,10 @@ export default function ProductDetails() {
 
     const firstAvailableSize =
       variant?.sizes?.find(
-        (size) =>
-          Number(
-            size?.stock || 0
-          ) > 0
+        (size) => Number(size?.stock || 0) > 0
       ) || null;
 
-    setSelectedSize(
-      firstAvailableSize
-    );
-
+    setSelectedSize(firstAvailableSize);
     setQuantity(1);
   };
 
@@ -832,13 +577,7 @@ export default function ProductDetails() {
 
   const changeSize = (size) => {
     if (!size) return;
-
-    if (
-      Number(size.stock || 0) <=
-      0
-    ) {
-      return;
-    }
+    if (Number(size.stock || 0) <= 0) return;
 
     setSelectedSize(size);
     setQuantity(1);
@@ -848,36 +587,27 @@ export default function ProductDetails() {
   // VALID SELECTION
   // =========================================================
 
-  const isValidSelection =
-    Boolean(
-      currentProduct?._id &&
-        color?.color?.name &&
-        selectedSize?.size &&
-        !isOutOfStock &&
-        quantity > 0 &&
-        quantity <= stock
-    );
+  const isValidSelection = Boolean(
+    currentProduct?._id &&
+      color?.color?.name &&
+      selectedSize?.size &&
+      !isOutOfStock &&
+      quantity > 0 &&
+      quantity <= stock
+  );
 
   // =========================================================
   // ADD TO CART
   // =========================================================
 
   const handleAddToCart = () => {
-    if (!isValidSelection) {
-      return;
-    }
+    if (!isValidSelection) return;
 
     dispatch(
       addToCart({
-        productId:
-          currentProduct._id,
-
-        color:
-          color.color.name,
-
-        size:
-          selectedSize.size,
-
+        productId: currentProduct._id,
+        color: color.color.name,
+        size: selectedSize.size,
         quantity,
       })
     );
@@ -888,9 +618,7 @@ export default function ProductDetails() {
   // =========================================================
 
   const handleBuyNow = () => {
-    if (!isValidSelection) {
-      return;
-    }
+    if (!isValidSelection) return;
 
     const buyNowItem = {
       product: {
@@ -899,36 +627,24 @@ export default function ProductDetails() {
         image: currentProduct.image,
       },
 
-      productId:
-        currentProduct._id,
+      productId: currentProduct._id,
 
-      name:
-        currentProduct.name,
+      name: currentProduct.name,
+      image: currentProduct.image,
 
-      image:
-        currentProduct.image,
+      color: color.color.name,
+      size: selectedSize.size,
 
-      color:
-        color.color.name,
+      // ✅ السعر الأصلي (مش finalPrice)
+      price: price,
 
-      size:
-        selectedSize.size,
-
-      price: finalPrice,
-
-      offerPrice: hasOffer
-        ? offerPrice
-        : null,
+      // ✅ offerPrice = 0 لو مفيش عرض، و > 0 لو فيه عرض
+      offerPrice: hasOffer ? offerPrice : 0,
 
       quantity,
     };
 
-    dispatch(
-      setBuyNowItem(
-        buyNowItem
-      )
-    );
-
+    dispatch(setBuyNowItem(buyNowItem));
     navigate("/checkout");
   };
 
@@ -938,11 +654,8 @@ export default function ProductDetails() {
 
       <div className="mx-auto max-w-6xl px-6 pt-6">
         <div className="text-sm text-muted">
-          Menu /{" "}
-          {currentProduct.category
-            ?.name ||
-            "Dishes"}{" "}
-          / {currentProduct.name}
+          Menu / {currentProduct.category?.name || "Dishes"} /{" "}
+          {currentProduct.name}
         </div>
       </div>
 
@@ -961,12 +674,8 @@ export default function ProductDetails() {
           <div className="aspect-[4/3] overflow-hidden rounded-xl bg-bg">
             {currentProduct.image ? (
               <img
-                src={
-                  currentProduct.image
-                }
-                alt={
-                  currentProduct.name
-                }
+                src={currentProduct.image}
+                alt={currentProduct.name}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -987,9 +696,7 @@ export default function ProductDetails() {
           className="py-2"
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1 text-xs text-primary">
-            {currentProduct
-              .category?.name ||
-              "Chef's Special"}
+            {currentProduct.category?.name || "Chef's Special"}
           </span>
 
           <h1 className="mt-5 font-serif text-4xl leading-tight text-text sm:text-5xl">
@@ -997,141 +704,90 @@ export default function ProductDetails() {
           </h1>
 
           <div className="mt-4 flex items-center gap-3">
-            <StarRating
-              value={
-                currentProduct.rating ||
-                0
-              }
-            />
+            <StarRating value={currentProduct.rating || 0} />
 
             <span className="text-sm text-muted">
               {currentProduct.numReviews
-                ? `${Number(
-                    currentProduct.rating ||
-                      0
-                  ).toFixed(
+                ? `${Number(currentProduct.rating || 0).toFixed(
                     1
-                  )} (${
-                    currentProduct.numReviews
-                  } reviews)`
+                  )} (${currentProduct.numReviews} reviews)`
                 : "No ratings yet"}
             </span>
           </div>
 
           <p className="mt-6 max-w-md leading-8 text-muted">
-            {
-              currentProduct.description
-            }
+            {currentProduct.description}
           </p>
 
           {/* PREPARATION */}
 
-          {currentProduct
-            .variants
-            ?.length > 0 && (
+          {currentProduct.variants?.length > 0 && (
             <div className="mt-8">
               <h3 className="mb-3 text-sm font-semibold text-text">
                 Preparation
               </h3>
 
               <div className="flex flex-wrap gap-2">
-                {currentProduct.variants.map(
-                  (
-                    variant,
-                    index
-                  ) => {
-                    const colorName =
-                      variant?.color
-                        ?.name;
+                {currentProduct.variants.map((variant, index) => {
+                  const colorName = variant?.color?.name;
+                  if (!colorName) return null;
 
-                    if (!colorName) {
-                      return null;
-                    }
+                  const isSelected =
+                    color?.color?.name === colorName;
 
-                    const isSelected =
-                      color?.color
-                        ?.name ===
-                      colorName;
-
-                    return (
-                      <button
-                        key={`${colorName}-${index}`}
-                        type="button"
-                        onClick={() =>
-                          changeColor(
-                            variant
-                          )
-                        }
-                        className={`rounded-full border px-4 py-2 text-sm transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary text-white"
-                            : "border-border text-text hover:border-primary"
-                        }`}
-                      >
-                        {colorName}
-                      </button>
-                    );
-                  }
-                )}
+                  return (
+                    <button
+                      key={`${colorName}-${index}`}
+                      type="button"
+                      onClick={() => changeColor(variant)}
+                      className={`rounded-full border px-4 py-2 text-sm transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary text-white"
+                          : "border-border text-text hover:border-primary"
+                      }`}
+                    >
+                      {colorName}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* PORTION */}
 
-          {color?.sizes
-            ?.length > 0 && (
+          {color?.sizes?.length > 0 && (
             <div className="mt-6">
               <h3 className="mb-3 text-sm font-semibold text-text">
                 Portion
               </h3>
 
               <div className="flex flex-wrap gap-2">
-                {color.sizes.map(
-                  (
-                    size,
-                    index
-                  ) => {
-                    const sizeName =
-                      size?.size;
+                {color.sizes.map((size, index) => {
+                  const sizeName = size?.size;
+                  const isSelected = selectedSize?.size === sizeName;
+                  const outOfStock = Number(size?.stock || 0) <= 0;
 
-                    const isSelected =
-                      selectedSize?.size ===
-                      sizeName;
-
-                    const outOfStock =
-                      Number(
-                        size?.stock ||
-                          0
-                      ) <= 0;
-
-                    return (
-                      <button
-                        key={`${sizeName}-${index}`}
-                        type="button"
-                        disabled={
-                          outOfStock
-                        }
-                        onClick={() =>
-                          changeSize(
-                            size
-                          )
-                        }
-                        className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary text-white"
-                            : "border-border text-text hover:border-primary"
-                        } ${
-                          outOfStock
-                            ? "cursor-not-allowed opacity-40 line-through"
-                            : ""
-                        }`}
-                      >
-                        {sizeName}
-                      </button>
-                    );
-                  }
-                )}
+                  return (
+                    <button
+                      key={`${sizeName}-${index}`}
+                      type="button"
+                      disabled={outOfStock}
+                      onClick={() => changeSize(size)}
+                      className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary text-white"
+                          : "border-border text-text hover:border-primary"
+                      } ${
+                        outOfStock
+                          ? "cursor-not-allowed opacity-40 line-through"
+                          : ""
+                      }`}
+                    >
+                      {sizeName}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1152,31 +808,21 @@ export default function ProductDetails() {
 
           <div className="rounded-lg border border-border px-4 py-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted">
-                Preparation
-              </span>
-
+              <span className="text-sm text-muted">Preparation</span>
               <span className="font-semibold">
-                {color?.color?.name ||
-                  "—"}
+                {color?.color?.name || "—"}
               </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">
-                Portion
-              </span>
-
+              <span className="text-sm text-muted">Portion</span>
               <span className="font-semibold">
-                {selectedSize?.size ||
-                  "—"}
+                {selectedSize?.size || "—"}
               </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">
-                Price
-              </span>
+              <span className="text-sm text-muted">Price</span>
 
               <div className="flex items-center gap-2">
                 {hasOffer && (
@@ -1187,13 +833,8 @@ export default function ProductDetails() {
                 )}
 
                 <span className="font-semibold text-primary">
-                  {finalPrice >
-                  0 ? (
-                    <Currency
-                      amount={
-                        finalPrice
-                      }
-                    />
+                  {finalPrice > 0 ? (
+                    <Currency amount={finalPrice} />
                   ) : (
                     "—"
                   )}
@@ -1202,15 +843,11 @@ export default function ProductDetails() {
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">
-                Availability
-              </span>
+              <span className="text-sm text-muted">Availability</span>
 
               <span
                 className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                  !isOutOfStock
-                    ? "text-green-600"
-                    : "text-red-500"
+                  !isOutOfStock ? "text-green-600" : "text-red-500"
                 }`}
               >
                 <FiClock className="text-sm" />
@@ -1233,32 +870,20 @@ export default function ProductDetails() {
               <button
                 type="button"
                 aria-label="Decrease quantity"
-                onClick={
-                  decreaseQuantity
-                }
-                disabled={
-                  isOutOfStock ||
-                  quantity <= 1
-                }
+                onClick={decreaseQuantity}
+                disabled={isOutOfStock || quantity <= 1}
                 className="text-lg transition hover:text-primary disabled:opacity-30"
               >
                 <FiMinus />
               </button>
 
-              <span className="font-semibold">
-                {quantity}
-              </span>
+              <span className="font-semibold">{quantity}</span>
 
               <button
                 type="button"
                 aria-label="Increase quantity"
-                onClick={
-                  increaseQuantity
-                }
-                disabled={
-                  isOutOfStock ||
-                  quantity >= stock
-                }
+                onClick={increaseQuantity}
+                disabled={isOutOfStock || quantity >= stock}
                 className="text-lg transition hover:text-primary disabled:opacity-30"
               >
                 <FiPlus />
@@ -1270,13 +895,8 @@ export default function ProductDetails() {
 
           <button
             type="button"
-            onClick={
-              handleAddToCart
-            }
-            disabled={
-              !isValidSelection ||
-              cartActionLoading
-            }
+            onClick={handleAddToCart}
+            disabled={!isValidSelection || cartActionLoading}
             className="btn-primary mt-6 w-full rounded-xl px-5 py-4 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cartActionLoading
@@ -1290,12 +910,8 @@ export default function ProductDetails() {
 
           <button
             type="button"
-            disabled={
-              !isValidSelection
-            }
-            onClick={
-              handleBuyNow
-            }
+            disabled={!isValidSelection}
+            onClick={handleBuyNow}
             className="mt-3 w-full rounded-xl border border-primary px-5 py-4 font-semibold text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Order Now
@@ -1303,9 +919,7 @@ export default function ProductDetails() {
 
           {!selectedSize && (
             <p className="mt-3 text-center text-xs text-muted">
-              Choose a preparation
-              and portion to
-              continue.
+              Choose a preparation and portion to continue.
             </p>
           )}
         </motion.div>
@@ -1320,9 +934,7 @@ export default function ProductDetails() {
           </h2>
 
           <p className="mt-4 max-w-2xl leading-8 text-muted">
-            {
-              currentProduct.description
-            }
+            {currentProduct.description}
           </p>
         </div>
       </section>
@@ -1345,10 +957,7 @@ export default function ProductDetails() {
 
       {/* REVIEWS */}
 
-      <ReviewsSection
-        product={currentProduct}
-        productId={id}
-      />
+      <ReviewsSection product={currentProduct} productId={id} />
     </div>
   );
 }
