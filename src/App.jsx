@@ -18,6 +18,7 @@ import { getUser } from "./features/auth/authSlice.js";
 import { getCart } from "./features/cart/cartSlice.js";
 import { addOrder } from "./features/order/orderSlice.js";
 import useApplyTheme from "./hooks/useApplyTheme.js";
+import { fetchSettings } from "./features/settings/settingsSlice.js";
 
 function App() {
   useApplyTheme();
