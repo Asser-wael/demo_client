@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosInstance from "../../api/axiosInstance"; 
+import axiosInstance from "../../api/axiosInstance";
 
 export const fetchSettings = createAsyncThunk(
   "settings/fetch",
@@ -8,7 +8,9 @@ export const fetchSettings = createAsyncThunk(
       const { data } = await axiosInstance.get("/settings");
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "فشل تحميل الإعدادات");
+      return rejectWithValue(
+        err.response?.data?.message || "فشل تحميل الإعدادات"
+      );
     }
   }
 );
@@ -20,45 +22,130 @@ export const saveSettings = createAsyncThunk(
       const { data } = await axiosInstance.put("/settings", payload);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "فشل حفظ الإعدادات");
+      return rejectWithValue(
+        err.response?.data?.message || "فشل حفظ الإعدادات"
+      );
     }
   }
 );
 
+const initialState = {
+  theme: "light",
+
+  colors: {
+    light: {},
+    dark: {},
+  },
+
+  company: {
+    name: "company",
+  },
+
+  social: {
+    instagram: "",
+    tiktok: "",
+    facebook: "",
+    whatsapp: "",
+  },
+
+  phone: "",
+
+  status: "idle",
+  error: null,
+};
+
 const settingsSlice = createSlice({
   name: "settings",
-  initialState: {
-    theme: "light",
-    colors: { light: {}, dark: {} },
-    company: { name: "company" },
-    social: { instagram: "", tiktok: "", facebook: "", whatsapp: "" },
-    phone: "",
-    status: "idle", // idle | loading | succeeded | failed
-    error: null,
-  },
+
+  initialState,
+
   reducers: {
+    setColor(state, action) {
+      const { theme, key, value } = action.payload;
+
+      if (!state.colors[theme]) {
+        state.colors[theme] = {};
+      }
+
+      state.colors[theme][key] = value;
+    },
+
+    resetColors(state) {
+      state.colors = {
+        light: {},
+        dark: {},
+      };
+    },
+
+    toggleTheme(state) {
+      state.theme = state.theme === "light" ? "dark" : "light";
+    },
+
     setThemeLocal(state, action) {
-      state.theme = action.payload; // تحديث فوري في الـ UI قبل ما السيرفر يرد
+      state.theme = action.payload;
+    },
+
+    setCompanyName(state, action) {
+      state.company.name = action.payload;
+    },
+
+    setSocial(state, action) {
+      const { key, value } = action.payload;
+
+      if (key in state.social) {
+        state.social[key] = value;
+      }
+    },
+
+    setPhone(state, action) {
+      state.phone = action.payload;
     },
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchSettings.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
+
       .addCase(fetchSettings.fulfilled, (state, action) => {
         state.status = "succeeded";
+
         Object.assign(state, action.payload);
       })
+
       .addCase(fetchSettings.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
+
+      .addCase(saveSettings.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+
       .addCase(saveSettings.fulfilled, (state, action) => {
+        state.status = "succeeded";
+
         Object.assign(state, action.payload);
+      })
+
+      .addCase(saveSettings.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
       });
   },
 });
 
-export const { setThemeLocal } = settingsSlice.actions;
+export const {
+  setColor,
+  resetColors,
+  toggleTheme,
+  setThemeLocal,
+  setCompanyName,
+  setSocial,
+  setPhone,
+} = settingsSlice.actions;
+
 export default settingsSlice.reducer;
