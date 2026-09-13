@@ -237,9 +237,67 @@ function SectionHeader({
   );
 }
 
-// ============================================================
-// MENU CARD
-// ============================================================
+function ProductSwiper({
+  products = [],
+  badgeLabel,
+  showNewTag = false,
+  reduceMotion,
+}) {
+  if (!products?.length) {
+    return (
+      <div className="flex min-h-60 items-center justify-center rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
+        <p className="text-sm text-[var(--color-text-muted)]">
+          No dishes available right now.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full overflow-hidden">
+      <Swiper
+        modules={[Autoplay, Pagination]}
+        slidesPerView={1.12}
+        spaceBetween={16}
+        breakpoints={swiperBreakpoints}
+        autoplay={
+          reduceMotion
+            ? false
+            : {
+              delay: 4500,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }
+        }
+        pagination={{
+          clickable: true,
+          dynamicBullets: true,
+        }}
+        watchSlidesProgress
+        observer
+        observeParents
+        className="home-products-swiper !overflow-visible !pb-14"
+      >
+        {products.map((raw, index) => {
+          const item = raw?.id || raw;
+
+          if (!item?._id) return null;
+
+          return (
+            <SwiperSlide key={item._id} className="!h-auto">
+              <MenuCard
+                item={item}
+                index={index}
+                badgeLabel={badgeLabel}
+                showNewTag={showNewTag}
+              />
+            </SwiperSlide>
+          );
+        })}
+      </Swiper>
+    </div>
+  );
+}
 
 function MenuCard({
   item,
@@ -265,314 +323,315 @@ function MenuCard({
       whileInView="visible"
       viewport={{
         once: true,
-        amount: 0.15,
+        amount: 0.1,
       }}
       variants={reduceMotion ? staticVariant : fadeUp}
-      onClick={() => navigate(`/products/${item?._id}`)}
       className="
         group
+        relative
         h-full
-        flex
-        flex-col
         overflow-hidden
-        cursor-pointer
-        rounded-xl
+        rounded-2xl
         border
         border-[var(--color-border-subtle)]
         bg-[var(--color-bg-surface)]
         transition-all
-        duration-300
+        duration-500
         hover:-translate-y-1
         hover:border-[var(--color-accent)]
-        hover:shadow-xl
       "
     >
       {/* IMAGE */}
-      <div
+
+      <button
+        type="button"
+        onClick={() => navigate(`/products/${item?._id}`)}
         className="
           relative
-          aspect-[4/3]
+          block
+          w-full
           overflow-hidden
-          bg-[var(--color-bg-elevated)]
+          text-left
+          focus:outline-none
         "
       >
-        {item?.image ? (
-          <img
-            src={item.image}
-            alt={item?.name || "Dish"}
-            loading="lazy"
+        <div
+          className="
+            relative
+            aspect-[1/1]
+            overflow-hidden
+            bg-[var(--color-bg-elevated)]
+          "
+        >
+          {item?.image ? (
+            <img
+              src={item.image}
+              alt={item?.name || "Dish"}
+              loading="lazy"
+              className="
+                absolute
+                inset-0
+                h-full
+                w-full
+                object-cover
+                transition-transform
+                duration-700
+                ease-out
+                group-hover:scale-105
+              "
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[var(--color-bg-elevated)]" />
+          )}
+
+          <div
             className="
               absolute
               inset-0
-              h-full
-              w-full
-              object-cover
-              transition-transform
-              duration-700
-              ease-out
-              group-hover:scale-105
+              bg-gradient-to-t
+              from-black/65
+              via-black/5
+              to-transparent
             "
           />
-        ) : (
-          <div className="absolute inset-0 bg-[var(--color-bg-elevated)]" />
-        )}
 
-        {/* IMAGE OVERLAY */}
-        <div
-          className="
-            pointer-events-none
-            absolute
-            inset-0
-            bg-gradient-to-t
-            from-black/25
-            via-transparent
-            to-transparent
-            opacity-60
-          "
-        />
+          {/* TOP LEFT */}
 
-        {/* BADGES */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-2">
-          {showNewTag && (
-            <span
+          <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+            {showNewTag && (
+              <span
+                className="
+                  rounded-full
+                  bg-white
+                  px-3
+                  py-1.5
+                  text-[9px]
+                  font-bold
+                  uppercase
+                  tracking-[0.16em]
+                  text-black
+                "
+              >
+                New
+              </span>
+            )}
+
+            {badgeLabel && (
+              <span
+                className="
+                  rounded-full
+                  border
+                  border-white/30
+                  bg-black/30
+                  px-3
+                  py-1.5
+                  text-[9px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.14em]
+                  text-white
+                  backdrop-blur-md
+                "
+              >
+                {badgeLabel}
+              </span>
+            )}
+          </div>
+
+          {/* RATING */}
+
+          <div
+            className="
+              absolute
+              right-4
+              top-4
+              flex
+              items-center
+              gap-1.5
+              rounded-full
+              bg-black/45
+              px-3
+              py-1.5
+              text-white
+              backdrop-blur-md
+            "
+          >
+            <FiStar
               className="
-                rounded-full
-                border
-                border-[var(--color-accent)]
-                bg-[var(--color-bg-primary)]/90
-                px-3
-                py-1.5
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.14em]
+                text-xs
                 text-[var(--color-accent)]
-                backdrop-blur-md
+                fill-[var(--color-accent)]
               "
-            >
-              New
-            </span>
-          )}
+            />
 
-          {badgeLabel && (
+            <span className="text-[11px] font-semibold">
+              {rating}
+            </span>
+          </div>
+
+          {/* IMAGE INFO */}
+
+          <div className="absolute bottom-4 left-4 right-4">
             <span
               className="
-                rounded-full
-                border
-                border-[var(--color-border-subtle)]
-                bg-[var(--color-bg-primary)]/90
-                px-3
-                py-1.5
+                mb-1.5
+                block
                 text-[9px]
                 font-semibold
                 uppercase
-                tracking-[0.12em]
-                text-[var(--color-text-muted)]
-                backdrop-blur-md
-              "
-            >
-              {badgeLabel}
-            </span>
-          )}
-        </div>
-
-        {/* HEART */}
-        <button
-          type="button"
-          onClick={(e) => e.stopPropagation()}
-          aria-label="Save dish"
-          className="
-            absolute
-            top-3
-            right-3
-            z-20
-            flex
-            h-9
-            w-9
-            items-center
-            justify-center
-            rounded-full
-            border
-            border-[var(--color-border-subtle)]
-            bg-[var(--color-bg-primary)]/85
-            text-[var(--color-text-main)]
-            backdrop-blur-md
-            transition-all
-            duration-200
-            hover:border-[var(--color-accent)]
-            hover:text-[var(--color-accent)]
-          "
-        >
-          <FiHeart className="text-sm" />
-        </button>
-      </div>
-
-      {/* CONTENT */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <div>
-          {/* CATEGORY + RATING */}
-          <div className="mb-2.5 flex items-center justify-between gap-3">
-            <span
-              className="
-                min-w-0
-                truncate
-                text-[10px]
-                font-medium
-                uppercase
-                tracking-[0.12em]
-                text-[var(--color-text-muted)]
+                tracking-[0.18em]
+                text-white/65
               "
             >
               {item?.category?.name || "Signature dish"}
             </span>
 
-            <span
+            <h3
               className="
-                flex
-                shrink-0
-                items-center
-                gap-1
-                rounded-md
-                bg-[var(--color-bg-elevated)]
-                px-2
-                py-1
-                text-[11px]
-                font-semibold
-                text-[var(--color-text-main)]
+                font-serif
+                text-2xl
+                leading-none
+                text-white
+                sm:text-[26px]
               "
             >
-              <FiStar
-                className="
-                  text-[var(--color-accent)]
-                  fill-[var(--color-accent)]
-                "
-              />
-
-              {rating}
-            </span>
+              {item?.name}
+            </h3>
           </div>
+        </div>
+      </button>
 
-          {/* NAME */}
-          <h3
+      {/* CONTENT */}
+
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        {item?.description && (
+          <p
             className="
-              truncate
-              font-serif
-              text-xl
-              leading-tight
-              text-[var(--color-text-bright)]
-              transition-colors
-              duration-200
-              group-hover:text-[var(--color-accent)]
+              line-clamp-2
+              min-h-[38px]
+              text-xs
+              leading-5
+              text-[var(--color-text-muted)]
             "
           >
-            {item?.name}
-          </h3>
+            {item.description}
+          </p>
+        )}
 
-          {/* DESCRIPTION */}
-          {item?.description && (
-            <p
-              className="
-                mt-2
-                line-clamp-2
-                text-xs
-                leading-relaxed
-                text-[var(--color-text-muted)]
-              "
-            >
-              {item.description}
-            </p>
-          )}
+        {/* SIZES */}
 
-          {/* SIZES */}
-          {sizeBadges.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {sizeBadges.map((size, i) => (
-                <span
-                  key={`${size}-${i}`}
-                  className="
-                    rounded
-                    border
-                    border-[var(--color-border-subtle)]
-                    bg-[var(--color-bg-elevated)]
-                    px-2
-                    py-1
-                    text-[9px]
-                    font-mono
-                    uppercase
-                    text-[var(--color-text-muted)]
-                  "
-                >
-                  {size}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        {sizeBadges.length > 0 && (
+          <div className="mt-4 flex items-center gap-1.5 overflow-hidden">
+            {sizeBadges.slice(0, 4).map((size, i) => (
+              <span
+                key={`${size}-${i}`}
+                className="
+                  shrink-0
+                  rounded-md
+                  border
+                  border-[var(--color-border-subtle)]
+                  bg-[var(--color-bg-elevated)]
+                  px-2.5
+                  py-1
+                  text-[9px]
+                  font-medium
+                  uppercase
+                  tracking-wide
+                  text-[var(--color-text-muted)]
+                "
+              >
+                {size}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* FOOTER */}
+
         <div
           className="
-            mt-auto
+            mt-5
             flex
-            items-center
+            items-end
             justify-between
-            gap-3
+            gap-4
             border-t
             border-[var(--color-border-subtle)]
             pt-4
-            mt-5
           "
         >
-          <div className="flex min-w-0 items-baseline gap-2">
-            {price !== null && (
-              <Currency
-                amount={price}
-                className="
-                  truncate
-                  text-base
-                  font-bold
-                  text-[var(--color-text-bright)]
-                "
-              />
-            )}
+          {/* PRICE */}
 
-            {oldPrice !== null && (
-              <Currency
-                amount={oldPrice}
-                className="
-                  shrink-0
-                  text-xs
-                  text-[var(--color-text-muted)]
-                  line-through
-                "
-              />
-            )}
+          <div className="min-w-0">
+            <span
+              className="
+                mb-1
+                block
+                text-[9px]
+                font-medium
+                uppercase
+                tracking-[0.14em]
+                text-[var(--color-text-muted)]
+              "
+            >
+              Starting from
+            </span>
+
+            <div className="flex items-baseline gap-2">
+              {price !== null && (
+                <Currency
+                  amount={price}
+                  className="
+                    text-lg
+                    font-bold
+                    text-[var(--color-text-bright)]
+                  "
+                />
+              )}
+
+              {oldPrice !== null && (
+                <Currency
+                  amount={oldPrice}
+                  className="
+                    text-xs
+                    text-[var(--color-text-muted)]
+                    line-through
+                  "
+                />
+              )}
+            </div>
           </div>
+
+          {/* ORDER BUTTON */}
 
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/menu/${item?._id}`);
-            }}
+            onClick={() => navigate(`/menu/${item?._id}`)}
             aria-label={`Order ${item?.name || "dish"}`}
             className="
               flex
-              h-9
-              w-9
+              h-11
               shrink-0
               items-center
-              justify-center
+              gap-2
               rounded-full
               bg-[var(--color-accent)]
+              px-4
+              text-xs
+              font-bold
+              uppercase
+              tracking-wide
               text-[var(--color-text-bright)]
               transition-all
-              duration-200
-              hover:scale-105
+              duration-300
+              hover:scale-[1.03]
               hover:bg-[var(--color-accent-hover)]
+              active:scale-95
             "
           >
-            <FiPlus className="text-base" />
+            <span>Order</span>
+
+            <FiPlus className="text-sm" />
           </button>
         </div>
       </div>
@@ -580,76 +639,6 @@ function MenuCard({
   );
 }
 
-// ============================================================
-// PRODUCT SWIPER
-// ============================================================
-
-function ProductSwiper({
-  products = [],
-  badgeLabel,
-  showNewTag = false,
-  reduceMotion,
-}) {
-  if (!products?.length) {
-    return (
-      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-6 py-12 text-center">
-        <p className="text-sm text-[var(--color-text-muted)]">
-          No dishes available right now.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative w-full overflow-hidden">
-      <Swiper
-        modules={[Autoplay, Pagination]}
-        slidesPerView={1.15}
-        spaceBetween={14}
-        breakpoints={swiperBreakpoints}
-        autoplay={
-          reduceMotion
-            ? false
-            : {
-              delay: 5000,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: true,
-            }
-        }
-        pagination={{
-          clickable: true,
-          dynamicBullets: true,
-        }}
-        watchSlidesProgress
-        observer
-        observeParents
-        className="home-products-swiper !overflow-visible !pb-14"
-      >
-        {products.map((raw, index) => {
-          const item = raw?.id || raw;
-
-          if (!item?._id) return null;
-
-          return (
-            <SwiperSlide
-              key={item._id}
-              className="!h-auto"
-            >
-              <div className="h-full">
-                <MenuCard
-                  item={item}
-                  index={index}
-                  badgeLabel={badgeLabel}
-                  showNewTag={showNewTag}
-                />
-              </div>
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
-    </div>
-  );
-}
 
 // ============================================================
 // HOME PAGE
