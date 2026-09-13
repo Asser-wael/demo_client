@@ -1,19 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from "../../../client/src/api/axiosInstance";
 
 export const getSettings = createAsyncThunk(
   "settings/getSettings",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`${API_URL}/settings`);
+      const { data } = await axiosInstance.get("/settings");
 
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to load settings"
+        error.response?.data?.message || "Failed to load settings"
       );
     }
   }
@@ -23,16 +20,12 @@ export const saveSettings = createAsyncThunk(
   "settings/saveSettings",
   async (payload, { rejectWithValue }) => {
     try {
-      const { data } = await axios.patch(
-        `${API_URL}/settings`,
-        payload
-      );
+      const { data } = await axiosInstance.put("/settings", payload);
 
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to save settings"
+        error.response?.data?.message || "Failed to save settings"
       );
     }
   }
@@ -42,16 +35,14 @@ export const resetColorsRemote = createAsyncThunk(
   "settings/resetColorsRemote",
   async (mode, { rejectWithValue }) => {
     try {
-      const { data } = await axios.patch(
-        `${API_URL}/settings/reset-colors`,
-        { mode }
+      const { data } = await axiosInstance.put(
+        `/settings/reset-colors/${mode}`
       );
 
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to reset colors"
+        error.response?.data?.message || "Failed to reset colors"
       );
     }
   }
@@ -200,9 +191,6 @@ const settingsSlice = createSlice({
   },
 });
 
-export const {
-  setColor,
-  setThemeLocal,
-} = settingsSlice.actions;
+export const { setColor, setThemeLocal } = settingsSlice.actions;
 
 export default settingsSlice.reducer;
