@@ -69,32 +69,32 @@ const staticVariant = {
 
 const swiperBreakpoints = {
   0: {
-    slidesPerView: 1.15,
+    slidesPerView: 1.08,
     spaceBetween: 14,
   },
 
   480: {
-    slidesPerView: 1.45,
+    slidesPerView: 1.35,
     spaceBetween: 16,
   },
 
   640: {
-    slidesPerView: 2.15,
+    slidesPerView: 2,
     spaceBetween: 18,
   },
 
   768: {
-    slidesPerView: 2.5,
+    slidesPerView: 2.35,
     spaceBetween: 20,
   },
 
   1024: {
-    slidesPerView: 3.2,
+    slidesPerView: 3,
     spaceBetween: 22,
   },
 
   1280: {
-    slidesPerView: 4,
+    slidesPerView: 3.5,
     spaceBetween: 24,
   },
 };
@@ -110,21 +110,18 @@ const kitchenNotes = [
     description:
       "Sealed within minutes of leaving the pass, on the road in under ten.",
   },
-
   {
     icon: FiAward,
     title: "Trained kitchen",
     description:
       "Every section runs under a head chef with formal culinary training.",
   },
-
   {
     icon: FiShield,
     title: "Sourced daily",
     description:
       "Produce and fish are bought each morning, not held in cold storage.",
   },
-
   {
     icon: FiClock,
     title: "Open late",
@@ -139,7 +136,6 @@ const kitchenNotes = [
 
 function getEffectivePrice(size) {
   const price = Number(size?.price);
-
   const offerPrice = Number(size?.offerPrice);
 
   const hasOffer =
@@ -208,8 +204,16 @@ function SectionHeader({
   onClick,
 }) {
   return (
-    <div className="flex items-end justify-between gap-6 mb-8 sm:mb-10">
-      <h2 className="font-serif text-3xl sm:text-4xl leading-tight text-[var(--color-text-bright)]">
+    <div className="mb-8 flex items-end justify-between gap-6 sm:mb-10">
+      <h2
+        className="
+          font-serif
+          text-3xl
+          leading-tight
+          text-[var(--text)]
+          sm:text-4xl
+        "
+      >
         {title}
       </h2>
 
@@ -218,15 +222,16 @@ function SectionHeader({
           type="button"
           onClick={onClick}
           className="
-            hidden sm:flex
+            hidden
             shrink-0
             items-center
             gap-2
             text-[13px]
             font-semibold
-            text-[var(--color-text-muted)]
-            hover:text-[var(--color-accent)]
+            text-[var(--muted)]
             transition-colors
+            hover:text-[var(--accent)]
+            sm:flex
           "
         >
           {buttonText}
@@ -271,29 +276,30 @@ function MenuCard({
       onClick={() => navigate(`/products/${item?._id}`)}
       className="
         group
-        h-full
         flex
+        h-full
+        cursor-pointer
         flex-col
         overflow-hidden
-        cursor-pointer
-        rounded-xl
+        rounded-2xl
         border
-        border-[var(--color-border-subtle)]
-        bg-[var(--color-bg-surface)]
+        border-[var(--border)]
+        bg-[var(--card)]
         transition-all
         duration-300
         hover:-translate-y-1
-        hover:border-[var(--color-accent)]
-        hover:shadow-xl
+        hover:border-[var(--accent)]
+        hover:shadow-[var(--shadow)]
       "
     >
       {/* IMAGE */}
+
       <div
         className="
           relative
-          aspect-[4/3]
+          aspect-[4/4.6]
           overflow-hidden
-          bg-[var(--color-bg-elevated)]
+          bg-[var(--accent-light)]
         "
       >
         {item?.image ? (
@@ -314,40 +320,42 @@ function MenuCard({
             "
           />
         ) : (
-          <div className="absolute inset-0 bg-[var(--color-bg-elevated)]" />
+          <div
+            className="
+              absolute
+              inset-0
+              bg-[var(--accent-light)]
+            "
+          />
         )}
 
-        {/* IMAGE OVERLAY */}
         <div
           className="
             pointer-events-none
             absolute
             inset-0
             bg-gradient-to-t
-            from-black/25
-            via-transparent
+            from-black/65
+            via-black/5
             to-transparent
-            opacity-60
           "
         />
 
         {/* BADGES */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-2">
+
+        <div className="absolute left-3 top-3 z-10 flex flex-col items-start gap-2">
           {showNewTag && (
             <span
               className="
                 rounded-full
-                border
-                border-[var(--color-accent)]
-                bg-[var(--color-bg-primary)]/90
+                bg-[var(--primary)]
                 px-3
                 py-1.5
                 text-[9px]
                 font-semibold
                 uppercase
                 tracking-[0.14em]
-                text-[var(--color-accent)]
-                backdrop-blur-md
+                text-white
               "
             >
               New
@@ -359,15 +367,15 @@ function MenuCard({
               className="
                 rounded-full
                 border
-                border-[var(--color-border-subtle)]
-                bg-[var(--color-bg-primary)]/90
+                border-white/20
+                bg-black/45
                 px-3
                 py-1.5
                 text-[9px]
                 font-semibold
                 uppercase
                 tracking-[0.12em]
-                text-[var(--color-text-muted)]
+                text-white
                 backdrop-blur-md
               "
             >
@@ -376,15 +384,16 @@ function MenuCard({
           )}
         </div>
 
-        {/* HEART */}
+        {/* FAVORITE */}
+
         <button
           type="button"
           onClick={(e) => e.stopPropagation()}
           aria-label="Save dish"
           className="
             absolute
-            top-3
             right-3
+            top-3
             z-20
             flex
             h-9
@@ -393,58 +402,51 @@ function MenuCard({
             justify-center
             rounded-full
             border
-            border-[var(--color-border-subtle)]
-            bg-[var(--color-bg-primary)]/85
-            text-[var(--color-text-main)]
+            border-white/20
+            bg-black/35
+            text-white
             backdrop-blur-md
             transition-all
             duration-200
-            hover:border-[var(--color-accent)]
-            hover:text-[var(--color-accent)]
+            hover:border-[var(--accent)]
+            hover:bg-[var(--accent)]
           "
         >
           <FiHeart className="text-sm" />
         </button>
-      </div>
 
-      {/* CONTENT */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <div>
-          {/* CATEGORY + RATING */}
-          <div className="mb-2.5 flex items-center justify-between gap-3">
+        {/* IMAGE INFO */}
+
+        <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-5">
+          <div className="mb-1 flex items-center gap-2">
             <span
               className="
-                min-w-0
-                truncate
-                text-[10px]
-                font-medium
+                text-[9px]
+                font-semibold
                 uppercase
-                tracking-[0.12em]
-                text-[var(--color-text-muted)]
+                tracking-[0.16em]
+                text-white/70
               "
             >
               {item?.category?.name || "Signature dish"}
             </span>
 
+            <span className="h-1 w-1 rounded-full bg-white/50" />
+
             <span
               className="
                 flex
-                shrink-0
                 items-center
                 gap-1
-                rounded-md
-                bg-[var(--color-bg-elevated)]
-                px-2
-                py-1
-                text-[11px]
+                text-[10px]
                 font-semibold
-                text-[var(--color-text-main)]
+                text-white
               "
             >
               <FiStar
                 className="
-                  text-[var(--color-accent)]
-                  fill-[var(--color-accent)]
+                  text-[var(--accent)]
+                  fill-[var(--accent)]
                 "
               />
 
@@ -452,64 +454,67 @@ function MenuCard({
             </span>
           </div>
 
-          {/* NAME */}
           <h3
             className="
               truncate
               font-serif
               text-xl
               leading-tight
-              text-[var(--color-text-bright)]
-              transition-colors
-              duration-200
-              group-hover:text-[var(--color-accent)]
+              text-white
+              sm:text-2xl
             "
           >
             {item?.name}
           </h3>
-
-          {/* DESCRIPTION */}
-          {item?.description && (
-            <p
-              className="
-                mt-2
-                line-clamp-2
-                text-xs
-                leading-relaxed
-                text-[var(--color-text-muted)]
-              "
-            >
-              {item.description}
-            </p>
-          )}
-
-          {/* SIZES */}
-          {sizeBadges.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {sizeBadges.map((size, i) => (
-                <span
-                  key={`${size}-${i}`}
-                  className="
-                    rounded
-                    border
-                    border-[var(--color-border-subtle)]
-                    bg-[var(--color-bg-elevated)]
-                    px-2
-                    py-1
-                    text-[9px]
-                    font-mono
-                    uppercase
-                    text-[var(--color-text-muted)]
-                  "
-                >
-                  {size}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
+      </div>
+
+      {/* CONTENT */}
+
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        {item?.description && (
+          <p
+            className="
+              line-clamp-2
+              text-[12px]
+              leading-6
+              text-[var(--muted)]
+              sm:text-[13px]
+            "
+          >
+            {item.description}
+          </p>
+        )}
+
+        {/* SIZES */}
+
+        {sizeBadges.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {sizeBadges.map((size, i) => (
+              <span
+                key={`${size}-${i}`}
+                className="
+                  rounded-md
+                  border
+                  border-[var(--border)]
+                  bg-[var(--bg)]
+                  px-2
+                  py-1
+                  text-[9px]
+                  font-medium
+                  uppercase
+                  tracking-wide
+                  text-[var(--muted)]
+                "
+              >
+                {size}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* FOOTER */}
+
         <div
           className="
             mt-auto
@@ -518,9 +523,8 @@ function MenuCard({
             justify-between
             gap-3
             border-t
-            border-[var(--color-border-subtle)]
+            border-[var(--border)]
             pt-4
-            mt-5
           "
         >
           <div className="flex min-w-0 items-baseline gap-2">
@@ -531,7 +535,7 @@ function MenuCard({
                   truncate
                   text-base
                   font-bold
-                  text-[var(--color-text-bright)]
+                  text-[var(--text)]
                 "
               />
             )}
@@ -542,7 +546,7 @@ function MenuCard({
                 className="
                   shrink-0
                   text-xs
-                  text-[var(--color-text-muted)]
+                  text-[var(--muted)]
                   line-through
                 "
               />
@@ -558,18 +562,18 @@ function MenuCard({
             aria-label={`Order ${item?.name || "dish"}`}
             className="
               flex
-              h-9
-              w-9
+              h-10
+              w-10
               shrink-0
               items-center
               justify-center
               rounded-full
-              bg-[var(--color-accent)]
-              text-[var(--color-text-bright)]
+              bg-[var(--primary)]
+              text-white
               transition-all
               duration-200
               hover:scale-105
-              hover:bg-[var(--color-accent-hover)]
+              hover:bg-[var(--primary-hover)]
             "
           >
             <FiPlus className="text-base" />
@@ -592,8 +596,18 @@ function ProductSwiper({
 }) {
   if (!products?.length) {
     return (
-      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-6 py-12 text-center">
-        <p className="text-sm text-[var(--color-text-muted)]">
+      <div
+        className="
+          rounded-2xl
+          border
+          border-[var(--border)]
+          bg-[var(--card)]
+          px-6
+          py-12
+          text-center
+        "
+      >
+        <p className="text-sm text-[var(--muted)]">
           No dishes available right now.
         </p>
       </div>
@@ -604,17 +618,17 @@ function ProductSwiper({
     <div className="relative w-full overflow-hidden">
       <Swiper
         modules={[Autoplay, Pagination]}
-        slidesPerView={1.15}
+        slidesPerView={1.08}
         spaceBetween={14}
         breakpoints={swiperBreakpoints}
         autoplay={
           reduceMotion
             ? false
             : {
-              delay: 5000,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: true,
-            }
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }
         }
         pagination={{
           clickable: true,
@@ -696,9 +710,9 @@ export default function Home() {
         min-h-screen
         w-full
         overflow-x-hidden
-        bg-[var(--color-bg-primary)]
+        bg-[var(--bg)]
         font-sans
-        text-[var(--color-text-main)]
+        text-[var(--text)]
         antialiased
       "
     >
@@ -708,7 +722,6 @@ export default function Home() {
 
       <section className="mx-auto max-w-[1280px] px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:px-10 lg:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-          {/* LEFT */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -716,7 +729,7 @@ export default function Home() {
             variants={variant}
           >
             <div className="mb-5 flex items-center gap-3">
-              <span className="h-px w-8 bg-[var(--color-accent)]" />
+              <span className="h-px w-8 bg-[var(--accent)]" />
 
               <span
                 className="
@@ -724,7 +737,7 @@ export default function Home() {
                   font-semibold
                   uppercase
                   tracking-[0.2em]
-                  text-[var(--color-accent)]
+                  text-[var(--accent)]
                 "
               >
                 Fresh every day
@@ -737,7 +750,7 @@ export default function Home() {
                 font-serif
                 text-[38px]
                 leading-[1.04]
-                text-[var(--color-text-bright)]
+                text-[var(--text)]
                 sm:text-[50px]
                 lg:text-[58px]
               "
@@ -751,7 +764,7 @@ export default function Home() {
                 max-w-xl
                 text-[14px]
                 leading-7
-                text-[var(--color-text-muted)]
+                text-[var(--muted)]
                 sm:text-[15px]
               "
             >
@@ -766,17 +779,16 @@ export default function Home() {
                 onClick={() => navigate("/menu")}
                 className="
                   rounded-md
-                  bg-[var(--color-accent)]
+                  bg-[var(--primary)]
                   px-6
                   py-3
                   text-[13px]
                   font-semibold
-                  text-[var(--color-text-bright)]
-                  shadow-sm
+                  text-white
                   transition-all
                   duration-200
                   hover:-translate-y-0.5
-                  hover:bg-[var(--color-accent-hover)]
+                  hover:bg-[var(--primary-hover)]
                 "
               >
                 View the menu
@@ -788,16 +800,16 @@ export default function Home() {
                 className="
                   rounded-md
                   border
-                  border-[var(--color-border-subtle)]
+                  border-[var(--border)]
                   px-6
                   py-3
                   text-[13px]
                   font-semibold
-                  text-[var(--color-text-main)]
+                  text-[var(--text)]
                   transition-all
                   duration-200
-                  hover:border-[var(--color-accent)]
-                  hover:text-[var(--color-accent)]
+                  hover:border-[var(--accent)]
+                  hover:text-[var(--accent)]
                 "
               >
                 Today's specials
@@ -805,7 +817,6 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* RIGHT */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -820,9 +831,9 @@ export default function Home() {
                 overflow-hidden
                 rounded-2xl
                 border
-                border-[var(--color-border-subtle)]
-                bg-[var(--color-bg-surface)]
-                shadow-2xl
+                border-[var(--border)]
+                bg-[var(--card)]
+                shadow-[var(--shadow)]
               "
             >
               <video
@@ -839,7 +850,6 @@ export default function Home() {
               <div className="absolute inset-0 bg-black/10" />
             </div>
 
-            {/* TICKET */}
             <div
               className="
                 absolute
@@ -848,10 +858,10 @@ export default function Home() {
                 w-[220px]
                 rounded-xl
                 border
-                border-[var(--color-border-subtle)]
-                bg-[var(--color-bg-surface)]/95
+                border-[var(--border)]
+                bg-[var(--glass)]
                 p-4
-                shadow-2xl
+                shadow-[var(--shadow)]
                 backdrop-blur-xl
                 sm:-left-8
                 sm:w-[250px]
@@ -862,7 +872,7 @@ export default function Home() {
                   mb-3
                   border-b
                   border-dashed
-                  border-[var(--color-border-subtle)]
+                  border-[var(--border)]
                   pb-2
                 "
               >
@@ -872,7 +882,7 @@ export default function Home() {
                     font-semibold
                     uppercase
                     tracking-[0.16em]
-                    text-[var(--color-text-muted)]
+                    text-[var(--muted)]
                   "
                 >
                   Tonight's special
@@ -884,13 +894,13 @@ export default function Home() {
                   font-serif
                   text-[15px]
                   leading-snug
-                  text-[var(--color-text-bright)]
+                  text-[var(--text)]
                 "
               >
                 Butter-poached lobster, charred corn
               </p>
 
-              <div className="mt-2 text-sm font-semibold text-[var(--color-accent)]">
+              <div className="mt-2 text-sm font-semibold text-[var(--accent)]">
                 <Currency amount={40} />
               </div>
             </div>
@@ -905,8 +915,8 @@ export default function Home() {
       <section
         className="
           border-y
-          border-[var(--color-border-subtle)]
-          bg-[var(--color-bg-surface)]
+          border-[var(--border)]
+          bg-[var(--card)]
         "
       >
         <div className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 sm:py-14 lg:px-10">
@@ -932,7 +942,7 @@ export default function Home() {
                       mt-0.5
                       shrink-0
                       text-lg
-                      text-[var(--color-accent)]
+                      text-[var(--accent)]
                     "
                   />
 
@@ -941,7 +951,7 @@ export default function Home() {
                       className="
                         text-[14px]
                         font-semibold
-                        text-[var(--color-text-bright)]
+                        text-[var(--text)]
                       "
                     >
                       {item.title}
@@ -952,7 +962,7 @@ export default function Home() {
                         mt-1
                         text-[13px]
                         leading-relaxed
-                        text-[var(--color-text-muted)]
+                        text-[var(--muted)]
                       "
                     >
                       {item.description}
@@ -992,8 +1002,8 @@ export default function Home() {
                   animate-pulse
                   rounded-xl
                   border
-                  border-[var(--color-border-subtle)]
-                  bg-[var(--color-bg-surface)]
+                  border-[var(--border)]
+                  bg-[var(--card)]
                 "
               />
             ))}
@@ -1012,7 +1022,6 @@ export default function Home() {
                 }}
                 variants={variant}
                 onClick={() => navigate(`/collections/${item._id}`)}
-
                 className="
                   group
                   relative
@@ -1021,12 +1030,13 @@ export default function Home() {
                   overflow-hidden
                   rounded-xl
                   border
-                  border-[var(--color-border-subtle)]
-                  bg-[var(--color-bg-surface)]
+                  border-[var(--border)]
+                  bg-[var(--card)]
                   transition-all
                   duration-300
                   hover:-translate-y-1
-                  hover:border-[var(--color-accent)]
+                  hover:border-[var(--accent)]
+                  hover:shadow-[var(--shadow)]
                 "
               >
                 <img
@@ -1086,7 +1096,7 @@ export default function Home() {
                       shrink-0
                       text-white/60
                       transition-colors
-                      group-hover:text-[var(--color-accent)]
+                      group-hover:text-[var(--accent)]
                     "
                   />
                 </div>
@@ -1117,8 +1127,8 @@ export default function Home() {
                   animate-pulse
                   rounded-xl
                   border
-                  border-[var(--color-border-subtle)]
-                  bg-[var(--color-bg-surface)]
+                  border-[var(--border)]
+                  bg-[var(--card)]
                 "
               />
             ))}
@@ -1145,8 +1155,8 @@ export default function Home() {
             overflow-hidden
             rounded-2xl
             border
-            border-[var(--color-border-subtle)]
-            bg-[var(--color-bg-surface)]
+            border-[var(--border)]
+            bg-[var(--card)]
             lg:grid-cols-2
           "
         >
@@ -1157,7 +1167,7 @@ export default function Home() {
                 font-semibold
                 uppercase
                 tracking-[0.18em]
-                text-[var(--color-accent)]
+                text-[var(--accent)]
               "
             >
               From our kitchen
@@ -1170,7 +1180,7 @@ export default function Home() {
                 font-serif
                 text-3xl
                 leading-tight
-                text-[var(--color-text-bright)]
+                text-[var(--text)]
                 sm:text-4xl
               "
             >
@@ -1183,7 +1193,7 @@ export default function Home() {
                 max-w-md
                 text-[14px]
                 leading-7
-                text-[var(--color-text-muted)]
+                text-[var(--muted)]
               "
             >
               Every plate starts when your order comes in. It takes
@@ -1197,16 +1207,16 @@ export default function Home() {
                 mt-8
                 w-fit
                 rounded-md
-                bg-[var(--color-accent)]
+                bg-[var(--primary)]
                 px-6
                 py-3
                 text-[13px]
                 font-semibold
-                text-[var(--color-text-bright)]
+                text-white
                 transition-all
                 duration-200
                 hover:-translate-y-0.5
-                hover:bg-[var(--color-accent-hover)]
+                hover:bg-[var(--primary-hover)]
               "
             >
               Reserve a table
@@ -1245,8 +1255,8 @@ export default function Home() {
                   animate-pulse
                   rounded-xl
                   border
-                  border-[var(--color-border-subtle)]
-                  bg-[var(--color-bg-surface)]
+                  border-[var(--border)]
+                  bg-[var(--card)]
                 "
               />
             ))}
@@ -1267,8 +1277,8 @@ export default function Home() {
       <section
         className="
           border-y
-          border-[var(--color-border-subtle)]
-          bg-[var(--color-bg-surface)]
+          border-[var(--border)]
+          bg-[var(--card)]
           py-20
         "
       >
@@ -1279,7 +1289,7 @@ export default function Home() {
               font-semibold
               uppercase
               tracking-[0.18em]
-              text-[var(--color-accent)]
+              text-[var(--accent)]
             "
           >
             Our philosophy
@@ -1291,7 +1301,7 @@ export default function Home() {
               font-serif
               text-3xl
               leading-snug
-              text-[var(--color-text-bright)]
+              text-[var(--text)]
               sm:text-4xl
             "
           >
@@ -1304,7 +1314,7 @@ export default function Home() {
               mt-5
               text-[14px]
               leading-7
-              text-[var(--color-text-muted)]
+              text-[var(--muted)]
             "
           >
             That means the menu changes with the season and, some
@@ -1320,9 +1330,9 @@ export default function Home() {
 
       <section
         className="
-          bg-[var(--color-accent)]
+          bg-[var(--primary)]
           py-20
-          text-[var(--color-text-bright)]
+          text-white
         "
       >
         <div className="mx-auto max-w-xl px-5 sm:px-8">
@@ -1332,7 +1342,7 @@ export default function Home() {
               font-semibold
               uppercase
               tracking-[0.18em]
-              opacity-70
+              text-white/70
             "
           >
             Stay in the loop
@@ -1342,7 +1352,7 @@ export default function Home() {
             Hear about new menus first.
           </h2>
 
-          <p className="mt-3 text-[14px] leading-7 opacity-80">
+          <p className="mt-3 text-[14px] leading-7 text-white/75">
             One email when the season changes. No specials spam,
             no daily blasts.
           </p>
@@ -1365,9 +1375,9 @@ export default function Home() {
                 px-4
                 py-3
                 text-sm
-                text-[var(--color-text-bright)]
+                text-white
                 outline-none
-                placeholder:text-[var(--color-text-bright)]/50
+                placeholder:text-white/50
                 focus:border-white/50
                 focus:ring-2
                 focus:ring-white/20
@@ -1378,15 +1388,15 @@ export default function Home() {
               type="submit"
               className="
                 rounded-md
-                bg-[var(--color-bg-primary)]
+                bg-[var(--card)]
                 px-6
                 py-3
                 text-[13px]
                 font-semibold
-                text-[var(--color-text-bright)]
+                text-[var(--text)]
                 transition-colors
                 duration-200
-                hover:bg-[var(--color-bg-surface)]
+                hover:bg-[var(--bg)]
               "
             >
               Subscribe
@@ -1424,22 +1434,20 @@ export default function Home() {
           justify-content: center;
         }
 
-        .home-products-swiper
-          .swiper-pagination-bullet {
+        .home-products-swiper .swiper-pagination-bullet {
           width: 6px;
           height: 6px;
           margin: 0 4px !important;
           opacity: 0.35;
-          background: var(--color-text-muted);
+          background: var(--muted);
           transition: all 0.25s ease;
         }
 
-        .home-products-swiper
-          .swiper-pagination-bullet-active {
+        .home-products-swiper .swiper-pagination-bullet-active {
           width: 20px;
           border-radius: 999px;
           opacity: 1;
-          background: var(--color-accent);
+          background: var(--accent);
         }
 
         @media (max-width: 640px) {
@@ -1498,10 +1506,10 @@ function TrustItem({ item, index }) {
             overflow-hidden
             rounded-md
             border
-            border-[var(--color-border-subtle)]
+            border-[var(--border)]
             transition-colors
             duration-200
-            hover:border-[var(--color-accent)]
+            hover:border-[var(--accent)]
           "
         >
           <img
@@ -1516,7 +1524,7 @@ function TrustItem({ item, index }) {
           className="
             text-[14px]
             font-medium
-            text-[var(--color-text-bright)]
+            text-[var(--text)]
           "
         >
           {item?.title}
@@ -1585,25 +1593,25 @@ function TrustSection() {
       <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="
+              <div
+                key={i}
+                className="
                   h-12
                   animate-pulse
                   rounded-md
                   border
-                  border-[var(--color-border-subtle)]
-                  bg-[var(--color-bg-surface)]
+                  border-[var(--border)]
+                  bg-[var(--card)]
                 "
-            />
-          ))
+              />
+            ))
           : trustItems.map((item, index) => (
-            <TrustItem
-              key={item?._id || index}
-              item={item}
-              index={index}
-            />
-          ))}
+              <TrustItem
+                key={item?._id || index}
+                item={item}
+                index={index}
+              />
+            ))}
       </div>
     </section>
   );
