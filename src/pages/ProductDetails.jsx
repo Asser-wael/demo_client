@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  Link,
+} from "react-router-dom";
 import { motion } from "framer-motion";
+
 import {
   FiStar,
   FiUser,
@@ -15,35 +20,52 @@ import {
   addReview,
 } from "../features/products/productSlice";
 
-import { 
-  addToCart, 
-  selectBuyNowItem, // Changed from BuyNowitem
-  selectCartActionLoading, 
-  setBuyNowItem
+import {
+  addToCart,
+  selectCartActionLoading,
+  setBuyNowItem,
 } from "../features/cart/cartSlice";
 
 import Loading from "../components/common/Loading";
 
-/* =========================================================
-   CURRENCY COMPONENT
-========================================================= */
+// =========================================================
+// CURRENCY
+// =========================================================
 
-function Currency({ amount, className = "" }) {
-  if (amount === null || amount === undefined || isNaN(Number(amount))) {
-    return <span className={className}>NZ$ —</span>;
+function Currency({
+  amount,
+  className = "",
+}) {
+  if (
+    amount === null ||
+    amount === undefined ||
+    isNaN(Number(amount))
+  ) {
+    return (
+      <span className={className}>
+        NZ$ —
+      </span>
+    );
   }
 
-  const formatted = Number(amount).toLocaleString("en-NZ", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formatted = Number(amount).toLocaleString(
+    "en-NZ",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }
+  );
 
-  return <span className={className}>NZ$ {formatted}</span>;
+  return (
+    <span className={className}>
+      NZ$ {formatted}
+    </span>
+  );
 }
 
-/* =========================================================
-   ANIMATION
-========================================================= */
+// =========================================================
+// ANIMATION
+// =========================================================
 
 const fadeUp = {
   hidden: {
@@ -54,6 +76,7 @@ const fadeUp = {
   visible: (index = 0) => ({
     opacity: 1,
     y: 0,
+
     transition: {
       duration: 0.55,
       delay: index * 0.08,
@@ -62,17 +85,22 @@ const fadeUp = {
   }),
 };
 
-/* =========================================================
-   HELPERS
-========================================================= */
+// =========================================================
+// HELPERS
+// =========================================================
 
 const getSizePrice = (size) => {
   if (!size) return 0;
 
   const price = Number(size.price ?? 0);
-  const offerPrice = Number(size.offerPrice ?? 0);
+  const offerPrice = Number(
+    size.offerPrice ?? 0
+  );
 
-  if (offerPrice > 0 && offerPrice < price) {
+  if (
+    offerPrice > 0 &&
+    offerPrice < price
+  ) {
     return offerPrice;
   }
 
@@ -98,18 +126,31 @@ const getMinPrice = (product) => {
   let cheapest = sizes[0];
 
   sizes.forEach((size) => {
-    const currentPrice = getSizePrice(size);
-    const cheapestPrice = getSizePrice(cheapest);
+    const currentPrice =
+      getSizePrice(size);
 
-    if (currentPrice < cheapestPrice) {
+    const cheapestPrice =
+      getSizePrice(cheapest);
+
+    if (
+      currentPrice < cheapestPrice
+    ) {
       cheapest = size;
     }
   });
 
-  const price = Number(cheapest?.price ?? 0);
-  const offerPrice = Number(cheapest?.offerPrice ?? 0);
+  const price = Number(
+    cheapest?.price ?? 0
+  );
 
-  if (offerPrice > 0 && offerPrice < price) {
+  const offerPrice = Number(
+    cheapest?.offerPrice ?? 0
+  );
+
+  if (
+    offerPrice > 0 &&
+    offerPrice < price
+  ) {
     return {
       price: offerPrice,
       oldPrice: price,
@@ -122,81 +163,131 @@ const getMinPrice = (product) => {
   };
 };
 
-/* =========================================================
-   STAR RATING
-========================================================= */
+// =========================================================
+// STAR RATING
+// =========================================================
 
-function StarRating({ value = 0, size = "text-base" }) {
-  const roundedValue = Math.round(Number(value) || 0);
+function StarRating({
+  value = 0,
+  size = "text-base",
+}) {
+  const roundedValue = Math.round(
+    Number(value) || 0
+  );
 
   return (
     <div
       className={`flex items-center gap-0.5 text-primary ${size}`}
       aria-label={`Rating ${roundedValue} out of 5`}
     >
-      {[1, 2, 3, 4, 5].map((star) => (
-        <FiStar
-          key={star}
-          className={star <= roundedValue ? "fill-current" : ""}
-        />
-      ))}
+      {[1, 2, 3, 4, 5].map(
+        (star) => (
+          <FiStar
+            key={star}
+            className={
+              star <= roundedValue
+                ? "fill-current"
+                : ""
+            }
+          />
+        )
+      )}
     </div>
   );
 }
 
-/* =========================================================
-   STAR PICKER
-========================================================= */
+// =========================================================
+// STAR PICKER
+// =========================================================
 
-function StarPicker({ value, onChange }) {
-  const [hover, setHover] = useState(0);
+function StarPicker({
+  value,
+  onChange,
+}) {
+  const [hover, setHover] =
+    useState(0);
 
   return (
     <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => {
-        const active = star <= (hover || value);
+      {[1, 2, 3, 4, 5].map(
+        (star) => {
+          const active =
+            star <=
+            (hover || value);
 
-        return (
-          <button
-            key={star}
-            type="button"
-            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
-            onClick={() => onChange(star)}
-            onMouseEnter={() => setHover(star)}
-            onMouseLeave={() => setHover(0)}
-            className="text-2xl text-primary transition-transform hover:scale-110"
-          >
-            <FiStar className={active ? "fill-current" : ""} />
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={star}
+              type="button"
+              aria-label={`Rate ${star} star${
+                star > 1 ? "s" : ""
+              }`}
+              onClick={() =>
+                onChange(star)
+              }
+              onMouseEnter={() =>
+                setHover(star)
+              }
+              onMouseLeave={() =>
+                setHover(0)
+              }
+              className="text-2xl text-primary transition-transform hover:scale-110"
+            >
+              <FiStar
+                className={
+                  active
+                    ? "fill-current"
+                    : ""
+                }
+              />
+            </button>
+          );
+        }
+      )}
     </div>
   );
 }
 
-/* =========================================================
-   DISH CARD
-========================================================= */
+// =========================================================
+// DISH CARD
+// =========================================================
 
-function DishCard({ item, index }) {
-  const navigate = useNavigate();
-  const { price, oldPrice } = getMinPrice(item);
+function DishCard({
+  item,
+  index,
+}) {
+  const navigate =
+    useNavigate();
+
+  const {
+    price,
+    oldPrice,
+  } = getMinPrice(item);
 
   return (
     <motion.div
       custom={index}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
+      viewport={{
+        once: true,
+        amount: 0.3,
+      }}
       variants={fadeUp}
-      onClick={() => navigate(`/products/${item._id}`)}
+      onClick={() =>
+        navigate(
+          `/products/${item._id}`
+        )
+      }
       className="card group flex w-48 flex-shrink-0 cursor-pointer flex-col overflow-hidden sm:w-56"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-bg">
         {item?.image ? (
           <img
             src={item.image}
-            alt={item.name || "Dish"}
+            alt={
+              item.name || "Dish"
+            }
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         ) : (
@@ -213,13 +304,21 @@ function DishCard({ item, index }) {
 
         <div className="flex items-center gap-2">
           {price !== null ? (
-            <Currency amount={price} className="text-sm font-semibold text-text" />
+            <Currency
+              amount={price}
+              className="text-sm font-semibold text-text"
+            />
           ) : (
-            <span className="text-sm text-muted">Price unavailable</span>
+            <span className="text-sm text-muted">
+              Price unavailable
+            </span>
           )}
 
           {oldPrice !== null && (
-            <Currency amount={oldPrice} className="text-xs text-muted line-through" />
+            <Currency
+              amount={oldPrice}
+              className="text-xs text-muted line-through"
+            />
           )}
         </div>
       </div>
@@ -227,81 +326,131 @@ function DishCard({ item, index }) {
   );
 }
 
-/* =========================================================
-   MENU RAIL
-========================================================= */
+// =========================================================
+// MENU RAIL
+// =========================================================
 
-function MenuRail({ title, subtitle, items }) {
-  if (!Array.isArray(items) || !items.length) {
+function MenuRail({
+  title,
+  subtitle,
+  items,
+}) {
+  if (
+    !Array.isArray(items) ||
+    !items.length
+  ) {
     return null;
   }
 
   return (
     <section className="mx-auto max-w-6xl px-6 pb-16">
       <div className="mb-6 flex items-baseline justify-between gap-4 border-b border-border pb-4">
-        <h2 className="font-serif text-2xl text-text">{title}</h2>
+        <h2 className="font-serif text-2xl text-text">
+          {title}
+        </h2>
 
         {subtitle && (
-          <p className="text-sm text-muted">{subtitle}</p>
+          <p className="text-sm text-muted">
+            {subtitle}
+          </p>
         )}
       </div>
 
       <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2 scrollbar-thin">
-        {items.map((item, index) => (
-          <DishCard key={item._id} item={item} index={index} />
-        ))}
+        {items.map(
+          (item, index) => (
+            <DishCard
+              key={item._id}
+              item={item}
+              index={index}
+            />
+          )
+        )}
       </div>
     </section>
   );
 }
 
-/* =========================================================
-   REVIEWS
-========================================================= */
+// =========================================================
+// REVIEWS
+// =========================================================
 
-function ReviewsSection({ product, productId }) {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth?.user);
+function ReviewsSection({
+  product,
+  productId,
+}) {
+  const dispatch =
+    useDispatch();
 
-  const reviewLoading = useSelector(
-    (state) => state.products?.reviewLoading
+  const user = useSelector(
+    (state) =>
+      state.auth?.user
   );
 
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
+  const reviewLoading =
+    useSelector(
+      (state) =>
+        state.products
+          ?.reviewLoading
+    );
 
-  const reviews = Array.isArray(product?.reviews) ? product.reviews : [];
+  const [rating, setRating] =
+    useState(0);
 
-  const handleSubmit = async (e) => {
+  const [comment, setComment] =
+    useState("");
+
+  const reviews = Array.isArray(
+    product?.reviews
+  )
+    ? product.reviews
+    : [];
+
+  const handleSubmit = async (
+    e
+  ) => {
     e.preventDefault();
-    const cleanComment = comment.trim();
 
-    if (!rating || !cleanComment || reviewLoading) {
+    const cleanComment =
+      comment.trim();
+
+    if (
+      !rating ||
+      !cleanComment ||
+      reviewLoading
+    ) {
       return;
     }
 
-    const result = await dispatch(
-      addReview({
-        productId,
-        rating,
-        comment: cleanComment,
-      })
-    );
+    const result =
+      await dispatch(
+        addReview({
+          productId,
+          rating,
+          comment:
+            cleanComment,
+        })
+      );
 
-    if (addReview.fulfilled.match(result)) {
+    if (
+      addReview.fulfilled.match(
+        result
+      )
+    ) {
       setRating(0);
       setComment("");
     }
   };
 
-  const averageRating = Number(product?.rating || 0);
-  const reviewsCount = Number(
-    product?.numReviews || reviews.length || 0
+  const averageRating = Number(
+    product?.rating || 0
   );
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  const reviewsCount = Number(
+    product?.numReviews ||
+      reviews.length ||
+      0
+  );
 
   return (
     <section className="mx-auto max-w-6xl px-6 pb-20">
@@ -313,11 +462,18 @@ function ReviewsSection({ product, productId }) {
             </h2>
 
             <div className="mt-3 flex items-center gap-2">
-              <StarRating value={averageRating} />
+              <StarRating
+                value={averageRating}
+              />
 
               <span className="text-sm text-muted">
-                {averageRating.toFixed(1)} · {reviewsCount}{" "}
-                {reviewsCount === 1 ? "review" : "reviews"}
+                {averageRating.toFixed(
+                  1
+                )}{" "}
+                · {reviewsCount}{" "}
+                {reviewsCount === 1
+                  ? "review"
+                  : "reviews"}
               </span>
             </div>
           </div>
@@ -325,13 +481,23 @@ function ReviewsSection({ product, productId }) {
 
         <div className="mb-8 rounded-2xl border border-border p-6">
           {user ? (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form
+              onSubmit={
+                handleSubmit
+              }
+              className="flex flex-col gap-4"
+            >
               <div>
                 <label className="mb-2 block text-sm font-semibold text-text">
                   Rate this dish
                 </label>
 
-                <StarPicker value={rating} onChange={setRating} />
+                <StarPicker
+                  value={rating}
+                  onChange={
+                    setRating
+                  }
+                />
               </div>
 
               <div>
@@ -341,7 +507,11 @@ function ReviewsSection({ product, productId }) {
 
                 <textarea
                   value={comment}
-                  onChange={(e) => setComment(e.target.value)}
+                  onChange={(e) =>
+                    setComment(
+                      e.target.value
+                    )
+                  }
                   rows={3}
                   maxLength={1000}
                   placeholder="How was the taste, portion, and presentation?"
@@ -355,10 +525,16 @@ function ReviewsSection({ product, productId }) {
 
               <button
                 type="submit"
-                disabled={reviewLoading || !rating || !comment.trim()}
+                disabled={
+                  reviewLoading ||
+                  !rating ||
+                  !comment.trim()
+                }
                 className="btn-primary self-start rounded-xl px-6 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {reviewLoading ? "Submitting..." : "Submit Review"}
+                {reviewLoading
+                  ? "Submitting..."
+                  : "Submit Review"}
               </button>
             </form>
           ) : (
@@ -387,10 +563,18 @@ function ReviewsSection({ product, productId }) {
               .slice()
               .sort(
                 (a, b) =>
-                  new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+                  new Date(
+                    b.createdAt || 0
+                  ) -
+                  new Date(
+                    a.createdAt || 0
+                  )
               )
               .map((review) => (
-                <div key={review._id} className="py-5 first:pt-0 last:pb-0">
+                <div
+                  key={review._id}
+                  className="py-5 first:pt-0 last:pb-0"
+                >
                   <div className="mb-2 flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-border text-muted">
                       <FiUser />
@@ -398,18 +582,28 @@ function ReviewsSection({ product, productId }) {
 
                     <div>
                       <span className="block text-sm font-semibold text-text">
-                        {review.name || review.user?.name || "Guest"}
+                        {review.name ||
+                          review.user
+                            ?.name ||
+                          "Guest"}
                       </span>
 
                       <span className="text-xs text-muted">
                         {review.createdAt
-                          ? new Date(review.createdAt).toLocaleDateString()
+                          ? new Date(
+                              review.createdAt
+                            ).toLocaleDateString()
                           : ""}
                       </span>
                     </div>
 
                     <div className="ml-auto">
-                      <StarRating value={review.rating} size="text-sm" />
+                      <StarRating
+                        value={
+                          review.rating
+                        }
+                        size="text-sm"
+                      />
                     </div>
                   </div>
 
@@ -425,42 +619,87 @@ function ReviewsSection({ product, productId }) {
   );
 }
 
-/* =========================================================
-   PRODUCT DETAILS
-========================================================= */
+// =========================================================
+// PRODUCT DETAILS
+// =========================================================
 
 export default function ProductDetails() {
-  const { id } = useParams();
+  const { id } =
+    useParams();
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch =
+    useDispatch();
 
-  const { productDetails, detailsLoading } = useSelector(
+  const navigate =
+    useNavigate();
+
+  const {
+    productDetails,
+    detailsLoading,
+  } = useSelector(
     (state) => state.products
   );
 
-  const currentProduct = productDetails?.product || null;
-  const relatedProducts = productDetails?.relatedProducts || [];
-  const differentProducts = productDetails?.differentProducts || [];
+  const currentProduct =
+    productDetails?.product ||
+    null;
 
-  const cartActionLoading = useSelector(selectCartActionLoading);
+  const relatedProducts =
+    productDetails?.relatedProducts ||
+    [];
 
-  const [color, setColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [quantity, setQuantity] = useState(1);
+  const differentProducts =
+    productDetails?.differentProducts ||
+    [];
+
+  const cartActionLoading =
+    useSelector(
+      selectCartActionLoading
+    );
+
+  const [color, setColor] =
+    useState(null);
+
+  const [
+    selectedSize,
+    setSelectedSize,
+  ] = useState(null);
+
+  const [quantity, setQuantity] =
+    useState(1);
+
+  // ==========================================
+  // LOAD PRODUCT
+  // ==========================================
 
   useEffect(() => {
     if (id) {
-      dispatch(getProductDetails(id));
+      dispatch(
+        getProductDetails(id)
+      );
     }
   }, [dispatch, id]);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [id]);
+  // ==========================================
+  // SCROLL
+  // ==========================================
 
   useEffect(() => {
-    if (!currentProduct?.variants?.length) {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [id]);
+
+  // ==========================================
+  // DEFAULT VARIANT
+  // ==========================================
+
+  useEffect(() => {
+    if (
+      !currentProduct?.variants
+        ?.length
+    ) {
       setColor(null);
       setSelectedSize(null);
       setQuantity(1);
@@ -468,34 +707,72 @@ export default function ProductDetails() {
     }
 
     const firstAvailableVariant =
-      currentProduct.variants.find((variant) =>
-        variant?.sizes?.some((size) => Number(size?.stock || 0) > 0)
-      ) || currentProduct.variants[0];
+      currentProduct.variants.find(
+        (variant) =>
+          variant?.sizes?.some(
+            (size) =>
+              Number(
+                size?.stock || 0
+              ) > 0
+          )
+      ) ||
+      currentProduct.variants[0];
 
     const firstAvailableSize =
       firstAvailableVariant?.sizes?.find(
-        (size) => Number(size?.stock || 0) > 0
+        (size) =>
+          Number(
+            size?.stock || 0
+          ) > 0
       ) || null;
 
-    setColor(firstAvailableVariant);
-    setSelectedSize(firstAvailableSize);
+    setColor(
+      firstAvailableVariant
+    );
+
+    setSelectedSize(
+      firstAvailableSize
+    );
+
     setQuantity(1);
   }, [currentProduct]);
 
+  // ==========================================
+  // STOCK
+  // ==========================================
+
   useEffect(() => {
-    const stock = Number(selectedSize?.stock || 0);
+    const stock = Number(
+      selectedSize?.stock || 0
+    );
 
     if (stock <= 0) {
       setQuantity(1);
       return;
     }
 
-    setQuantity((prev) => Math.min(Math.max(Number(prev) || 1, 1), stock));
+    setQuantity((prev) =>
+      Math.min(
+        Math.max(
+          Number(prev) || 1,
+          1
+        ),
+        stock
+      )
+    );
   }, [selectedSize]);
+
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (detailsLoading) {
     return <Loading />;
   }
+
+  // ==========================================
+  // NOT FOUND
+  // ==========================================
 
   if (!currentProduct) {
     return (
@@ -505,63 +782,149 @@ export default function ProductDetails() {
     );
   }
 
-  const stock = Number(selectedSize?.stock || 0);
-  const isOutOfStock = !selectedSize || stock <= 0;
-  const price = Number(selectedSize?.price ?? 0);
-  const offerPrice = Number(selectedSize?.offerPrice ?? 0);
-  const hasOffer = offerPrice > 0 && offerPrice < price;
-  const finalPrice = hasOffer ? offerPrice : price;
+  // ==========================================
+  // PRICE
+  // ==========================================
 
-  const decreaseQuantity = () => {
-    setQuantity((prev) => Math.max(1, prev - 1));
-  };
+  const stock = Number(
+    selectedSize?.stock || 0
+  );
 
-  const increaseQuantity = () => {
-    if (isOutOfStock) return;
-    setQuantity((prev) => Math.min(stock, prev + 1));
-  };
+  const isOutOfStock =
+    !selectedSize ||
+    stock <= 0;
 
-  const changeColor = (variant) => {
+  const price = Number(
+    selectedSize?.price ?? 0
+  );
+
+  const offerPrice = Number(
+    selectedSize?.offerPrice ?? 0
+  );
+
+  const hasOffer =
+    offerPrice > 0 &&
+    offerPrice < price;
+
+  const finalPrice = hasOffer
+    ? offerPrice
+    : price;
+
+  // ==========================================
+  // QUANTITY
+  // ==========================================
+
+  const decreaseQuantity =
+    () => {
+      setQuantity((prev) =>
+        Math.max(1, prev - 1)
+      );
+    };
+
+  const increaseQuantity =
+    () => {
+      if (isOutOfStock) return;
+
+      setQuantity((prev) =>
+        Math.min(
+          stock,
+          prev + 1
+        )
+      );
+    };
+
+  // ==========================================
+  // CHANGE VARIANT
+  // ==========================================
+
+  const changeColor = (
+    variant
+  ) => {
     if (!variant) return;
+
     setColor(variant);
 
     const firstAvailableSize =
-      variant?.sizes?.find((size) => Number(size?.stock || 0) > 0) || null;
+      variant?.sizes?.find(
+        (size) =>
+          Number(
+            size?.stock || 0
+          ) > 0
+      ) || null;
 
-    setSelectedSize(firstAvailableSize);
+    setSelectedSize(
+      firstAvailableSize
+    );
+
     setQuantity(1);
   };
 
-  const changeSize = (size) => {
+  // ==========================================
+  // CHANGE SIZE
+  // ==========================================
+
+  const changeSize = (
+    size
+  ) => {
     if (!size) return;
-    if (Number(size.stock || 0) <= 0) return;
+
+    if (
+      Number(size.stock || 0) <=
+      0
+    ) {
+      return;
+    }
 
     setSelectedSize(size);
     setQuantity(1);
   };
 
-  const isValidSelection = Boolean(
-    currentProduct?._id &&
-      color?.color?.name &&
-      selectedSize?.size &&
-      !isOutOfStock
-  );
+  // ==========================================
+  // VALID SELECTION
+  // ==========================================
 
-  const handleAddToCart = () => {
-    if (!isValidSelection) return;
-
-    dispatch(
-      addToCart({
-        productId: currentProduct._id,
-        color: color.color.name,
-        size: selectedSize.size,
-        quantity,
-      })
+  const isValidSelection =
+    Boolean(
+      currentProduct?._id &&
+        color?.color?.name &&
+        selectedSize?.size &&
+        !isOutOfStock
     );
-  };
+
+  // ==========================================
+  // ADD TO CART
+  // ==========================================
+
+  const handleAddToCart =
+    () => {
+      if (
+        !isValidSelection ||
+        cartActionLoading
+      ) {
+        return;
+      }
+
+      dispatch(
+        addToCart({
+          productId:
+            currentProduct._id,
+          color:
+            color.color.name,
+          size:
+            selectedSize.size,
+          quantity,
+        })
+      );
+    };
+
+  // ==========================================
+  // BUY NOW
+  // ==========================================
 
   const handleBuyNow = () => {
-    if (!isValidSelection) return;
+    if (!isValidSelection) {
+      return;
+    }
 
     dispatch(
       setBuyNowItem({
@@ -570,13 +933,29 @@ export default function ProductDetails() {
           name: currentProduct.name,
           image: currentProduct.image,
         },
-        productId: currentProduct._id,
-        name: currentProduct.name,
-        image: currentProduct.image,
-        color: color.color.name,
-        size: selectedSize.size,
+
+        productId:
+          currentProduct._id,
+
+        name:
+          currentProduct.name,
+
+        image:
+          currentProduct.image,
+
+        color:
+          color.color.name,
+
+        size:
+          selectedSize.size,
+
         price: finalPrice,
-        offerPrice: hasOffer ? offerPrice : null,
+
+        offerPrice:
+          hasOffer
+            ? offerPrice
+            : null,
+
         quantity,
       })
     );
@@ -586,17 +965,26 @@ export default function ProductDetails() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
+
       {/* BREADCRUMB */}
+
       <div className="mx-auto max-w-6xl px-6 pt-6">
         <div className="text-sm text-muted">
-          Menu / {currentProduct.category?.name || "Dishes"} /{" "}
+          Menu /{" "}
+          {currentProduct.category
+            ?.name ||
+            "Dishes"}{" "}
+          /{" "}
           {currentProduct.name}
         </div>
       </div>
 
-      {/* DISH HERO */}
+      {/* HERO */}
+
       <section className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 py-8 lg:grid-cols-[1fr_1fr_0.85fr]">
+
         {/* IMAGE */}
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -607,8 +995,12 @@ export default function ProductDetails() {
           <div className="aspect-[4/3] overflow-hidden rounded-xl bg-bg">
             {currentProduct.image ? (
               <img
-                src={currentProduct.image}
-                alt={currentProduct.name}
+                src={
+                  currentProduct.image
+                }
+                alt={
+                  currentProduct.name
+                }
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -620,6 +1012,7 @@ export default function ProductDetails() {
         </motion.div>
 
         {/* DETAILS */}
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -628,7 +1021,9 @@ export default function ProductDetails() {
           className="py-2"
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1 text-xs text-primary">
-            {currentProduct.category?.name || "Chef's Special"}
+            {currentProduct
+              .category?.name ||
+              "Chef's Special"}
           </span>
 
           <h1 className="mt-5 font-serif text-4xl leading-tight text-text sm:text-5xl">
@@ -636,91 +1031,153 @@ export default function ProductDetails() {
           </h1>
 
           <div className="mt-4 flex items-center gap-3">
-            <StarRating value={currentProduct.rating || 0} />
+            <StarRating
+              value={
+                currentProduct.rating ||
+                0
+              }
+            />
+
             <span className="text-sm text-muted">
               {currentProduct.numReviews
-                ? `${Number(currentProduct.rating || 0).toFixed(1)} (${
-                    currentProduct.numReviews
-                  } reviews)`
+                ? `${Number(
+                    currentProduct.rating ||
+                      0
+                  ).toFixed(
+                    1
+                  )} (${currentProduct.numReviews} reviews)`
                 : "No ratings yet"}
             </span>
           </div>
 
           <p className="mt-6 max-w-md leading-8 text-muted">
-            {currentProduct.description}
+            {
+              currentProduct.description
+            }
           </p>
 
           {/* PREPARATION */}
-          {currentProduct.variants?.length > 0 && (
+
+          {currentProduct
+            .variants?.length >
+            0 && (
             <div className="mt-8">
               <h3 className="mb-3 text-sm font-semibold text-text">
                 Preparation
               </h3>
 
               <div className="flex flex-wrap gap-2">
-                {currentProduct.variants.map((variant, index) => {
-                  const colorName = variant?.color?.name;
-                  if (!colorName) return null;
-                  const isSelected = color?.color?.name === colorName;
+                {currentProduct.variants.map(
+                  (
+                    variant,
+                    index
+                  ) => {
+                    const colorName =
+                      variant
+                        ?.color
+                        ?.name;
 
-                  return (
-                    <button
-                      key={`${colorName}-${index}`}
-                      type="button"
-                      onClick={() => changeColor(variant)}
-                      className={`rounded-full border px-4 py-2 text-sm transition-all ${
-                        isSelected
-                          ? "border-primary bg-primary text-white"
-                          : "border-border text-text hover:border-primary"
-                      }`}
-                    >
-                      {colorName}
-                    </button>
-                  );
-                })}
+                    if (!colorName) {
+                      return null;
+                    }
+
+                    const isSelected =
+                      color
+                        ?.color
+                        ?.name ===
+                      colorName;
+
+                    return (
+                      <button
+                        key={`${colorName}-${index}`}
+                        type="button"
+                        onClick={() =>
+                          changeColor(
+                            variant
+                          )
+                        }
+                        className={`rounded-full border px-4 py-2 text-sm transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary text-white"
+                            : "border-border text-text hover:border-primary"
+                        }`}
+                      >
+                        {
+                          colorName
+                        }
+                      </button>
+                    );
+                  }
+                )}
               </div>
             </div>
           )}
 
           {/* PORTION */}
-          {color?.sizes?.length > 0 && (
+
+          {color?.sizes
+            ?.length > 0 && (
             <div className="mt-6">
               <h3 className="mb-3 text-sm font-semibold text-text">
                 Portion
               </h3>
 
               <div className="flex flex-wrap gap-2">
-                {color.sizes.map((size, index) => {
-                  const sizeName = size?.size;
-                  const isSelected = selectedSize?.size === sizeName;
-                  const outOfStock = Number(size?.stock || 0) <= 0;
+                {color.sizes.map(
+                  (
+                    size,
+                    index
+                  ) => {
+                    const sizeName =
+                      size?.size;
 
-                  return (
-                    <button
-                      key={`${sizeName}-${index}`}
-                      type="button"
-                      disabled={outOfStock}
-                      onClick={() => changeSize(size)}
-                      className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${
-                        isSelected
-                          ? "border-primary bg-primary text-white"
-                          : "border-border text-text hover:border-primary"
-                      } ${
-                        outOfStock
-                          ? "cursor-not-allowed opacity-40 line-through"
-                          : ""
-                      }`}
-                    >
-                      {sizeName}
-                    </button>
-                  );
-                })}
+                    const isSelected =
+                      selectedSize
+                        ?.size ===
+                      sizeName;
+
+                    const outOfStock =
+                      Number(
+                        size?.stock ||
+                          0
+                      ) <= 0;
+
+                    return (
+                      <button
+                        key={`${sizeName}-${index}`}
+                        type="button"
+                        disabled={
+                          outOfStock
+                        }
+                        onClick={() =>
+                          changeSize(
+                            size
+                          )
+                        }
+                        className={`rounded-xl border px-5 py-2.5 text-sm transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary text-white"
+                            : "border-border text-text hover:border-primary"
+                        } ${
+                          outOfStock
+                            ? "cursor-not-allowed opacity-40 line-through"
+                            : ""
+                        }`}
+                      >
+                        {
+                          sizeName
+                        }
+                      </button>
+                    );
+                  }
+                )}
               </div>
             </div>
           )}
         </motion.div>
 
         {/* ORDER CARD */}
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -728,21 +1185,38 @@ export default function ProductDetails() {
           variants={fadeUp}
           className="card h-fit p-6"
         >
-          <h3 className="mb-5 font-serif text-lg text-text">Your Order</h3>
+          <h3 className="mb-5 font-serif text-lg text-text">
+            Your Order
+          </h3>
 
           <div className="rounded-lg border border-border px-4 py-4">
+
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted">Preparation</span>
-              <span className="font-semibold">{color?.color?.name || "—"}</span>
+              <span className="text-sm text-muted">
+                Preparation
+              </span>
+
+              <span className="font-semibold">
+                {color?.color
+                  ?.name || "—"}
+              </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">Portion</span>
-              <span className="font-semibold">{selectedSize?.size || "—"}</span>
+              <span className="text-sm text-muted">
+                Portion
+              </span>
+
+              <span className="font-semibold">
+                {selectedSize
+                  ?.size || "—"}
+              </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">Price</span>
+              <span className="text-sm text-muted">
+                Price
+              </span>
 
               <div className="flex items-center gap-2">
                 {hasOffer && (
@@ -753,8 +1227,13 @@ export default function ProductDetails() {
                 )}
 
                 <span className="font-semibold text-primary">
-                  {finalPrice > 0 ? (
-                    <Currency amount={finalPrice} />
+                  {finalPrice >
+                  0 ? (
+                    <Currency
+                      amount={
+                        finalPrice
+                      }
+                    />
                   ) : (
                     "—"
                   )}
@@ -763,20 +1242,28 @@ export default function ProductDetails() {
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">Availability</span>
+              <span className="text-sm text-muted">
+                Availability
+              </span>
 
               <span
                 className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                  !isOutOfStock ? "text-green-600" : "text-red-500"
+                  !isOutOfStock
+                    ? "text-green-600"
+                    : "text-red-500"
                 }`}
               >
-                <FiClock className="text-sm" />
-                {!isOutOfStock ? `${stock} left today` : "Sold out today"}
+                <FiClock />
+
+                {!isOutOfStock
+                  ? `${stock} left today`
+                  : "Sold out today"}
               </span>
             </div>
           </div>
 
           {/* QUANTITY */}
+
           <div className="mt-6">
             <label className="mb-2 block text-sm font-semibold">
               Quantity
@@ -786,20 +1273,32 @@ export default function ProductDetails() {
               <button
                 type="button"
                 aria-label="Decrease quantity"
-                onClick={decreaseQuantity}
-                disabled={isOutOfStock || quantity <= 1}
+                onClick={
+                  decreaseQuantity
+                }
+                disabled={
+                  isOutOfStock ||
+                  quantity <= 1
+                }
                 className="text-lg transition hover:text-primary disabled:opacity-30"
               >
                 <FiMinus />
               </button>
 
-              <span className="font-semibold">{quantity}</span>
+              <span className="font-semibold">
+                {quantity}
+              </span>
 
               <button
                 type="button"
                 aria-label="Increase quantity"
-                onClick={increaseQuantity}
-                disabled={isOutOfStock || quantity >= stock}
+                onClick={
+                  increaseQuantity
+                }
+                disabled={
+                  isOutOfStock ||
+                  quantity >= stock
+                }
                 className="text-lg transition hover:text-primary disabled:opacity-30"
               >
                 <FiPlus />
@@ -807,11 +1306,17 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          {/* ADD TO CART */}
+          {/* ADD */}
+
           <button
             type="button"
-            onClick={handleAddToCart}
-            disabled={!isValidSelection || cartActionLoading}
+            onClick={
+              handleAddToCart
+            }
+            disabled={
+              !isValidSelection ||
+              cartActionLoading
+            }
             className="btn-primary mt-6 w-full rounded-xl px-5 py-4 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cartActionLoading
@@ -822,10 +1327,15 @@ export default function ProductDetails() {
           </button>
 
           {/* BUY NOW */}
+
           <button
             type="button"
-            disabled={!isValidSelection}
-            onClick={handleBuyNow}
+            disabled={
+              !isValidSelection
+            }
+            onClick={
+              handleBuyNow
+            }
             className="mt-3 w-full rounded-xl border border-primary px-5 py-4 font-semibold text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Order Now
@@ -839,33 +1349,50 @@ export default function ProductDetails() {
         </motion.div>
       </section>
 
-      {/* ABOUT THE DISH */}
+      {/* ABOUT */}
+
       <section className="mx-auto max-w-6xl px-6 pb-16">
         <div className="card p-8 md:p-10">
-          <h2 className="font-serif text-3xl text-text">About This Dish</h2>
+          <h2 className="font-serif text-3xl text-text">
+            About This Dish
+          </h2>
 
           <p className="mt-4 max-w-2xl leading-8 text-muted">
-            {currentProduct.description}
+            {
+              currentProduct.description
+            }
           </p>
         </div>
       </section>
 
       {/* RELATED */}
+
       <MenuRail
         title="Pairs Well With"
         subtitle="From the same category"
-        items={relatedProducts}
+        items={
+          relatedProducts
+        }
       />
 
       {/* DIFFERENT */}
+
       <MenuRail
         title="More From Our Menu"
         subtitle="Something different to try"
-        items={differentProducts}
+        items={
+          differentProducts
+        }
       />
 
       {/* REVIEWS */}
-      <ReviewsSection product={currentProduct} productId={id} />
+
+      <ReviewsSection
+        product={
+          currentProduct
+        }
+        productId={id}
+      />
     </div>
   );
 }
