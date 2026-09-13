@@ -52,10 +52,7 @@ export default function AdminLayout() {
             return (
               <motion.button
                 key={item.id}
-                onClick={() => {
-                  setOpen(false)
-                  navigate(item.to)
-                }}
+                onClick={() => navigate(item.to)}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.04 }}

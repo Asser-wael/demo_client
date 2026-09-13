@@ -274,7 +274,8 @@ function Status({ status }) {
 
 export default function Dashboard() {
   const dispatch = useDispatch();
-  const socket = useSocket();
+  const { accessToken } = useSelector((state) => state.auth);
+  const socket = useSocket(accessToken);
 
   const [onlineUsers, setOnlineUsers] = useState(0);
 
