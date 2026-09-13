@@ -1,95 +1,208 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosInstance from "../../api/axiosInstance";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
-export const fetchSettings = createAsyncThunk(
-  "settings/fetch",
+const API_URL = import.meta.env.VITE_API_URL;
+
+export const getSettings = createAsyncThunk(
+  "settings/getSettings",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.get("/settings");
+      const { data } = await axios.get(`${API_URL}/settings`);
+
       return data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to load settings.");
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to load settings"
+      );
     }
   }
 );
 
 export const saveSettings = createAsyncThunk(
-  "settings/save",
+  "settings/saveSettings",
   async (payload, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.put("/settings", payload);
+      const { data } = await axios.patch(
+        `${API_URL}/settings`,
+        payload
+      );
+
       return data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to save settings.");
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to save settings"
+      );
     }
   }
 );
 
 export const resetColorsRemote = createAsyncThunk(
-  "settings/resetColors",
+  "settings/resetColorsRemote",
   async (mode, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.put(`/settings/reset-colors/${mode}`);
+      const { data } = await axios.patch(
+        `${API_URL}/settings/reset-colors`,
+        { mode }
+      );
+
       return data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to reset colors.");
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to reset colors"
+      );
     }
   }
 );
 
-// نفس ألوان الديفولت الموجودة في الباك اند (Settings model) — عشان أول تحميل يطلع متسق
-const defaultColors = {
-  light: {
-    bg: "#f8f8f6", card: "#ffffff", text: "#0b0b0b", muted: "#6b6b6b",
-    border: "#e5e5e5", primary: "#5a0000", primaryHover: "#760000",
-    accent: "#8b1a1a", accentLight: "#f3e5e5",
-  },
-  dark: {
-    bg: "#080808", card: "#111111", text: "#ffffff", muted: "#a0a0a0",
-    border: "#252525", primary: "#8b1a1a", primaryHover: "#a52a2a",
-    accent: "#b33a3a", accentLight: "#2a1111",
-  },
-};
-
 const initialState = {
   theme: "light",
-  colors: { light: { ...defaultColors.light }, dark: { ...defaultColors.dark } },
-  company: { name: "Company" },
-  social: { instagram: "", tiktok: "", facebook: "", whatsapp: "" },
+
+  colors: {
+    light: {},
+    dark: {},
+  },
+
+  company: {
+    name: "",
+  },
+
+  social: {
+    instagram: "",
+    tiktok: "",
+    facebook: "",
+    whatsapp: "",
+  },
+
   phone: "",
+
   status: "idle",
   error: null,
 };
 
 const settingsSlice = createSlice({
   name: "settings",
+
   initialState,
+
   reducers: {
-    // معاينة لحظية فقط قبل الحفظ — مش بتحفظ في الداتابيز
-    setColor(state, action) {
+    setColor: (state, action) => {
       const { mode, key, value } = action.payload;
-      if (!state.colors[mode]) state.colors[mode] = {};
+
+      if (!state.colors[mode]) {
+        state.colors[mode] = {};
+      }
+
       state.colors[mode][key] = value;
     },
-    setThemeLocal(state, action) {
+
+    setThemeLocal: (state, action) => {
       state.theme = action.payload;
     },
   },
+
   extraReducers: (builder) => {
     builder
-      .addCase(fetchSettings.pending, (state) => { state.status = "loading"; state.error = null; })
-      .addCase(fetchSettings.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
-      .addCase(fetchSettings.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; })
 
-      .addCase(saveSettings.pending, (state) => { state.status = "loading"; state.error = null; })
-      .addCase(saveSettings.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
-      .addCase(saveSettings.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; })
+      // GET SETTINGS
+      .addCase(getSettings.pending, (state) => {
+        state.status = "loading";
+      })
 
-      .addCase(resetColorsRemote.pending, (state) => { state.status = "loading"; state.error = null; })
-      .addCase(resetColorsRemote.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
-      .addCase(resetColorsRemote.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; });
+      .addCase(getSettings.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.error = null;
+
+        const settings = action.payload;
+
+        state.theme = settings.theme || "light";
+
+        state.colors = {
+          light: settings.colors?.light || {},
+          dark: settings.colors?.dark || {},
+        };
+
+        state.company = settings.company || {
+          name: "",
+        };
+
+        state.social = settings.social || {
+          instagram: "",
+          tiktok: "",
+          facebook: "",
+          whatsapp: "",
+        };
+
+        state.phone = settings.phone || "";
+      })
+
+      .addCase(getSettings.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+
+      // SAVE SETTINGS
+      .addCase(saveSettings.pending, (state) => {
+        state.status = "loading";
+      })
+
+      .addCase(saveSettings.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.error = null;
+
+        const settings = action.payload;
+
+        state.theme = settings.theme || state.theme;
+
+        state.colors = {
+          light: settings.colors?.light || state.colors.light,
+          dark: settings.colors?.dark || state.colors.dark,
+        };
+
+        state.company = settings.company || state.company;
+
+        state.social = settings.social || state.social;
+
+        state.phone =
+          settings.phone !== undefined
+            ? settings.phone
+            : state.phone;
+      })
+
+      .addCase(saveSettings.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+
+      // RESET COLORS
+      .addCase(resetColorsRemote.pending, (state) => {
+        state.status = "loading";
+      })
+
+      .addCase(resetColorsRemote.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.error = null;
+
+        const settings = action.payload;
+
+        state.colors = {
+          light: settings.colors?.light || state.colors.light,
+          dark: settings.colors?.dark || state.colors.dark,
+        };
+      })
+
+      .addCase(resetColorsRemote.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
   },
 });
 
-export const { setColor, setThemeLocal } = settingsSlice.actions;
+export const {
+  setColor,
+  setThemeLocal,
+} = settingsSlice.actions;
+
 export default settingsSlice.reducer;

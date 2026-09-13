@@ -19,6 +19,7 @@ import { getCart } from "./features/cart/cartSlice.js";
 import { addOrder } from "./features/order/orderSlice.js";
 import useApplyTheme from "./hooks/useApplyTheme.js";
 import { fetchSettings } from "./features/settings/settingsSlice.js";
+import ThemeProvider from "./components/common/ThemeProvider.jsx";
 
 function App() {
   useApplyTheme();
@@ -42,6 +43,10 @@ function App() {
     if (!accessToken) return;
     dispatch(getUser());
   }, [accessToken, dispatch]);
+  useEffect(() => {
+    dispatch(getSettings());
+  }, [dispatch]);
+
 
   /* =========================================================
      USER ORDER ROOMS
@@ -277,7 +282,7 @@ function App() {
           duration: 4000,
         }}
       />
-
+      <ThemeProvider />
       <Suspense fallback={<Loading />}>
         <RouterProvider router={router} />
       </Suspense>
