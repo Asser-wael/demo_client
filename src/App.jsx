@@ -16,7 +16,10 @@ import { showToast } from "./utils/showToast.jsx";
 
 import { getUser } from "./features/auth/authSlice.js";
 import { getCart } from "./features/cart/cartSlice.js";
-import { addOrder, getOrdersUser } from "./features/order/orderSlice.js";
+import {
+  addOrder,
+  getOrdersUser,
+} from "./features/order/orderSlice.js";
 
 function App() {
   const dispatch = useDispatch();
@@ -25,54 +28,66 @@ function App() {
   const { user, accessToken } = useSelector((state) => state.auth);
   const { orders } = useSelector((state) => state.orders);
 
-  /* =========================================================
-     AUTH & USER ORDERS
-  ========================================================= */
+  // =========================================================
+  // AUTH
+  // =========================================================
 
   useEffect(() => {
     if (!accessToken) return;
+
     dispatch(getUser());
   }, [accessToken, dispatch]);
 
-  useEffect(() => {
-    if (user && user.role !== "admin") {
-      dispatch(getOrdersUser());
-    }
-  }, [dispatch, user]);
-
-  /* =========================================================
-     USER ORDER ROOMS (with reconnect handling)
-  ========================================================= */
+  // =========================================================
+  // LOAD USER ORDERS
+  // =========================================================
 
   useEffect(() => {
-    if (!socket || !user || user.role === "admin" || !orders?.length) return;
+    if (!user) return;
+    if (user.role === "admin") return;
 
-    const joinRooms = () => {
-      orders.forEach(({ _id }) => {
-        if (_id) socket.emit("userOrder", _id);
+    dispatch(getOrdersUser());
+  }, [user, dispatch]);
+
+  // =========================================================
+  // USER ORDER ROOMS
+  // =========================================================
+
+  useEffect(() => {
+    if (!socket) return;
+    if (!user) return;
+    if (user.role === "admin") return;
+    if (!orders?.length) return;
+
+    const joinOrderRooms = () => {
+      orders.forEach((order) => {
+        if (!order?._id) return;
+
+        socket.emit("userOrder", order._id);
       });
     };
 
-    // Join now if already connected
-    if (socket.connected) joinRooms();
+    if (socket.connected) {
+      joinOrderRooms();
+    }
 
-    // Re-join on every (re)connect — this fixes the case where the socket
-    // reconnects after network drop / server restart and room membership
-    // is lost on the server side.
-    socket.on("connect", joinRooms);
+    socket.on("connect", joinOrderRooms);
 
     return () => {
-      socket.off("connect", joinRooms);
+      socket.off("connect", joinOrderRooms);
     };
   }, [socket, user, orders]);
 
-  /* =========================================================
-     SOCKET HANDLERS
-  ========================================================= */
+  // =========================================================
+  // ADMIN: NEW ORDER
+  // =========================================================
 
   const handleNewOrder = useCallback(
     async (order) => {
       if (!order?._id) return;
+
+      // This event should only be handled by admin
+      if (user?.role !== "admin") return;
 
       playSound?.(sounds.newOrder);
 
@@ -86,41 +101,69 @@ function App() {
 
       try {
         await printOrder(order);
+
         showToast({
           type: "success",
           message: "Order printed successfully",
         });
       } catch (error) {
+        console.error("Print order error:", error);
+
         showToast({
           type: "error",
           message: "Order received, but printing failed",
         });
       }
     },
-    [dispatch]
+    [dispatch, user?.role]
   );
 
-  const handleWarning = useCallback((data) => {
-    if (!data) return;
-    playSound?.(sounds.lowStock);
-    showToast({
-      type: "lowStock",
-      message: `${data.name} is running low on stock (${data.color} - ${data.size})`,
-    });
-  }, []);
+  // =========================================================
+  // LOW STOCK
+  // =========================================================
 
-  const handleOrderStatus = useCallback((data) => {
-    if (!data) return;
-    playSound?.(sounds.orderStatus);
-    showToast({
-      type: "orderStatus",
-      message: data.body || `Order status updated to ${data.status}`,
-    });
-  }, []);
+  const handleWarning = useCallback(
+    (data) => {
+      if (!data) return;
 
-  /* =========================================================
-     LISTEN TO SOCKET EVENTS
-  ========================================================= */
+      if (user?.role !== "admin") return;
+
+      playSound?.(sounds.lowStock);
+
+      showToast({
+        type: "lowStock",
+        message: `${data.name} is running low on stock (${data.color} - ${data.size})`,
+      });
+    },
+    [user?.role]
+  );
+
+  // =========================================================
+  // ORDER STATUS
+  // =========================================================
+
+  const handleOrderStatus = useCallback(
+    (data) => {
+      if (!data) return;
+
+      // Only normal users should receive customer order updates
+      if (user?.role === "admin") return;
+
+      playSound?.(sounds.orderStatus);
+
+      showToast({
+        type: "orderStatus",
+        message:
+          data.body ||
+          `Order status updated to ${data.status}`,
+      });
+    },
+    [user?.role]
+  );
+
+  // =========================================================
+  // SOCKET EVENTS
+  // =========================================================
 
   useEffect(() => {
     if (!socket) return;
@@ -134,41 +177,57 @@ function App() {
       socket.off("warning", handleWarning);
       socket.off("orderStatus", handleOrderStatus);
     };
-  }, [socket, handleNewOrder, handleWarning, handleOrderStatus]);
+  }, [
+    socket,
+    handleNewOrder,
+    handleWarning,
+    handleOrderStatus,
+  ]);
 
-  /* =========================================================
-     CART & PUSH NOTIFICATIONS
-  ========================================================= */
+  // =========================================================
+  // CART
+  // =========================================================
 
   useEffect(() => {
     dispatch(getCart());
   }, [dispatch]);
 
+  // =========================================================
+  // PUSH NOTIFICATIONS
+  // =========================================================
+
   useEffect(() => {
     if (!user) return;
+
     subscribeToPush();
   }, [user]);
 
-  /* =========================================================
-     ADMIN SOCKET ROOM (with reconnect handling)
-  ========================================================= */
+  // =========================================================
+  // ADMIN ROOM
+  // =========================================================
 
   useEffect(() => {
-    if (!socket || user?.role !== "admin") return;
+    if (!socket) return;
+    if (user?.role !== "admin") return;
 
-    const joinAdmin = () => socket.emit("admin");
+    const joinAdminRoom = () => {
+      socket.emit("admin");
+    };
 
-    if (socket.connected) joinAdmin();
-    socket.on("connect", joinAdmin);
+    if (socket.connected) {
+      joinAdminRoom();
+    }
+
+    socket.on("connect", joinAdminRoom);
 
     return () => {
-      socket.off("connect", joinAdmin);
+      socket.off("connect", joinAdminRoom);
     };
   }, [socket, user?.role]);
 
-  /* =========================================================
-     UI
-  ========================================================= */
+  // =========================================================
+  // UI
+  // =========================================================
 
   return (
     <>
@@ -176,8 +235,13 @@ function App() {
         position="top-right"
         reverseOrder={false}
         gutter={12}
-        containerStyle={{ top: 24, right: 24 }}
-        toastOptions={{ duration: 4000 }}
+        containerStyle={{
+          top: 24,
+          right: 24,
+        }}
+        toastOptions={{
+          duration: 4000,
+        }}
       />
 
       <Suspense fallback={<Loading />}>
