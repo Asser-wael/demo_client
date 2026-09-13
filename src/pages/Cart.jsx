@@ -9,7 +9,6 @@ import {
 } from "../features/cart/cartSlice";
 import { useNavigate } from "react-router-dom";
 import Loading from "../components/common/Loading";
-import Currency from "../components/company/Currency";
 
 
 const containerVariants = {
