@@ -120,6 +120,8 @@ export default function WebsiteShape() {
     successMsg
   ) => {
     try {
+      console.log(1);
+      
       await dispatch(
         saveSettings(payload)
       ).unwrap();
