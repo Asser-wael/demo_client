@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axiosInstance from "../../../client/src/api/axiosInstance";
+import axiosInstance from "../../api/axiosInstance";
+
 
 export const getSettings = createAsyncThunk(
   "settings/getSettings",
