@@ -567,6 +567,7 @@ const ToastCard = ({
               uppercase
               tracking-[0.12em]
             "
+            onClick={() => toast.dismiss(t.id)}
             style={{
               color: activeAccent,
             }}
