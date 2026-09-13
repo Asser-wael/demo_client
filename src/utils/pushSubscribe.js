@@ -1,30 +1,22 @@
+
 import axiosInstance from "../api/axiosInstance";
 import { store } from "../app/store";
 import { showToast } from "./showToast";
 
 export async function subscribeToPush() {
   try {
-    console.log(1);
-    
     const register = await navigator.serviceWorker.register("/sw.js");
-    console.log(2);
-    
+
     const permission = await Notification.requestPermission();
-    console.log(3);
-    
+
     if (permission !== "granted") {
       console.log("Notification permission denied");
       return;
     }
-    console.log(4);
-    
+
     let subscription = await register.pushManager.getSubscription();
-    console.log(5);
-    
+
     if (!subscription) {
-      console.log(6);
-      console.log(import.meta.env.VITE_VAPID_PUBLIC_KEY);
-      
       subscription = await register.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
@@ -32,13 +24,11 @@ export async function subscribeToPush() {
         ),
       });
     }
-    
-    console.log(7);
-    
+
+
     const res = await axiosInstance.post("/notifications/subscribe", {
       subscription,
     });
-    console.log(8);
 
 
 
