@@ -1,33 +1,51 @@
 import React, { useEffect, useState } from "react";
 import { FaMoon, FaSun } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { getSettings } from "../../../../features/settings/settingsSlice";
 
 export default function ThemeToggle() {
+  const dispatch = useDispatch();
+
+  const { settings, loading } = useSelector(
+    (state) => state.settings
+  );
+
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-      document.documentElement.classList.add("dark");
-      setDark(true);
-    }
-  }, []);
+    dispatch(getSettings());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!settings?.theme) return;
+
+    const isDark = settings.theme === "dark";
+
+    document.documentElement.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+
+    setDark(isDark);
+  }, [settings]);
 
   const toggleTheme = () => {
-    if (dark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setDark(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setDark(true);
-    }
+    const newTheme = dark ? "light" : "dark";
+
+    document.documentElement.classList.toggle(
+      "dark",
+      newTheme === "dark"
+    );
+
+    localStorage.setItem("theme", newTheme);
+    setDark(newTheme === "dark");
   };
 
   return (
     <button
+      type="button"
       onClick={toggleTheme}
+      disabled={loading}
       className="p-2 rounded-full bg-card text-text hover:scale-105 transition"
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {dark ? <FaSun /> : <FaMoon />}
     </button>
