@@ -34,7 +34,6 @@ function App() {
     dispatch(getUser());
   }, [accessToken, dispatch]);
 
-  // جلب طلبات المستخدم العادي عند تسجيل الدخول
   useEffect(() => {
     if (user && user.role !== "admin") {
       dispatch(getOrdersUser());
@@ -42,17 +41,29 @@ function App() {
   }, [dispatch, user]);
 
   /* =========================================================
-     USER ORDER ROOMS
+     USER ORDER ROOMS (with reconnect handling)
   ========================================================= */
 
   useEffect(() => {
     if (!socket || !user || user.role === "admin" || !orders?.length) return;
 
-    orders.forEach(({ _id }) => {
-      if (_id) {
-        socket.emit("userOrder", _id);
-      }
-    });
+    const joinRooms = () => {
+      orders.forEach(({ _id }) => {
+        if (_id) socket.emit("userOrder", _id);
+      });
+    };
+
+    // Join now if already connected
+    if (socket.connected) joinRooms();
+
+    // Re-join on every (re)connect — this fixes the case where the socket
+    // reconnects after network drop / server restart and room membership
+    // is lost on the server side.
+    socket.on("connect", joinRooms);
+
+    return () => {
+      socket.off("connect", joinRooms);
+    };
   }, [socket, user, orders]);
 
   /* =========================================================
@@ -91,9 +102,7 @@ function App() {
 
   const handleWarning = useCallback((data) => {
     if (!data) return;
-
     playSound?.(sounds.lowStock);
-
     showToast({
       type: "lowStock",
       message: `${data.name} is running low on stock (${data.color} - ${data.size})`,
@@ -102,9 +111,7 @@ function App() {
 
   const handleOrderStatus = useCallback((data) => {
     if (!data) return;
-
     playSound?.(sounds.orderStatus);
-
     showToast({
       type: "orderStatus",
       message: data.body || `Order status updated to ${data.status}`,
@@ -143,12 +150,20 @@ function App() {
   }, [user]);
 
   /* =========================================================
-     ADMIN SOCKET ROOM
+     ADMIN SOCKET ROOM (with reconnect handling)
   ========================================================= */
 
   useEffect(() => {
     if (!socket || user?.role !== "admin") return;
-    socket.emit("admin");
+
+    const joinAdmin = () => socket.emit("admin");
+
+    if (socket.connected) joinAdmin();
+    socket.on("connect", joinAdmin);
+
+    return () => {
+      socket.off("connect", joinAdmin);
+    };
   }, [socket, user?.role]);
 
   /* =========================================================
@@ -161,13 +176,8 @@ function App() {
         position="top-right"
         reverseOrder={false}
         gutter={12}
-        containerStyle={{
-          top: 24,
-          right: 24,
-        }}
-        toastOptions={{
-          duration: 4000,
-        }}
+        containerStyle={{ top: 24, right: 24 }}
+        toastOptions={{ duration: 4000 }}
       />
 
       <Suspense fallback={<Loading />}>
