@@ -130,6 +130,8 @@ const cartSlice = createSlice({
   reducers: {
     setBuyNowItem: (state, action) => {
       state.buyNowItem = action.payload;
+      console.log(state.buyNowItem);
+      
     },
     clearBuyNowItem: (state) => {
       state.buyNowItem = null;
