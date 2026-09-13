@@ -5,6 +5,7 @@ import {
   updateCartItem,
   removeFromCart,
   clearCart,
+  getCart,
 } from "../features/cart/cartSlice";
 import { useNavigate } from "react-router-dom";
 import Loading from "../components/common/Loading";
@@ -122,6 +123,9 @@ export default function Cart() {
     );
   };
 
+  useEffect(() => {
+dispatch(getCart())
+  }, [items]);
   useEffect(() => {
     window.scrollTo({
       top: 0,
