@@ -20,7 +20,7 @@ import {
   FiTruck,
 } from "react-icons/fi";
 
-import { getCategories } from "../../src/features/category/categorySlice";
+import { getCategories } from "../features/category/categorySlice";
 import { getPopularProducts } from "../features/popular/popularSlice";
 import { getLatestProducts } from "../features/products/productSlice";
 import { getTrustItems } from "../features/trust/trustSlice";
@@ -36,7 +36,6 @@ const fadeUp = {
     opacity: 0,
     y: 16,
   },
-
   visible: (index = 0) => ({
     opacity: 1,
     y: 0,
@@ -49,18 +48,8 @@ const fadeUp = {
 };
 
 const staticVariant = {
-  hidden: {
-    opacity: 1,
-    y: 0,
-  },
-
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0,
-    },
-  },
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0 } },
 };
 
 // ============================================================
@@ -68,35 +57,12 @@ const staticVariant = {
 // ============================================================
 
 const swiperBreakpoints = {
-  0: {
-    slidesPerView: 1.08,
-    spaceBetween: 14,
-  },
-
-  480: {
-    slidesPerView: 1.35,
-    spaceBetween: 16,
-  },
-
-  640: {
-    slidesPerView: 2,
-    spaceBetween: 18,
-  },
-
-  768: {
-    slidesPerView: 2.35,
-    spaceBetween: 20,
-  },
-
-  1024: {
-    slidesPerView: 3,
-    spaceBetween: 22,
-  },
-
-  1280: {
-    slidesPerView: 3.5,
-    spaceBetween: 24,
-  },
+  0: { slidesPerView: 1.08, spaceBetween: 14 },
+  480: { slidesPerView: 1.35, spaceBetween: 16 },
+  640: { slidesPerView: 2, spaceBetween: 18 },
+  768: { slidesPerView: 2.35, spaceBetween: 20 },
+  1024: { slidesPerView: 3, spaceBetween: 22 },
+  1280: { slidesPerView: 3.5, spaceBetween: 24 },
 };
 
 // ============================================================
@@ -107,26 +73,22 @@ const kitchenNotes = [
   {
     icon: FiTruck,
     title: "Delivered hot",
-    description:
-      "Sealed within minutes of leaving the pass, on the road in under ten.",
+    description: "Sealed within minutes of leaving the pass, on the road in under ten.",
   },
   {
     icon: FiAward,
     title: "Trained kitchen",
-    description:
-      "Every section runs under a head chef with formal culinary training.",
+    description: "Every section runs under a head chef with formal culinary training.",
   },
   {
     icon: FiShield,
     title: "Sourced daily",
-    description:
-      "Produce and fish are bought each morning, not held in cold storage.",
+    description: "Produce and fish are bought each morning, not held in cold storage.",
   },
   {
     icon: FiClock,
     title: "Open late",
-    description:
-      "Kitchen takes orders until 1am, seven nights a week.",
+    description: "Kitchen takes orders until 1am, seven nights a week.",
   },
 ];
 
@@ -148,21 +110,14 @@ function getEffectivePrice(size) {
 }
 
 function getPriceInfo(item) {
-  const allSizes = (item?.variants ?? []).flatMap(
-    (variant) => variant?.sizes ?? []
-  );
+  const allSizes = (item?.variants ?? []).flatMap((variant) => variant?.sizes ?? []);
 
   if (!allSizes.length) {
-    return {
-      price: null,
-      oldPrice: null,
-    };
+    return { price: null, oldPrice: null };
   }
 
   const cheapest = allSizes.reduce((min, current) => {
-    return getEffectivePrice(current) < getEffectivePrice(min)
-      ? current
-      : min;
+    return getEffectivePrice(current) < getEffectivePrice(min) ? current : min;
   });
 
   const price = Number(cheapest?.price);
@@ -182,38 +137,104 @@ function getPriceInfo(item) {
 
 function getAllSizesList(item) {
   const sizes = new Set();
-
   item?.variants?.forEach((variant) => {
     variant?.sizes?.forEach((size) => {
-      if (size?.size) {
-        sizes.add(size.size);
-      }
+      if (size?.size) sizes.add(size.size);
     });
   });
-
   return Array.from(sizes);
 }
 
 // ============================================================
-// SECTION HEADER
+// TRUST COMPONENTS
 // ============================================================
 
-function SectionHeader({
-  title,
-  buttonText,
-  onClick,
-}) {
+function TrustItem({ item, index }) {
+  const [img, setImg] = useState(null);
+  const reduceMotion = useReducedMotion();
+  const variant = reduceMotion ? staticVariant : fadeUp;
+
+  return (
+    <>
+      <motion.div
+        custom={index}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={variant}
+        className="flex items-center gap-4 text-left"
+      >
+        <button
+          type="button"
+          onClick={() => setImg(item?.image)}
+          aria-label={`View ${item?.title || "certification"}`}
+          className="relative flex h-12 w-12 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-md border border-[var(--border)] transition-colors duration-200 hover:border-[var(--accent)]"
+        >
+          <img
+            src={item?.image}
+            alt={item?.title || "Quality badge"}
+            loading="lazy"
+            className="h-6 w-6 object-contain"
+          />
+        </button>
+
+        <h3 className="text-[14px] font-medium text-[var(--text)]">
+          {item?.title}
+        </h3>
+      </motion.div>
+
+      {img && (
+        <div
+          onClick={() => setImg(null)}
+          className="fixed inset-0 z-[9999] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+        >
+          <img
+            src={img}
+            alt="Preview"
+            className="max-h-[85vh] max-w-[85vw] rounded-lg border border-white/10 object-contain"
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+function TrustSection() {
+  const dispatch = useDispatch();
+  const { trustItems, loading } = useSelector((state) => state.trust);
+
+  useEffect(() => {
+    dispatch(getTrustItems());
+  }, [dispatch]);
+
+  if (!loading && (!trustItems || trustItems.length === 0)) return null;
+
+  return (
+    <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 sm:py-14 lg:px-10">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+        {loading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-12 animate-pulse rounded-md border border-[var(--border)] bg-[var(--card)]"
+              />
+            ))
+          : trustItems.map((item, index) => (
+              <TrustItem key={item?._id || index} item={item} index={index} />
+            ))}
+      </div>
+    </section>
+  );
+}
+
+// ============================================================
+// SECTION HEADER & MENU CARD
+// ============================================================
+
+function SectionHeader({ title, buttonText, onClick }) {
   return (
     <div className="mb-8 flex items-end justify-between gap-6 sm:mb-10">
-      <h2
-        className="
-          font-serif
-          text-3xl
-          leading-tight
-          text-[var(--text)]
-          sm:text-4xl
-        "
-      >
+      <h2 className="font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
         {title}
       </h2>
 
@@ -221,18 +242,7 @@ function SectionHeader({
         <button
           type="button"
           onClick={onClick}
-          className="
-            hidden
-            shrink-0
-            items-center
-            gap-2
-            text-[13px]
-            font-semibold
-            text-[var(--muted)]
-            transition-colors
-            hover:text-[var(--accent)]
-            sm:flex
-          "
+          className="hidden shrink-0 items-center gap-2 text-[13px] font-semibold text-[var(--muted)] transition-colors hover:text-[var(--accent)] sm:flex"
         >
           {buttonText}
           <FiArrowUpRight className="text-sm" />
@@ -242,16 +252,7 @@ function SectionHeader({
   );
 }
 
-// ============================================================
-// MENU CARD
-// ============================================================
-
-function MenuCard({
-  item,
-  index = 0,
-  badgeLabel,
-  showNewTag = false,
-}) {
+function MenuCard({ item, index = 0, badgeLabel, showNewTag = false }) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
 
@@ -259,122 +260,41 @@ function MenuCard({
   const sizeBadges = getAllSizesList(item);
 
   const rating =
-    typeof item?.rating === "number"
-      ? item.rating.toFixed(1)
-      : "4.9";
+    typeof item?.rating === "number" ? item.rating.toFixed(1) : "4.9";
 
   return (
     <motion.article
       custom={index}
       initial="hidden"
       whileInView="visible"
-      viewport={{
-        once: true,
-        amount: 0.15,
-      }}
+      viewport={{ once: true, amount: 0.15 }}
       variants={reduceMotion ? staticVariant : fadeUp}
       onClick={() => navigate(`/products/${item?._id}`)}
-      className="
-        group
-        flex
-        h-full
-        cursor-pointer
-        flex-col
-        overflow-hidden
-        rounded-2xl
-        border
-        border-[var(--border)]
-        bg-[var(--card)]
-        transition-all
-        duration-300
-        hover:-translate-y-1
-        hover:border-[var(--accent)]
-        hover:shadow-[var(--shadow)]
-      "
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow)]"
     >
-      <div
-        className="
-          relative
-          aspect-[4/4.6]
-          overflow-hidden
-          bg-[var(--accent-light)]
-        "
-      >
+      <div className="relative aspect-[4/4.6] overflow-hidden bg-[var(--accent-light)]">
         {item?.image ? (
           <img
             src={item.image}
             alt={item?.name || "Dish"}
             loading="lazy"
-            className="
-              absolute
-              inset-0
-              h-full
-              w-full
-              object-cover
-              transition-transform
-              duration-700
-              ease-out
-              group-hover:scale-105
-            "
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         ) : (
-          <div
-            className="
-              absolute
-              inset-0
-              bg-[var(--accent-light)]
-            "
-          />
+          <div className="absolute inset-0 bg-[var(--accent-light)]" />
         )}
 
-        <div
-          className="
-            pointer-events-none
-            absolute
-            inset-0
-            bg-gradient-to-t
-            from-black/65
-            via-black/5
-            to-transparent
-          "
-        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
 
         <div className="absolute left-3 top-3 z-10 flex flex-col items-start gap-2">
           {showNewTag && (
-            <span
-              className="
-                rounded-full
-                bg-[var(--primary)]
-                px-3
-                py-1.5
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.14em]
-                text-white
-              "
-            >
+            <span className="rounded-full bg-[var(--primary)] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white">
               New
             </span>
           )}
 
           {badgeLabel && (
-            <span
-              className="
-                rounded-full
-                border
-                border-white/20
-                bg-black/45
-                px-3
-                py-1.5
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.12em]
-                text-white
-                backdrop-blur-md
-              "
-            >
+            <span className="rounded-full border border-white/20 bg-black/45 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white backdrop-blur-md">
               {badgeLabel}
             </span>
           )}
@@ -384,78 +304,24 @@ function MenuCard({
           type="button"
           onClick={(e) => e.stopPropagation()}
           aria-label="Save dish"
-          className="
-            absolute
-            right-3
-            top-3
-            z-20
-            flex
-            h-9
-            w-9
-            items-center
-            justify-center
-            rounded-full
-            border
-            border-white/20
-            bg-black/35
-            text-white
-            backdrop-blur-md
-            transition-all
-            duration-200
-            hover:border-[var(--accent)]
-            hover:bg-[var(--accent)]
-          "
+          className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-md transition-all duration-200 hover:border-[var(--accent)] hover:bg-[var(--accent)]"
         >
           <FiHeart className="text-sm" />
         </button>
 
         <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-5">
           <div className="mb-1 flex items-center gap-2">
-            <span
-              className="
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.16em]
-                text-white/70
-              "
-            >
+            <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/70">
               {item?.category?.name || "Signature dish"}
             </span>
-
             <span className="h-1 w-1 rounded-full bg-white/50" />
-
-            <span
-              className="
-                flex
-                items-center
-                gap-1
-                text-[10px]
-                font-semibold
-                text-white
-              "
-            >
-              <FiStar
-                className="
-                  text-[var(--accent)]
-                  fill-[var(--accent)]
-                "
-              />
-
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-white">
+              <FiStar className="fill-[var(--accent)] text-[var(--accent)]" />
               {rating}
             </span>
           </div>
 
-          <h3
-            className="
-              truncate
-              font-serif
-              text-xl
-              leading-tight
-              text-white
-              sm:text-2xl
-            "
-          >
+          <h3 className="truncate font-serif text-xl leading-tight text-white sm:text-2xl">
             {item?.name}
           </h3>
         </div>
@@ -463,15 +329,7 @@ function MenuCard({
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         {item?.description && (
-          <p
-            className="
-              line-clamp-2
-              text-[12px]
-              leading-6
-              text-[var(--muted)]
-              sm:text-[13px]
-            "
-          >
+          <p className="line-clamp-2 text-[12px] leading-6 text-[var(--muted)] sm:text-[13px]">
             {item.description}
           </p>
         )}
@@ -481,19 +339,7 @@ function MenuCard({
             {sizeBadges.map((size, i) => (
               <span
                 key={`${size}-${i}`}
-                className="
-                  rounded-md
-                  border
-                  border-[var(--border)]
-                  bg-[var(--bg)]
-                  px-2
-                  py-1
-                  text-[9px]
-                  font-medium
-                  uppercase
-                  tracking-wide
-                  text-[var(--muted)]
-                "
+                className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-[9px] font-medium uppercase tracking-wide text-[var(--muted)]"
               >
                 {size}
               </span>
@@ -501,40 +347,19 @@ function MenuCard({
           </div>
         )}
 
-        <div
-          className="
-            mt-auto
-            flex
-            items-center
-            justify-between
-            gap-3
-            border-t
-            border-[var(--border)]
-            pt-4
-          "
-        >
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
           <div className="flex min-w-0 items-baseline gap-2">
             {price !== null && (
               <Currency
                 amount={price}
-                className="
-                  truncate
-                  text-base
-                  font-bold
-                  text-[var(--text)]
-                "
+                className="truncate text-base font-bold text-[var(--text)]"
               />
             )}
 
             {oldPrice !== null && (
               <Currency
                 amount={oldPrice}
-                className="
-                  shrink-0
-                  text-xs
-                  text-[var(--muted)]
-                  line-through
-                "
+                className="shrink-0 text-xs text-[var(--muted)] line-through"
               />
             )}
           </div>
@@ -546,21 +371,7 @@ function MenuCard({
               navigate(`/menu/${item?._id}`);
             }}
             aria-label={`Order ${item?.name || "dish"}`}
-            className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              bg-[var(--primary)]
-              text-white
-              transition-all
-              duration-200
-              hover:scale-105
-              hover:bg-[var(--primary-hover)]
-            "
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white transition-all duration-200 hover:scale-105 hover:bg-[var(--primary-hover)]"
           >
             <FiPlus className="text-base" />
           </button>
@@ -574,34 +385,15 @@ function MenuCard({
 // PRODUCT SWIPER
 // ============================================================
 
-function ProductSwiper({
-  products = [],
-  badgeLabel,
-  showNewTag = false,
-  reduceMotion,
-}) {
+function ProductSwiper({ products = [], badgeLabel, showNewTag = false, reduceMotion }) {
   const normalizedProducts = Array.isArray(products)
-    ? products
-        .map((product) => product?.id || product)
-        .filter((product) => product?._id)
+    ? products.map((product) => product?.id || product).filter((product) => product?._id)
     : [];
 
   if (!normalizedProducts.length) {
     return (
-      <div
-        className="
-          rounded-2xl
-          border
-          border-[var(--border)]
-          bg-[var(--card)]
-          px-6
-          py-12
-          text-center
-        "
-      >
-        <p className="text-sm text-[var(--muted)]">
-          No dishes available right now.
-        </p>
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-6 py-12 text-center">
+        <p className="text-sm text-[var(--muted)]">No dishes available right now.</p>
       </div>
     );
   }
@@ -622,20 +414,14 @@ function ProductSwiper({
                 pauseOnMouseEnter: true,
               }
         }
-        pagination={{
-          clickable: true,
-          dynamicBullets: true,
-        }}
+        pagination={{ clickable: true, dynamicBullets: true }}
         watchSlidesProgress
         observer
         observeParents
         className="home-products-swiper !overflow-visible !pb-14"
       >
         {normalizedProducts.map((item, index) => (
-          <SwiperSlide
-            key={item._id}
-            className="!h-auto"
-          >
+          <SwiperSlide key={item._id} className="!h-auto">
             <div className="h-full">
               <MenuCard
                 item={item}
@@ -660,22 +446,15 @@ export default function Home() {
   const dispatch = useDispatch();
   const reduceMotion = useReducedMotion();
 
-  const {
-    categories,
-    loading: categoriesLoading,
-  } = useSelector((state) => state.categories);
-
-  // IMPORTANT:
-  // popularSlice stores the data in state.popular.products
-  const {
-    products: popularProducts,
-    loading: popularLoading,
-  } = useSelector((state) => state.popular);
-
-  const {
-    latestProducts,
-    loading: newLoading,
-  } = useSelector((state) => state.products);
+  const { categories, loading: categoriesLoading } = useSelector(
+    (state) => state.categories
+  );
+  const { products: popularProducts, loading: popularLoading } = useSelector(
+    (state) => state.popular
+  );
+  const { latestProducts, loading: newLoading } = useSelector(
+    (state) => state.products
+  );
 
   useEffect(() => {
     dispatch(getCategories());
@@ -684,98 +463,37 @@ export default function Home() {
   }, [dispatch]);
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const variant = reduceMotion ? staticVariant : fadeUp;
 
   return (
-    <main
-      className="
-        min-h-screen
-        w-full
-        overflow-x-hidden
-        bg-[var(--bg)]
-        font-sans
-        text-[var(--text)]
-        antialiased
-      "
-    >
+    <main className="min-h-screen w-full overflow-x-hidden bg-[var(--bg)] font-sans text-[var(--text)] antialiased">
       {/* HERO */}
-
       <section className="mx-auto max-w-[1280px] px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:px-10 lg:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            custom={0}
-            variants={variant}
-          >
+          <motion.div initial="hidden" animate="visible" custom={0} variants={variant}>
             <div className="mb-5 flex items-center gap-3">
               <span className="h-px w-8 bg-[var(--accent)]" />
-
-              <span
-                className="
-                  text-[10px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.2em]
-                  text-[var(--accent)]
-                "
-              >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
                 Fresh every day
               </span>
             </div>
 
-            <h1
-              className="
-                max-w-2xl
-                font-serif
-                text-[38px]
-                leading-[1.04]
-                text-[var(--text)]
-                sm:text-[50px]
-                lg:text-[58px]
-              "
-            >
+            <h1 className="max-w-2xl font-serif text-[38px] leading-[1.04] text-[var(--text)] sm:text-[50px] lg:text-[58px]">
               A kitchen built around what's fresh today.
             </h1>
 
-            <p
-              className="
-                mt-6
-                max-w-xl
-                text-[14px]
-                leading-7
-                text-[var(--muted)]
-                sm:text-[15px]
-              "
-            >
-              We buy from the market each morning and build the day's
-              dishes around it. Order for delivery or reserve a table
-              for the full room.
+            <p className="mt-6 max-w-xl text-[14px] leading-7 text-[var(--muted)] sm:text-[15px]">
+              We buy from the market each morning and build the day's dishes around it. Order for delivery or reserve a table for the full room.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => navigate("/menu")}
-                className="
-                  rounded-md
-                  bg-[var(--primary)]
-                  px-6
-                  py-3
-                  text-[13px]
-                  font-semibold
-                  text-white
-                  transition-all
-                  duration-200
-                  hover:-translate-y-0.5
-                  hover:bg-[var(--primary-hover)]
-                "
+                className="rounded-md bg-[var(--primary)] px-6 py-3 text-[13px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--primary-hover)]"
               >
                 View the menu
               </button>
@@ -783,20 +501,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => navigate("/menu?sort=new")}
-                className="
-                  rounded-md
-                  border
-                  border-[var(--border)]
-                  px-6
-                  py-3
-                  text-[13px]
-                  font-semibold
-                  text-[var(--text)]
-                  transition-all
-                  duration-200
-                  hover:border-[var(--accent)]
-                  hover:text-[var(--accent)]
-                "
+                className="rounded-md border border-[var(--border)] px-6 py-3 text-[13px] font-semibold text-[var(--text)] transition-all duration-200 hover:border-[var(--accent)] hover:text-[var(--accent)]"
               >
                 Today's specials
               </button>
@@ -810,82 +515,22 @@ export default function Home() {
             variants={variant}
             className="relative mx-auto w-full max-w-[520px] lg:mx-0"
           >
-            <div
-              className="
-                relative
-                aspect-[4/5]
-                overflow-hidden
-                rounded-2xl
-                border
-                border-[var(--border)]
-                bg-[var(--card)]
-                shadow-[var(--shadow)]
-              "
-            >
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                className="absolute inset-0 h-full w-full object-cover"
-              >
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)]">
+              <video autoPlay loop muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover">
                 <source src="/bg2.mp4" type="video/mp4" />
               </video>
-
               <div className="absolute inset-0 bg-black/10" />
             </div>
 
-            <div
-              className="
-                absolute
-                -bottom-6
-                left-4
-                w-[220px]
-                rounded-xl
-                border
-                border-[var(--border)]
-                bg-[var(--glass)]
-                p-4
-                shadow-[var(--shadow)]
-                backdrop-blur-xl
-                sm:-left-8
-                sm:w-[250px]
-              "
-            >
-              <div
-                className="
-                  mb-3
-                  border-b
-                  border-dashed
-                  border-[var(--border)]
-                  pb-2
-                "
-              >
-                <span
-                  className="
-                    text-[9px]
-                    font-semibold
-                    uppercase
-                    tracking-[0.16em]
-                    text-[var(--muted)]
-                  "
-                >
+            <div className="absolute -bottom-6 left-4 w-[220px] rounded-xl border border-[var(--border)] bg-[var(--glass)] p-4 shadow-[var(--shadow)] backdrop-blur-xl sm:-left-8 sm:w-[250px]">
+              <div className="mb-3 border-b border-dashed border-[var(--border)] pb-2">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
                   Tonight's special
                 </span>
               </div>
-
-              <p
-                className="
-                  font-serif
-                  text-[15px]
-                  leading-snug
-                  text-[var(--text)]
-                "
-              >
+              <p className="font-serif text-[15px] leading-snug text-[var(--text)]">
                 Butter-poached lobster, charred corn
               </p>
-
               <div className="mt-2 text-sm font-semibold text-[var(--accent)]">
                 <Currency amount={40} />
               </div>
@@ -895,60 +540,27 @@ export default function Home() {
       </section>
 
       {/* KITCHEN NOTES */}
-
-      <section
-        className="
-          border-y
-          border-[var(--border)]
-          bg-[var(--card)]
-        "
-      >
+      <section className="border-y border-[var(--border)] bg-[var(--card)]">
         <div className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 sm:py-14 lg:px-10">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {kitchenNotes.map((item, index) => {
               const Icon = item.icon;
-
               return (
                 <motion.div
                   key={item.title}
                   custom={index}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{
-                    once: true,
-                    amount: 0.3,
-                  }}
+                  viewport={{ once: true, amount: 0.3 }}
                   variants={variant}
                   className="flex gap-3"
                 >
-                  <Icon
-                    className="
-                      mt-0.5
-                      shrink-0
-                      text-lg
-                      text-[var(--accent)]
-                    "
-                  />
-
+                  <Icon className="mt-0.5 shrink-0 text-lg text-[var(--accent)]" />
                   <div>
-                    <h3
-                      className="
-                        text-[14px]
-                        font-semibold
-                        text-[var(--text)]
-                      "
-                    >
+                    <h3 className="text-[14px] font-semibold text-[var(--text)]">
                       {item.title}
                     </h3>
-
-                    <p
-                      className="
-                        mt-1
-                        text-[13px]
-                        leading-relaxed
-                        text-[var(--muted)]
-                      "
-                    >
+                    <p className="mt-1 text-[13px] leading-relaxed text-[var(--muted)]">
                       {item.description}
                     </p>
                   </div>
@@ -959,12 +571,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TRUST */}
-
+      {/* TRUST SECTION */}
       <TrustSection />
 
       {/* CATEGORIES */}
-
       <section className="mx-auto max-w-[1280px] px-5 py-20 sm:px-8 lg:px-10">
         <SectionHeader
           title="Browse the menu"
@@ -975,17 +585,7 @@ export default function Home() {
         {categoriesLoading ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="
-                  aspect-[3/4]
-                  animate-pulse
-                  rounded-xl
-                  border
-                  border-[var(--border)]
-                  bg-[var(--card)]
-                "
-              />
+              <div key={i} className="aspect-[3/4] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--card)]" />
             ))}
           </div>
         ) : (
@@ -996,91 +596,23 @@ export default function Home() {
                 custom={index}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{
-                  once: true,
-                  amount: 0.15,
-                }}
+                viewport={{ once: true, amount: 0.15 }}
                 variants={variant}
-                onClick={() =>
-                  navigate(`/collections/${item._id}`)
-                }
-                className="
-                  group
-                  relative
-                  aspect-[3/4]
-                  cursor-pointer
-                  overflow-hidden
-                  rounded-xl
-                  border
-                  border-[var(--border)]
-                  bg-[var(--card)]
-                  transition-all
-                  duration-300
-                  hover:-translate-y-1
-                  hover:border-[var(--accent)]
-                  hover:shadow-[var(--shadow)]
-                "
+                onClick={() => navigate(`/collections/${item._id}`)}
+                className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[var(--shadow)]"
               >
                 <img
                   src={item?.image}
                   alt={item?.name || "Category"}
                   loading="lazy"
-                  className="
-                    absolute
-                    inset-0
-                    h-full
-                    w-full
-                    object-cover
-                    transition-transform
-                    duration-700
-                    group-hover:scale-105
-                  "
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-
-                <div
-                  className="
-                    absolute
-                    inset-0
-                    bg-gradient-to-t
-                    from-black/80
-                    via-black/15
-                    to-transparent
-                  "
-                />
-
-                <div
-                  className="
-                    absolute
-                    bottom-0
-                    left-0
-                    right-0
-                    flex
-                    items-end
-                    justify-between
-                    gap-2
-                    p-4
-                    sm:p-5
-                  "
-                >
-                  <h3
-                    className="
-                      font-serif
-                      text-lg
-                      text-white
-                      sm:text-xl
-                    "
-                  >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-2 p-4 sm:p-5">
+                  <h3 className="font-serif text-lg text-white sm:text-xl">
                     {item?.name}
                   </h3>
-
-                  <FiArrowUpRight
-                    className="
-                      shrink-0
-                      text-white/60
-                      transition-colors
-                      group-hover:text-[var(--accent)]
-                    "
-                  />
+                  <FiArrowUpRight className="shrink-0 text-white/60 transition-colors group-hover:text-[var(--accent)]" />
                 </div>
               </motion.div>
             ))}
@@ -1089,7 +621,6 @@ export default function Home() {
       </section>
 
       {/* POPULAR */}
-
       <section className="mx-auto max-w-[1280px] px-5 pb-20 sm:px-8 lg:px-10">
         <SectionHeader
           title="What people keep ordering"
@@ -1100,17 +631,7 @@ export default function Home() {
         {popularLoading ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="
-                  aspect-[3/4]
-                  animate-pulse
-                  rounded-xl
-                  border
-                  border-[var(--border)]
-                  bg-[var(--card)]
-                "
-              />
+              <div key={i} className="aspect-[3/4] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--card)]" />
             ))}
           </div>
         ) : (
@@ -1123,79 +644,22 @@ export default function Home() {
       </section>
 
       {/* EDITORIAL */}
-
       <section className="px-5 pb-20 sm:px-8 lg:px-10">
-        <div
-          className="
-            mx-auto
-            grid
-            max-w-[1280px]
-            overflow-hidden
-            rounded-2xl
-            border
-            border-[var(--border)]
-            bg-[var(--card)]
-            lg:grid-cols-2
-          "
-        >
+        <div className="mx-auto grid max-w-[1280px] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] lg:grid-cols-2">
           <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-14">
-            <span
-              className="
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-[0.18em]
-                text-[var(--accent)]
-              "
-            >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
               From our kitchen
             </span>
-
-            <h2
-              className="
-                mt-4
-                max-w-lg
-                font-serif
-                text-3xl
-                leading-tight
-                text-[var(--text)]
-                sm:text-4xl
-              "
-            >
+            <h2 className="mt-4 max-w-lg font-serif text-3xl leading-tight text-[var(--text)] sm:text-4xl">
               Cooked to order, not held under a heat lamp.
             </h2>
-
-            <p
-              className="
-                mt-5
-                max-w-md
-                text-[14px]
-                leading-7
-                text-[var(--muted)]
-              "
-            >
-              Every plate starts when your order comes in. It takes
-              a little longer than fast food, and it tastes like it.
+            <p className="mt-5 max-w-md text-[14px] leading-7 text-[var(--muted)]">
+              Every plate starts when your order comes in. It takes a little longer than fast food, and it tastes like it.
             </p>
-
             <button
               type="button"
               onClick={() => navigate("/products")}
-              className="
-                mt-8
-                w-fit
-                rounded-md
-                bg-[var(--primary)]
-                px-6
-                py-3
-                text-[13px]
-                font-semibold
-                text-white
-                transition-all
-                duration-200
-                hover:-translate-y-0.5
-                hover:bg-[var(--primary-hover)]
-              "
+              className="mt-8 w-fit rounded-md bg-[var(--primary)] px-6 py-3 text-[13px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--primary-hover)]"
             >
               Reserve a table
             </button>
@@ -1213,7 +677,6 @@ export default function Home() {
       </section>
 
       {/* NEW ARRIVALS */}
-
       <section className="mx-auto max-w-[1280px] px-5 pb-24 sm:px-8 lg:px-10">
         <SectionHeader
           title="New on the menu this season"
@@ -1226,14 +689,8 @@ export default function Home() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="
-                  aspect-[3/4]
-                  animate-pulse
-                  rounded-xl
-                  border
-                  border-[var(--border)]
-                  bg-[var(--card)]
-                />
+                className="aspect-[3/4] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--card)]"
+              />
             ))}
           </div>
         ) : (
@@ -1246,129 +703,43 @@ export default function Home() {
       </section>
 
       {/* PHILOSOPHY */}
-
-      <section
-        className="
-          border-y
-          border-[var(--border)]
-          bg-[var(--card)]
-          py-20
-        "
-      >
+      <section className="border-y border-[var(--border)] bg-[var(--card)] py-20">
         <div className="mx-auto max-w-2xl px-5 text-center sm:px-8 sm:text-left">
-          <span
-            className="
-              text-[10px]
-              font-semibold
-              uppercase
-              tracking-[0.18em]
-              text-[var(--accent)]
-            "
-          >
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
             Our philosophy
           </span>
-
-          <h2
-            className="
-              mt-4
-              font-serif
-              text-3xl
-              leading-snug
-              text-[var(--text)]
-              sm:text-4xl
-            "
-          >
-            We'd rather run out of a dish than serve a worse version
-            of it.
+          <h2 className="mt-4 font-serif text-3xl leading-snug text-[var(--text)] sm:text-4xl">
+            We'd rather run out of a dish than serve a worse version of it.
           </h2>
-
-          <p
-            className="
-              mt-5
-              text-[14px]
-              leading-7
-              text-[var(--muted)]
-            "
-          >
-            That means the menu changes with the season and, some
-            nights, with what the market had. Ask your server what's
-            good today; we'll tell you honestly.
+          <p className="mt-5 text-[14px] leading-7 text-[var(--muted)]">
+            That means the menu changes with the season and, some nights, with what the market had. Ask your server what's good today; we'll tell you honestly.
           </p>
         </div>
       </section>
 
       {/* NEWSLETTER */}
-
-      <section
-        className="
-          bg-[var(--primary)]
-          py-20
-          text-white
-        "
-      >
+      <section className="bg-[var(--primary)] py-20 text-white">
         <div className="mx-auto max-w-xl px-5 sm:px-8">
-          <span
-            className="
-              text-[10px]
-              font-semibold
-              uppercase
-              tracking-[0.18em]
-              text-white/70
-            "
-          >
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
             Stay in the loop
           </span>
-
           <h2 className="mt-3 font-serif text-3xl sm:text-4xl">
             Hear about new menus first.
           </h2>
-
           <p className="mt-3 text-[14px] leading-7 text-white/75">
-            One email when the season changes. No specials spam,
-            no daily blasts.
+            One email when the season changes. No specials spam, no daily blasts.
           </p>
 
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mt-7 flex max-w-md flex-col gap-3 sm:flex-row"
-          >
+          <form onSubmit={(e) => e.preventDefault()} className="mt-7 flex max-w-md flex-col gap-3 sm:flex-row">
             <input
               type="email"
               required
               placeholder="you@email.com"
-              className="
-                min-w-0
-                flex-1
-                rounded-md
-                border
-                border-white/20
-                bg-black/10
-                px-4
-                py-3
-                text-sm
-                text-white
-                outline-none
-                placeholder:text-white/50
-                focus:border-white/50
-                focus:ring-2
-                focus:ring-white/20
-              "
+              className="min-w-0 flex-1 rounded-md border border-white/20 bg-black/10 px-4 py-3 text-sm text-white outline-none placeholder:text-white/50 focus:border-white/50 focus:ring-2 focus:ring-white/20"
             />
-
             <button
               type="submit"
-              className="
-                rounded-md
-                bg-[var(--card)]
-                px-6
-                py-3
-                text-[13px]
-                font-semibold
-                text-[var(--text)]
-                transition-colors
-                duration-200
-                hover:bg-[var(--bg)]
-              "
+              className="rounded-md bg-[var(--card)] px-6 py-3 text-[13px] font-semibold text-[var(--text)] transition-colors duration-200 hover:bg-[var(--bg)]"
             >
               Subscribe
             </button>
@@ -1380,27 +751,22 @@ export default function Home() {
         .home-products-swiper {
           width: 100%;
         }
-
         .home-products-swiper .swiper-wrapper {
           align-items: stretch;
         }
-
         .home-products-swiper .swiper-slide {
           height: auto;
           display: flex;
         }
-
         .home-products-swiper .swiper-slide > div {
           width: 100%;
         }
-
         .home-products-swiper .swiper-pagination {
           bottom: 0 !important;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-
         .home-products-swiper .swiper-pagination-bullet {
           width: 6px;
           height: 6px;
@@ -1409,21 +775,18 @@ export default function Home() {
           background: var(--muted);
           transition: all 0.25s ease;
         }
-
         .home-products-swiper .swiper-pagination-bullet-active {
           width: 20px;
           border-radius: 999px;
           opacity: 1;
           background: var(--accent);
         }
-
         @media (max-width: 640px) {
           .home-products-swiper {
             margin-right: -20px;
             padding-right: 20px;
           }
         }
-
         @media (prefers-reduced-motion: reduce) {
           .home-products-swiper .swiper-wrapper {
             transition-duration: 0ms !important;
@@ -1431,155 +794,5 @@ export default function Home() {
         }
       `}</style>
     </main>
-  );
-}
-
-// ============================================================
-// TRUST ITEM
-// ============================================================
-
-function TrustItem({ item, index }) {
-  const [img, setImg] = useState(null);
-  const reduceMotion = useReducedMotion();
-
-  const variant = reduceMotion ? staticVariant : fadeUp;
-
-  return (
-    <>
-      <motion.div
-        custom={index}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{
-          once: true,
-          amount: 0.3,
-        }}
-        variants={variant}
-        className="flex items-center gap-4 text-left"
-      >
-        <button
-          type="button"
-          onClick={() => setImg(item?.image)}
-          aria-label={`View ${item?.title || "certification"}`}
-          className="
-            relative
-            flex
-            h-12
-            w-12
-            shrink-0
-            cursor-zoom-in
-            items-center
-            justify-center
-            overflow-hidden
-            rounded-md
-            border
-            border-[var(--border)]
-            transition-colors
-            duration-200
-            hover:border-[var(--accent)]
-          "
-        >
-          <img
-            src={item?.image}
-            alt={item?.title || "Quality badge"}
-            loading="lazy"
-            className="h-6 w-6 object-contain"
-          />
-        </button>
-
-        <h3
-          className="
-            text-[14px]
-            font-medium
-            text-[var(--text)]
-          "
-        >
-          {item?.title}
-        </h3>
-      </motion.div>
-
-      {img && (
-        <div
-          onClick={() => setImg(null)}
-          className="
-            fixed
-            inset-0
-            z-[9999]
-            flex
-            cursor-zoom-out
-            items-center
-            justify-center
-            bg-black/85
-            p-4
-            backdrop-blur-sm
-          "
-        >
-          <img
-            src={img}
-            alt="Preview"
-            className="
-              max-h-[85vh]
-              max-w-[85vw]
-              rounded-lg
-              border
-              border-white/10
-              object-contain
-            "
-          />
-        </div>
-      )}
-    </>
-  );
-}
-
-// ============================================================
-// TRUST SECTION
-// ============================================================
-
-function TrustSection() {
-  const dispatch = useDispatch();
-
-  const {
-    trustItems,
-    loading,
-  } = useSelector((state) => state.trust);
-
-  useEffect(() => {
-    dispatch(getTrustItems());
-  }, [dispatch]);
-
-  if (
-    !loading &&
-    (!trustItems || trustItems.length === 0)
-  ) {
-    return null;
-  }
-
-  return (
-    <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 sm:py-14 lg:px-10">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="
-                  h-12
-                  animate-pulse
-                  rounded-md
-                  border
-                  border-[var(--border)]
-                  bg-[var(--card)]
-                "
-              />
-            ))
-          : trustItems.map((item, index) => (
-              <TrustItem
-                key={item?._id || index}
-                item={item}
-                index={index}
-              />
-            ))}
-      </div>
-    </section>
   );
 }
