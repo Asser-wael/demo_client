@@ -84,60 +84,71 @@ function App() {
         return;
       }
 
-      console.log(
-        "🆕 NEW ORDER RECEIVED:",
-        order
-      );
 
-      /* -----------------------------------------------------
-         SOUND
-      ----------------------------------------------------- */
+      if (user?.role == "user") {
 
-      playSound?.(sounds.newOrder);
+        socket.emit("userOrder" , order)
+        showToast({
+          type: "info",
+          message: `started`,
+          amount: order.totalPrice,
+        });
 
-      /* -----------------------------------------------------
-         TOAST
-      ----------------------------------------------------- */
-
-      showToast({
-        type: "adminOrder",
-        message: `${order.items?.length || 0} dishes received`,
-        amount: order.totalPrice,
-      });
-
-      /* -----------------------------------------------------
-         REDUX
-      ----------------------------------------------------- */
-
-      dispatch(addOrder(order));
-
-      /* -----------------------------------------------------
-         PRINT
-      ----------------------------------------------------- */
-
-      try {
-        await printOrder(order);
-
+      } else {
         console.log(
-          "✅ Order printed successfully:",
-          order._id
+          "🆕 NEW ORDER RECEIVED:",
+          order
         );
+        /* -----------------------------------------------------
+        SOUND
+        ----------------------------------------------------- */
+
+        playSound?.(sounds.newOrder);
+
+        /* -----------------------------------------------------
+        TOAST
+        ----------------------------------------------------- */
 
         showToast({
-          type: "success",
-          message: "Order ticket printed successfully",
+          type: "adminOrder",
+          message: `${order.items?.length || 0} dishes received`,
+          amount: order.totalPrice,
         });
-      } catch (error) {
-        console.error(
-          "❌ Order printing failed:",
-          error
-        );
 
-        showToast({
-          type: "error",
-          message:
-            "Order received, but printing failed",
-        });
+        /* -----------------------------------------------------
+        REDUX
+        ----------------------------------------------------- */
+
+        dispatch(addOrder(order));
+
+        /* -----------------------------------------------------
+        PRINT
+        ----------------------------------------------------- */
+
+        try {
+          await printOrder(order);
+
+          console.log(
+            "✅ Order printed successfully:",
+            order._id
+          );
+
+          showToast({
+            type: "success",
+            message: "Order ticket printed successfully",
+          });
+        } catch (error) {
+          console.error(
+            "❌ Order printing failed:",
+            error
+          );
+
+          showToast({
+            type: "error",
+            message:
+              "Order received, but printing failed",
+          });
+        }
       }
     },
     [dispatch]
