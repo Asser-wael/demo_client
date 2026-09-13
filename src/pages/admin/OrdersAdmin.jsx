@@ -644,7 +644,7 @@ function MobileOrderCard({
               font-semibold
             "
           >
-            <Currency amount={order.totalPrice}/>
+            <Currency amount={order.totalPrice}/>nnnn
           </p>
         </div>
       </div>
