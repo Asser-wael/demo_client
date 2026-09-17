@@ -45,6 +45,7 @@ function App() {
     if (!accessToken) return;
     dispatch(getUser());
   }, [accessToken, dispatch]);
+
   useEffect(() => {
     dispatch(getSettings());
   }, [dispatch]);
@@ -282,7 +283,7 @@ function App() {
           duration: 4000,
         }}
       />
-      <Analytics/>|
+      <Analytics/>
       <SpeedInsights/>
       <ThemeProvider />
       <Suspense fallback={<Loading />}>
