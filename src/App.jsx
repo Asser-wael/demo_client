@@ -282,8 +282,8 @@ function App() {
           duration: 4000,
         }}
       />
-      <Analytics/>|
-      <SpeedInsights/>
+      <Analytics />
+      <SpeedInsights />
       <ThemeProvider />
       <Suspense fallback={<Loading />}>
         <RouterProvider router={router} />
