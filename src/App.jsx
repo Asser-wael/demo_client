@@ -21,6 +21,8 @@ import useApplyTheme from "./hooks/useApplyTheme.js";
 import {  getSettings } from "./features/settings/settingsSlice.js";
 import ThemeProvider from "./components/common/ThemeProvider.jsx";
 
+import { SpeedInsights } from "@vercel/speed-insights/react"
+import { Analytics } from "@vercel/analytics/react"
 function App() {
   useApplyTheme();
   const dispatch = useDispatch();
@@ -280,6 +282,8 @@ function App() {
           duration: 4000,
         }}
       />
+      <Analytics/>|
+      <SpeedInsights/>
       <ThemeProvider />
       <Suspense fallback={<Loading />}>
         <RouterProvider router={router} />
