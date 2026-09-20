@@ -691,8 +691,8 @@ export default function Checkout() {
                 onClick={() =>
                   choosePayment("wallet")
                 }
-              />
-            </div> */}
+              />*/}
+            </div> 
 
             {/* <AnimatePresence initial={false}>
               {isWallet && (
