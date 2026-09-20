@@ -684,7 +684,7 @@ export default function Checkout() {
                 }
               />
 
-              <SelectOption
+              {/* <SelectOption
                 active={isWallet}
                 icon={<FiCreditCard />}
                 title="E-Wallet"
@@ -692,9 +692,9 @@ export default function Checkout() {
                   choosePayment("wallet")
                 }
               />
-            </div>
+            </div> */}
 
-            <AnimatePresence initial={false}>
+            {/* <AnimatePresence initial={false}>
               {isWallet && (
                 <motion.div
                   initial={{
@@ -800,7 +800,7 @@ export default function Checkout() {
                   </div>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
           </div>
 
           {/* Submit */}

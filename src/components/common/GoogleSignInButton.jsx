@@ -9,10 +9,10 @@ export default function GoogleSignInButton({ onSuccess, onError }) {
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-    // if (!clientId) {
-    //   // Not configured — fail quietly rather than showing a broken button.
-    //   return;
-    // }
+    if (!clientId) {
+      // Not configured — fail quietly rather than showing a broken button.
+      return;
+    }
 
     const renderButton = () => {
       if (!window.google || !buttonRef.current) return;
