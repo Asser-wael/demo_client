@@ -15,6 +15,75 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const verifyOtp = createAsyncThunk(
+  "auth/verifyOtp",
+  async (data, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await axiosInstance.post("/auth/verify-otp", data);
+      dispatch(setAccessToken(res.data.accessToken));
+      localStorage.setItem("accessToken", res.data.accessToken);
+      showToast(res.data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error");
+    }
+  }
+);
+
+export const resendOtp = createAsyncThunk(
+  "auth/resendOtp",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post("/auth/resend-otp", data);
+      showToast(res.data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error");
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post("/auth/forgot-password", data);
+      showToast(res.data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error");
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post("/auth/reset-password", data);
+      showToast(res.data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error");
+    }
+  }
+);
+
+export const googleAuth = createAsyncThunk(
+  "auth/google",
+  async (credential, { rejectWithValue, dispatch }) => {
+    try {
+      const res = await axiosInstance.post("/auth/google", { credential });
+      dispatch(setAccessToken(res.data.accessToken));
+      localStorage.setItem("accessToken", res.data.accessToken);
+      showToast(res.data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error");
+    }
+  }
+);
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (data, { rejectWithValue, dispatch }) => {
@@ -25,7 +94,10 @@ export const loginUser = createAsyncThunk(
       showToast(res.data);
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error");
+      // Login intentionally returns the whole error payload (not just the
+      // message) here, since the "not verified" case needs `code` and
+      // `email` to send the user straight to OTP verification.
+      return rejectWithValue(err.response?.data || { message: "Error" });
     }
   }
 );
@@ -80,7 +152,9 @@ const authSlice = createSlice({
     notifications: [],
     accessToken: localStorage.getItem("accessToken") || null,
     loading: false,
+    loadingRegister: false,
     error: null,
+    registerError: null,
   },
 
   reducers: {
@@ -97,6 +171,49 @@ const authSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+      // Register
+      .addCase(registerUser.pending, (state) => {
+        state.loadingRegister = true;
+        state.registerError = null;
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.loadingRegister = false;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loadingRegister = false;
+        state.registerError = action.payload;
+      })
+
+      // Verify OTP (registration)
+      .addCase(verifyOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accessToken = action.payload.accessToken;
+        state.user = action.payload.user;
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Google sign-in
+      .addCase(googleAuth.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(googleAuth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accessToken = action.payload.accessToken;
+        state.user = action.payload.user;
+      })
+      .addCase(googleAuth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;

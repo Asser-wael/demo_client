@@ -61,14 +61,14 @@ const itemVariants = {
 
 const getVariantPrice = (
   product,
-  color,
+  variant,
   size
 ) => {
-  const variant = product?.variants?.find(
-    (v) => v.color?.name === color
+  const productVariant = product?.variants?.find(
+    (v) => v.variant?.name === variant
   );
 
-  const sizeObj = variant?.sizes?.find(
+  const sizeObj = productVariant?.sizes?.find(
     (s) => s.size === size
   );
 
@@ -108,7 +108,7 @@ export default function Cart() {
     (sum, item) => {
       const price = getVariantPrice(
         item.product,
-        item.color,
+        item.variant,
         item.size
       );
 
@@ -139,7 +139,7 @@ export default function Cart() {
         productId:
           item.product._id,
 
-        color: item.color,
+        variant: item.variant,
 
         size: item.size,
 
@@ -168,7 +168,7 @@ export default function Cart() {
         productId:
           item.product._id,
 
-        color: item.color,
+        variant: item.variant,
 
         size: item.size,
 
@@ -196,7 +196,7 @@ export default function Cart() {
         productId:
           item.product._id,
 
-        color: item.color,
+        variant: item.variant,
 
         size: item.size,
       })
@@ -417,7 +417,7 @@ export default function Cart() {
               const price =
                 getVariantPrice(
                   item.product,
-                  item.color,
+                  item.variant,
                   item.size
                 );
 
@@ -431,7 +431,7 @@ export default function Cart() {
               return (
                 <motion.div
                   layout
-                  key={`${item.product._id}-${item.color}-${item.size}`}
+                  key={`${item.product._id}-${item.variant}-${item.size}`}
                   variants={itemVariants}
                   initial="hidden"
                   animate="show"
@@ -530,7 +530,7 @@ export default function Cart() {
 
                       <div className="flex items-center gap-2 mt-1 text-xs text-[var(--muted)] capitalize">
                         <span className="font-medium text-[var(--text)]">
-                          {item.color}
+                          {item.variant}
                         </span>
 
                         <span>•</span>

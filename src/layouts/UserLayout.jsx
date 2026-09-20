@@ -22,6 +22,7 @@ import {
 } from "react-icons/fi";
 
 import { logoutUser } from "../features/auth/authSlice";
+import { unsubscribeFromPush } from "../utils/pushSubscribe";
 import ThemeToggle from "../components/common/ToggleButton";
 import Footer from "../components/common/Footer";
 import Name from "../components/company/Name";
@@ -473,6 +474,7 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
+      await unsubscribeFromPush();
       await dispatch(logoutUser()).unwrap();
 
       setAccountOpen(false);
@@ -1029,6 +1031,7 @@ function Navbar() {
                     <button
                       onClick={async () => {
                         try {
+                          await unsubscribeFromPush();
                           await dispatch(logoutUser()).unwrap();
 
                           closeDrawer();

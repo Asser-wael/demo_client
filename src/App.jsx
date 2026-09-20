@@ -16,13 +16,14 @@ import { showToast } from "./utils/showToast.jsx";
 
 import { getUser } from "./features/auth/authSlice.js";
 import { getCart } from "./features/cart/cartSlice.js";
-import { addOrder } from "./features/order/orderSlice.js";
+import {
+  addOrder,
+  applyOrderStatusFromSocket,
+  removeOrderFromSocket,
+} from "./features/order/orderSlice.js";
 import useApplyTheme from "./hooks/useApplyTheme.js";
-import {  getSettings } from "./features/settings/settingsSlice.js";
-import ThemeProvider from "./components/common/ThemeProvider.jsx";
+import { fetchSettings } from "./features/settings/settingsSlice.js";
 
-import { SpeedInsights } from "@vercel/speed-insights/react"
-import { Analytics } from "@vercel/analytics/react"
 function App() {
   useApplyTheme();
   const dispatch = useDispatch();
@@ -32,11 +33,6 @@ function App() {
 
   const socket = useSocket(accessToken);
 
-
-  const { orders } = useSelector(
-    (state) => state.orders
-  );
-
   /* =========================================================
      AUTH
   ========================================================= */
@@ -45,38 +41,6 @@ function App() {
     if (!accessToken) return;
     dispatch(getUser());
   }, [accessToken, dispatch]);
-
-  useEffect(() => {
-    dispatch(getSettings());
-  }, [dispatch]);
-
-
-  /* =========================================================
-     USER ORDER ROOMS
-     
-     Admin doesn't need to join every user order room.
-  ========================================================= */
-
-  useEffect(() => {
-    if (!socket) return;
-
-    if (!user) return;
-
-    if (user.role === "admin") return;
-
-    if (!orders?.length) return;
-
-    orders.forEach(({ _id }) => {
-      if (!_id) return;
-
-      socket.emit("userOrder", _id);
-    });
-  }, [
-    socket,
-    user?.role,
-    user?._id,
-    orders,
-  ]);
 
   /* =========================================================
      NEW ORDER
@@ -91,11 +55,6 @@ function App() {
 
         return;
       }
-
-      console.log(
-        "🆕 NEW ORDER RECEIVED:",
-        order
-      );
 
       /* -----------------------------------------------------
          SOUND
@@ -125,11 +84,6 @@ function App() {
 
       try {
         await printOrder(order);
-
-        console.log(
-          "✅ Order printed successfully:",
-          order._id
-        );
 
         showToast({
           type: "success",
@@ -162,7 +116,7 @@ function App() {
 
     showToast({
       type: "lowStock",
-      message: `${data.name} is running low on stock (${data.color
+      message: `${data.name} is running low on stock (${data.variant
         } - ${data.size})`,
     });
   }, []);
@@ -176,13 +130,35 @@ function App() {
 
     playSound?.(sounds.orderStatus);
 
+    dispatch(
+      applyOrderStatusFromSocket({
+        orderId: data.orderId,
+        status: data.status,
+      })
+    );
+
     showToast({
       type: "orderStatus",
       message:
         data.body ||
         `Order status updated to ${data.status}`,
     });
-  }, []);
+  }, [dispatch]);
+
+  /* =========================================================
+     ORDER DELETED
+  ========================================================= */
+
+  const handleOrderDeleted = useCallback((data) => {
+    if (!data) return;
+
+    dispatch(removeOrderFromSocket({ orderId: data.orderId }));
+
+    showToast({
+      type: "orderStatus",
+      message: "One of your orders was removed by the restaurant.",
+    });
+  }, [dispatch]);
 
   /* =========================================================
      SOCKET EVENTS
@@ -206,6 +182,11 @@ function App() {
       handleOrderStatus
     );
 
+    socket.on(
+      "orderDeleted",
+      handleOrderDeleted
+    );
+
     return () => {
       socket.off(
         "newOrder",
@@ -221,12 +202,18 @@ function App() {
         "orderStatus",
         handleOrderStatus
       );
+
+      socket.off(
+        "orderDeleted",
+        handleOrderDeleted
+      );
     };
   }, [
     socket,
     handleNewOrder,
     handleWarning,
     handleOrderStatus,
+    handleOrderDeleted,
   ]);
 
   /* =========================================================
@@ -251,7 +238,9 @@ function App() {
   /* =========================================================
      ADMIN SOCKET ROOM
   ========================================================= */
-
+  useEffect(() => {
+    dispatch(fetchSettings());
+  }, [dispatch]);
   useEffect(() => {
     if (!socket) return;
 
@@ -283,9 +272,7 @@ function App() {
           duration: 4000,
         }}
       />
-      <Analytics/>
-      <SpeedInsights/>
-      <ThemeProvider />
+
       <Suspense fallback={<Loading />}>
         <RouterProvider router={router} />
       </Suspense>

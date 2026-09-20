@@ -52,7 +52,7 @@ const ICONS = {
   ),
 };
 
-export default function Social({ className = "" }) {
+export default function Social({ className = "", itemClassName = "text-muted transition hover:text-primary" }) {
   const social = useSelector(
     (state) => state.settings.social
   );
@@ -91,7 +91,7 @@ export default function Social({ className = "" }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={key}
-          className="text-muted transition hover:text-primary"
+          className={itemClassName}
         >
           {ICONS[key]}
         </a>

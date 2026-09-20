@@ -2,38 +2,44 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { registerUser } from "../features/auth/authSlice";
+import { registerUser, googleAuth } from "../features/auth/authSlice";
 import { motion } from "framer-motion";
 import { MdEmail, MdLockOutline, MdPersonOutline } from "react-icons/md";
+import GoogleSignInButton from "../components/common/GoogleSignInButton";
+import { showToast } from "../utils/showToast.jsx";
 
 export default function Register() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { register, handleSubmit, reset } = useForm();
-  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const { loadingRegister } = useSelector((state) => state.auth);
 
   const onSubmit = async (data) => {
-    setLoading(true);
     setErrorMsg("");
-    setLoading(false);
 
     const res = await dispatch(registerUser(data))
-
-    console.log(res);
 
     const status = res.payload?.type;
 
     if (status === "success") {
       reset();
-      navigate("/login", { replace: true });
-    //   navigate("/login/verifyEmail", { replace: true });
+      navigate("/login", {
+        replace: true,
+        state: { verifyEmail: true, email: data.email },
+      });
     } else {
       setErrorMsg(res.payload?.message || "Server error");
     }
 
   }
+
+  const handleGoogleSuccess = async (credential) => {
+    const res = await dispatch(googleAuth(credential));
+    if (res.payload?.accessToken) {
+      navigate("/");
+    }
+  };
 
 
 
@@ -200,6 +206,17 @@ export default function Register() {
           >
             {loadingRegister ? "Creating account..." : "Register"}
           </button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-[var(--color-border)]" />
+            <span className="text-xs text-[var(--color-muted)]">OR</span>
+            <div className="h-px flex-1 bg-[var(--color-border)]" />
+          </div>
+
+          <GoogleSignInButton
+            onSuccess={handleGoogleSuccess}
+            onError={(msg) => showToast({ type: "error", message: msg })}
+          />
         </form>
       </motion.div>
     </div>

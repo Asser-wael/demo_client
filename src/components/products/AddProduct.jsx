@@ -29,7 +29,7 @@ const emptySize = () => ({
 
 const emptyVariant = () => ({
   id: crypto.randomUUID(),
-  color: { name: "" },
+  variant: { name: "" },
   sizes: [emptySize()],
 });
 
@@ -121,7 +121,7 @@ export default function AddProduct({ onDone }) {
         v.id === id
           ? {
               ...v,
-              color: {
+              variant: {
                 name: value,
               },
             }
@@ -444,7 +444,7 @@ export default function AddProduct({ onDone }) {
                         <input
                           type="text"
                           placeholder="Spicy, Regular, No Garlic..."
-                          value={variant.color.name}
+                          value={variant.variant.name}
                           onChange={(e) =>
                             updateVariantName(
                               variant.id,

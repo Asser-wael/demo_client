@@ -36,13 +36,14 @@ export const checkoutOrder = createAsyncThunk(
 
 export const getOrders = createAsyncThunk(
     "order/getOrders",
-    async (_, { rejectWithValue }) => {
+    async (page = 1, { rejectWithValue }) => {
         try {
             const { data } = await axiosInstance.get(
-                "/orders/orders"
+                "/orders/orders",
+                { params: { page } }
             );
 
-            return data.orders;
+            return data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message ||
@@ -58,13 +59,14 @@ export const getOrders = createAsyncThunk(
 
 export const getOrdersUser = createAsyncThunk(
     "order/getOrdersUser",
-    async (_, { rejectWithValue }) => {
+    async (page = 1, { rejectWithValue }) => {
         try {
             const { data } = await axiosInstance.get(
-                "/orders/my-orders"
+                "/orders/my-orders",
+                { params: { page } }
             );
 
-            return data.orders;
+            return data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message ||
@@ -156,6 +158,9 @@ const orderSlice = createSlice({
         orders: [],
         myOrders: [],
         order: null,
+        ordersPagination: null,
+        myOrdersPagination: null,
+        myOrdersStats: null,
 
         loading: false,
         actionLoading: false,
@@ -197,6 +202,50 @@ const orderSlice = createSlice({
                 state.orders.unshift(newOrder);
             }
         },
+
+        // --------------------------------------------------------
+        // ORDER STATUS CHANGED FROM SOCKET
+        //
+        // The socket only tells us the order id + new status (not the
+        // full order document), so this patches just that field wherever
+        // the order currently appears — otherwise a customer with the
+        // Orders page open would see a toast but a stale status badge
+        // until they refreshed.
+        // --------------------------------------------------------
+
+        applyOrderStatusFromSocket: (state, action) => {
+            const { orderId, status } = action.payload;
+            if (!orderId || !status) return;
+
+            const patch = (order) =>
+                order._id === orderId
+                    ? { ...order, status }
+                    : order;
+
+            state.myOrders = state.myOrders.map(patch);
+            state.orders = state.orders.map(patch);
+
+            if (state.order?._id === orderId) {
+                state.order = { ...state.order, status };
+            }
+        },
+
+        // --------------------------------------------------------
+        // ORDER DELETED FROM SOCKET
+        // --------------------------------------------------------
+
+        removeOrderFromSocket: (state, action) => {
+            const { orderId } = action.payload;
+            if (!orderId) return;
+
+            state.myOrders = state.myOrders.filter(
+                (order) => order._id !== orderId
+            );
+
+            if (state.order?._id === orderId) {
+                state.order = null;
+            }
+        },
     },
 
     extraReducers: (builder) => {
@@ -232,7 +281,8 @@ const orderSlice = createSlice({
 
             .addCase(getOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.orders = action.payload;
+                state.orders = action.payload.orders;
+                state.ordersPagination = action.payload.pagination;
             })
 
             .addCase(getOrders.rejected, (state, action) => {
@@ -251,7 +301,9 @@ const orderSlice = createSlice({
 
             .addCase(getOrdersUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.myOrders = action.payload;
+                state.myOrders = action.payload.orders;
+                state.myOrdersPagination = action.payload.pagination;
+                state.myOrdersStats = action.payload.stats;
             })
 
             .addCase(getOrdersUser.rejected, (state, action) => {
@@ -338,6 +390,8 @@ export const {
     clearOrder,
     clearOrderError,
     addOrder,
+    applyOrderStatusFromSocket,
+    removeOrderFromSocket,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

@@ -26,7 +26,6 @@ const CategoryDetails = lazy(() => import("../pages/CategoryDetails.jsx"));
 const Cart = lazy(() => import("../pages/Cart"));
 const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
-const VerifyOtp = lazy(() => import("../pages/VerifyOtp"));
 const Notifications = lazy(() => import("../pages/Notifications.jsx"));
 
 // =========================
@@ -131,11 +130,6 @@ export const router = createBrowserRouter([
       {
         path: "collections/:id",
         element: Loadable(CategoryDetails),
-      },
-
-      {
-        path: "verify-otp",
-        element: Loadable(VerifyOtp),
       },
 
 

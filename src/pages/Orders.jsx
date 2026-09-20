@@ -15,6 +15,8 @@ import {
   FiMapPin,
   FiRefreshCw,
   FiCalendar,
+  FiCoffee,
+  FiHash,
 } from "react-icons/fi";
 
 // Currency Component
@@ -33,32 +35,36 @@ function Currency({ amount, className = "" }) {
 
 export default function Orders() {
   const dispatch = useDispatch();
-  const { myOrders = [], loading } = useSelector((state) => state.orders);
+  const { myOrders = [], myOrdersStats, myOrdersPagination, loading } = useSelector(
+    (state) => state.orders
+  );
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
-    dispatch(getOrdersUser());
-  }, [dispatch]);
+    dispatch(getOrdersUser(page));
+  }, [dispatch, page]);
 
   if (loading) {
     return <Loading />;
   }
 
-  // Quick Stats Calculations
-  const totalOrders = myOrders?.length || 0;
-  const totalSpent =
-    myOrders?.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0) || 0;
-  const pendingOrders =
-    myOrders?.filter((o) => o.status === "pending" || o.status === "confirmed")
-      .length || 0;
+  // Quick Stats — sourced from the backend's aggregate stats, not derived
+  // from `myOrders`, since that array is now just the current page and
+  // would silently under-report once someone has more than one page of
+  // orders.
+  const totalOrders = myOrdersStats?.totalOrders ?? myOrders?.length ?? 0;
+  const totalSpent = myOrdersStats?.totalSpent ?? 0;
+  const pendingOrders = myOrdersStats?.pendingOrders ?? 0;
 
-  // Filter orders by status tab
+  // Filter orders by status tab (only within the currently loaded page —
+  // see the pagination controls below for moving between pages)
   const filteredOrders = myOrders.filter((order) => {
     if (selectedStatus === "all") return true;
     return order.status === selectedStatus;
@@ -107,6 +113,34 @@ export default function Orders() {
     );
   };
 
+  // Order type is a separate concept from status/payment — kept visually
+  // distinct wherever it's shown.
+  const orderTypeConfig = {
+    delivery: { label: "Delivery", icon: FiTruck },
+    takeaway: { label: "Takeaway", icon: FiShoppingBag },
+    dine_in: { label: "Dine In", icon: FiCoffee },
+  };
+
+  const getOrderTypeBadge = (order) => {
+    // Legacy orders created before orderType existed fall back to
+    // "Delivery" (the schema default) instead of showing nothing.
+    const current =
+      orderTypeConfig[order.orderType] || orderTypeConfig.delivery;
+    const Icon = current.icon;
+
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text)] bg-[var(--border)]/30 px-2.5 py-1 rounded-lg border border-[var(--border)]">
+        <Icon className="w-3.5 h-3.5 text-[var(--primary)]" />
+        {current.label}
+        {order.orderType === "dine_in" && order.tableNumber && (
+          <span className="text-[var(--muted)]">
+            · Table {order.tableNumber}
+          </span>
+        )}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg)] px-3 py-6 sm:px-6 md:px-8 text-[var(--text)] font-sans transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
@@ -122,7 +156,7 @@ export default function Orders() {
             </p>
           </div>
           <button
-            onClick={() => dispatch(getOrdersUser())}
+            onClick={() => dispatch(getOrdersUser(page))}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--border)]/30 transition shadow-sm active:scale-95"
           >
             <FiRefreshCw className="w-4 h-4" />
@@ -214,6 +248,7 @@ export default function Orders() {
                   <th className="p-4 pl-6">Receipt #</th>
                   <th className="p-4">Date & Time</th>
                   <th className="p-4">Dishes</th>
+                  <th className="p-4">Type</th>
                   <th className="p-4">Payment Method</th>
                   <th className="p-4">Total Amount</th>
                   <th className="p-4">Order Status</th>
@@ -250,6 +285,9 @@ export default function Orders() {
                           {order.items?.length || 0} item(s)
                         </td>
                         <td className="p-4">
+                          {getOrderTypeBadge(order)}
+                        </td>
+                        <td className="p-4">
                           <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text)] bg-[var(--border)]/30 px-2.5 py-1 rounded-lg border border-[var(--border)]">
                             {order.paymentMethod === "wallet" ? (
                               <FiCreditCard className="w-3.5 h-3.5 text-[var(--primary)]" />
@@ -258,7 +296,7 @@ export default function Orders() {
                             )}
                             {order.paymentMethod === "wallet"
                               ? "Digital Wallet"
-                              : "Cash on Delivery"}
+                              : "Cash"}
                           </span>
                         </td>
                         <td className="p-4 font-bold text-[var(--text)] text-xs sm:text-sm">
@@ -280,7 +318,7 @@ export default function Orders() {
                 ) : (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="p-12 text-center text-[var(--muted)] text-sm"
                     >
                       No meal orders found in this category.
@@ -291,6 +329,33 @@ export default function Orders() {
             </table>
           </div>
         </div>
+
+        {/* PAGINATION */}
+        {myOrdersPagination && myOrdersPagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 py-4">
+            <button
+              type="button"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-[var(--muted)]">
+              Page {myOrdersPagination.page} of {myOrdersPagination.totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={page >= myOrdersPagination.totalPages || loading}
+              onClick={() => setPage((p) => p + 1)}
+              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Order Details Modal */}
@@ -326,15 +391,35 @@ export default function Orders() {
               <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
                 Order Status
               </span>
-              <div>{getStatusBadge(selectedOrder.status)}</div>
+              <div className="flex items-center gap-3">
+                {getOrderTypeBadge(selectedOrder)}
+                {getStatusBadge(selectedOrder.status)}
+              </div>
             </div>
 
-            {/* Delivery Address */}
+            {/* Fulfillment Details — fields shown depend on orderType */}
             <div className="bg-[var(--border)]/10 p-4 sm:p-5 rounded-2xl space-y-3 border border-[var(--border)]">
               <h4 className="text-xs font-bold text-[var(--primary)] uppercase tracking-wider flex items-center gap-2">
-                <FiMapPin className="w-4 h-4" /> Delivery Address
+                <FiMapPin className="w-4 h-4" />
+                {selectedOrder.orderType === "dine_in"
+                  ? "Dine-In Details"
+                  : selectedOrder.orderType === "takeaway"
+                  ? "Takeaway Details"
+                  : "Delivery Address"}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[var(--text)]">
+                {selectedOrder.orderType === "dine_in" && (
+                  <div>
+                    <span className="text-[var(--muted)] text-[11px] block">
+                      Table Number
+                    </span>
+                    <span className="font-semibold flex items-center gap-1">
+                      <FiHash className="w-3.5 h-3.5" />
+                      {selectedOrder.tableNumber || "N/A"}
+                    </span>
+                  </div>
+                )}
+
                 <div>
                   <span className="text-[var(--muted)] text-[11px] block">
                     Customer Name
@@ -351,22 +436,29 @@ export default function Orders() {
                     {selectedOrder.shippingAddress?.phone || "N/A"}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[var(--muted)] text-[11px] block">
-                    Area / City
-                  </span>
-                  <span className="font-semibold">
-                    {selectedOrder.shippingAddress?.city || "N/A"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[var(--muted)] text-[11px] block">
-                    Street Address / Table
-                  </span>
-                  <span className="font-semibold">
-                    {selectedOrder.shippingAddress?.address || "N/A"}
-                  </span>
-                </div>
+
+                {/* City/Address only ever apply to delivery orders */}
+                {selectedOrder.orderType !== "takeaway" &&
+                  selectedOrder.orderType !== "dine_in" && (
+                    <>
+                      <div>
+                        <span className="text-[var(--muted)] text-[11px] block">
+                          Area / City
+                        </span>
+                        <span className="font-semibold">
+                          {selectedOrder.shippingAddress?.city || "N/A"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--muted)] text-[11px] block">
+                          Street Address
+                        </span>
+                        <span className="font-semibold">
+                          {selectedOrder.shippingAddress?.address || "N/A"}
+                        </span>
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -394,7 +486,7 @@ export default function Orders() {
                           {item.name}
                         </div>
                         <div className="text-[11px] sm:text-xs text-[var(--muted)] mt-0.5">
-                          Variant: {item.color || "Standard"} | Portion:{" "}
+                          Variant: {item.variant || "Standard"} | Portion:{" "}
                           {item.size || "Regular"} | Qty: {item.quantity}
                         </div>
                       </div>

@@ -23,8 +23,6 @@ export const addCategory = createAsyncThunk(
   "category/addCategory",
   async (formData, { rejectWithValue }) => {
     try {
-      console.log(formData);
-      
       const { data } = await axiosInstance.post(
         "/categories/addCategory",
         formData,

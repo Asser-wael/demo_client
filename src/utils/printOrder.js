@@ -47,11 +47,6 @@ export async function printOrder(order) {
     throw new Error("No default printer found");
   }
 
-  console.log(
-    "🖨️ Using printer:",
-    printerName
-  );
-
   /* =======================================================
      CREATE CONFIG
   ======================================================= */
@@ -121,6 +116,37 @@ export async function printOrder(order) {
   data.push(separator());
 
   /* =======================================================
+     ORDER TYPE — printed prominently so kitchen/counter staff
+     immediately know how to handle the order.
+  ======================================================= */
+
+  const orderTypeLabels = {
+    delivery: "DELIVERY",
+    takeaway: "TAKEAWAY",
+    dine_in: "DINE IN",
+  };
+
+  // Legacy orders with no orderType default to delivery, same as the
+  // schema default, so old tickets don't print "undefined".
+  const orderType = order.orderType || "delivery";
+
+  data.push("\x1B\x45\x01");
+
+  data.push(
+    line(
+      `TYPE: ${orderTypeLabels[orderType] || "DELIVERY"}${
+        orderType === "dine_in" && order.tableNumber
+          ? ` (Table ${order.tableNumber})`
+          : ""
+      }`
+    )
+  );
+
+  data.push("\x1B\x45\x00");
+
+  data.push(separator());
+
+  /* =======================================================
      CUSTOMER
   ======================================================= */
 
@@ -142,21 +168,25 @@ export async function printOrder(order) {
     )
   );
 
-  data.push(
-    line(
-      `City: ${safe(
-        order.shippingAddress?.city
-      )}`
-    )
-  );
+  // City/Address only matter for delivery orders — omit them for
+  // takeaway/dine-in instead of printing irrelevant "-" placeholders.
+  if (orderType === "delivery") {
+    data.push(
+      line(
+        `City: ${safe(
+          order.shippingAddress?.city
+        )}`
+      )
+    );
 
-  data.push(
-    line(
-      `Address: ${safe(
-        order.shippingAddress?.address
-      )}`
-    )
-  );
+    data.push(
+      line(
+        `Address: ${safe(
+          order.shippingAddress?.address
+        )}`
+      )
+    );
+  }
 
   data.push(separator());
 
@@ -175,8 +205,8 @@ export async function printOrder(order) {
 
     data.push(
       line(
-        `Size: ${safe(item.size)}  Color: ${safe(
-          item.color
+        `Size: ${safe(item.size)}  Variant: ${safe(
+          item.variant
         )}`
       )
     );
@@ -225,7 +255,7 @@ export async function printOrder(order) {
     line(
       `Payment: ${
         order.paymentMethod === "cash"
-          ? "Cash on Delivery"
+          ? "Cash"
           : "Wallet"
       }`
     )
@@ -307,13 +337,6 @@ export async function printOrder(order) {
       data: data.join(""),
     },
   ]);
-
-  console.log(
-    `🖨️ Order ${
-      order.orderCode ||
-      order._id
-    } sent to ${printerName}`
-  );
 
   return true;
 }

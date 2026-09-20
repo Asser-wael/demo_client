@@ -455,6 +455,7 @@ export default function Home() {
   const { latestProducts, loading: newLoading } = useSelector(
     (state) => state.products
   );
+  const homeContent = useSelector((state) => state.settings.homeContent);
 
   useEffect(() => {
     dispatch(getCategories());
@@ -516,9 +517,28 @@ export default function Home() {
             className="relative mx-auto w-full max-w-[520px] lg:mx-0"
           >
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)]">
-              <video autoPlay loop muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover">
-                <source src="/bg2.mp4" type="video/mp4" />
-              </video>
+              {homeContent?.isActive && homeContent?.video?.url ? (
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 h-full w-full object-cover"
+                >
+                  <source src={homeContent.video.url} type="video/mp4" />
+                </video>
+              ) : homeContent?.isActive && homeContent?.image?.url ? (
+                <img
+                  src={homeContent.image.url}
+                  alt="Restaurant"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <video autoPlay loop muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover">
+                  <source src="/bg2.mp4" type="video/mp4" />
+                </video>
+              )}
               <div className="absolute inset-0 bg-black/10" />
             </div>
 

@@ -32,7 +32,7 @@ const emptySize = () => ({
 
 const emptyVariant = () => ({
   id: crypto.randomUUID(),
-  color: {
+  variant: {
     name: "",
   },
   sizes: [emptySize()],
@@ -134,8 +134,8 @@ export default function EditProduct({ onDone }) {
         ? product.variants.map((variant) => ({
             id: crypto.randomUUID(),
 
-            color: {
-              name: variant.color?.name || "",
+            variant: {
+              name: variant.variant?.name || "",
             },
 
             sizes:
@@ -231,7 +231,7 @@ export default function EditProduct({ onDone }) {
         v.id === id
           ? {
               ...v,
-              color: {
+              variant: {
                 name: value,
               },
             }
@@ -626,7 +626,7 @@ export default function EditProduct({ onDone }) {
                             type="text"
                             placeholder="Spicy, Regular, No Garlic..."
                             value={
-                              variant.color
+                              variant.variant
                                 .name
                             }
                             onChange={(e) =>

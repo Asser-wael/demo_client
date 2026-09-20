@@ -116,10 +116,10 @@ function ProductCard({ item, index }) {
           <div className="flex items-center gap-1.5 mt-0.5">
             {options.map((variant, i) => (
               <span
-                key={variant.color?.hex ?? i}
-                title={variant.color?.name}
+                key={variant.variant?.hex ?? i}
+                title={variant.variant?.name}
                 className="w-3.5 h-3.5 rounded-full border border-[var(--border)] shrink-0"
-                style={{ backgroundColor: variant.color?.hex || "#ccc" }}
+                style={{ backgroundColor: variant.variant?.hex || "#ccc" }}
               />
             ))}
           </div>

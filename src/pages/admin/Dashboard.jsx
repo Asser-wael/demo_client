@@ -918,8 +918,8 @@ export default function Dashboard() {
                         </p>
 
                         <p className="mt-1 text-xs text-muted">
-                          {item.color ||
-                            "No color"}{" "}
+                          {item.variant ||
+                            "No variant"}{" "}
                           ·{" "}
                           {item.size ||
                             "No size"}

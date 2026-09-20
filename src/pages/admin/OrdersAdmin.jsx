@@ -21,6 +21,8 @@ import {
   FiX,
   FiCalendar,
   FiUser,
+  FiCoffee,
+  FiHash,
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import {
@@ -29,7 +31,6 @@ import {
 } from "../../features/order/orderSlice";
 import { printOrder } from "../../utils/printOrder";
 import { showToast } from "../../utils/showToast";
-import Currency from "../../components/company/Currency";
 
 // ============================================================
 // STATUS CONFIG
@@ -104,6 +105,56 @@ function StatusBadge({ status }) {
 
       {current.label}
     </span>
+  );
+}
+
+// ============================================================
+// ORDER TYPE CONFIG
+// ============================================================
+// Kept visually distinct from StatusBadge/payment so staff never confuse
+// "how the order is being fulfilled" with "how it was paid for".
+
+const orderTypeConfig = {
+  delivery: {
+    label: "Delivery",
+    color: "text-sky-600 dark:text-sky-400",
+    icon: FiTruck,
+  },
+  takeaway: {
+    label: "Takeaway",
+    color: "text-orange-600 dark:text-orange-400",
+    icon: FiShoppingBag,
+  },
+  dine_in: {
+    label: "Dine In",
+    color: "text-teal-600 dark:text-teal-400",
+    icon: FiCoffee,
+  },
+};
+
+function OrderTypeBadge({ orderType, tableNumber }) {
+  // Legacy orders created before orderType existed have no value here —
+  // fall back to "Delivery" (the schema default) rather than crashing.
+  const current =
+    orderTypeConfig[orderType] || orderTypeConfig.delivery;
+  const Icon = current.icon;
+
+  return (
+    <div className="flex flex-col gap-1">
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${current.color}`}
+      >
+        <Icon className="w-3.5 h-3.5" />
+        {current.label}
+      </span>
+
+      {orderType === "dine_in" && tableNumber && (
+        <span className="inline-flex items-center gap-1 text-[10px] text-[var(--muted)]">
+          <FiHash className="w-3 h-3" />
+          Table {tableNumber}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -315,6 +366,14 @@ function OrderRow({
         {itemsCount === 1 ? "dish" : "dishes"}
       </td>
 
+      {/* ORDER TYPE */}
+      <td className="px-4 sm:px-5 py-4">
+        <OrderTypeBadge
+          orderType={order.orderType}
+          tableNumber={order.tableNumber}
+        />
+      </td>
+
       {/* PAYMENT */}
       <td className="px-4 sm:px-5 py-4">
         <div
@@ -335,7 +394,7 @@ function OrderRow({
 
           {order.paymentMethod === "wallet"
             ? "Digital Wallet"
-            : "Cash on Delivery"}
+            : "Cash"}
         </div>
       </td>
 
@@ -350,7 +409,7 @@ function OrderRow({
           whitespace-nowrap
         "
       >
-        <Currency amount={order.totalPrice} />
+        {order.totalPrice?.toLocaleString() || 0} EGP
       </td>
 
       {/* STATUS */}
@@ -608,6 +667,26 @@ function MobileOrderCard({
               text-[var(--muted)]
             "
           >
+            Type
+          </p>
+
+          <div className="mt-1">
+            <OrderTypeBadge
+              orderType={order.orderType}
+              tableNumber={order.tableNumber}
+            />
+          </div>
+        </div>
+
+        <div>
+          <p
+            className="
+              text-[10px]
+              uppercase
+              tracking-wide
+              text-[var(--muted)]
+            "
+          >
             Payment
           </p>
 
@@ -621,7 +700,7 @@ function MobileOrderCard({
           >
             {order.paymentMethod === "wallet"
               ? "Wallet"
-              : "COD"}
+              : "Cash"}
           </p>
         </div>
 
@@ -644,7 +723,7 @@ function MobileOrderCard({
               font-semibold
             "
           >
-            <Currency amount={order.totalPrice} />
+            {order.totalPrice?.toLocaleString() || 0} EGP
           </p>
         </div>
       </div>
@@ -883,8 +962,15 @@ function OrderModal({
                   Current Status
                 </p>
 
-                <div className="mt-2">
+                <div className="mt-2 flex items-center gap-4">
                   <StatusBadge status={order.status} />
+
+                  {/* Kept visually separate from status — order type is a
+                      different concept (how the order is fulfilled) */}
+                  <OrderTypeBadge
+                    orderType={order.orderType}
+                    tableNumber={order.tableNumber}
+                  />
                 </div>
               </div>
 
@@ -938,7 +1024,7 @@ function OrderModal({
             </div>
           </section>
 
-          {/* DELIVERY */}
+          {/* FULFILLMENT DETAILS — shown fields depend on orderType */}
           <section>
             <div
               className="
@@ -953,7 +1039,11 @@ function OrderModal({
               <FiMapPin className="w-4 h-4 text-[var(--primary)]" />
 
               <h3 className="text-sm font-semibold">
-                Delivery Information
+                {order.orderType === "dine_in"
+                  ? "Dine-In Details"
+                  : order.orderType === "takeaway"
+                  ? "Takeaway Details"
+                  : "Delivery Information"}
               </h3>
             </div>
 
@@ -967,6 +1057,13 @@ function OrderModal({
                 pt-4
               "
             >
+              {order.orderType === "dine_in" && (
+                <InfoField
+                  label="Table Number"
+                  value={order.tableNumber}
+                />
+              )}
+
               <InfoField
                 label="Diner Name"
                 value={
@@ -982,19 +1079,25 @@ function OrderModal({
                 }
               />
 
-              <InfoField
-                label="City"
-                value={
-                  order.shippingAddress?.city
-                }
-              />
+              {/* City/Address only ever apply to delivery orders */}
+              {order.orderType !== "takeaway" &&
+                order.orderType !== "dine_in" && (
+                  <>
+                    <InfoField
+                      label="City"
+                      value={
+                        order.shippingAddress?.city
+                      }
+                    />
 
-              <InfoField
-                label="Address"
-                value={
-                  order.shippingAddress?.address
-                }
-              />
+                    <InfoField
+                      label="Address"
+                      value={
+                        order.shippingAddress?.address
+                      }
+                    />
+                  </>
+                )}
             </div>
           </section>
 
@@ -1203,7 +1306,7 @@ function OrderModal({
                             break-words
                           "
                         >
-                          {item.color || "N/A"}{" "}
+                          {item.variant || "N/A"}{" "}
                           ·{" "}
                           {item.size || "N/A"}{" "}
                           · Qty {item.quantity}
@@ -1218,12 +1321,11 @@ function OrderModal({
                         whitespace-nowrap
                       "
                     >
-                      <Currency
-                        amount={
-                          (item.price || 0) *
-                          (item.quantity || 0)
-                        }
-                      />
+                      {(
+                        (item.price || 0) *
+                        (item.quantity || 0)
+                      ).toLocaleString()}{" "}
+                      EGP
                     </p>
                   </div>
                 )
@@ -1265,7 +1367,16 @@ function OrderModal({
                   font-semibold
                 "
               >
-                <Currency amount={order.totalPrice} />
+                {order.totalPrice?.toLocaleString() || 0}{" "}
+                <span
+                  className="
+                    text-xs
+                    font-normal
+                    text-[var(--muted)]
+                  "
+                >
+                  EGP
+                </span>
               </p>
             </div>
 
@@ -1289,7 +1400,7 @@ function OrderModal({
                   const cleanPhone = String(phone).replace(/\D/g, "");
 
                   window.open(
-                    `https://wa.me/${cleanPhone}`,
+                    `https://wa.me/2${cleanPhone}`,
                     "_blank",
                     "noopener,noreferrer"
                   );
@@ -1319,11 +1430,6 @@ function OrderModal({
                 onClick={async () => {
                   try {
                     await printOrder(order);
-
-                    console.log(
-                      "✅ Order printed successfully:",
-                      order._id
-                    );
 
                     showToast({
                       type: "success",
@@ -1427,6 +1533,7 @@ export default function OrdersAdmin() {
 
   const {
     orders,
+    ordersPagination,
     loading,
     actionLoading,
   } = useReduxSelector(
@@ -1445,13 +1552,15 @@ export default function OrdersAdmin() {
   const [updatingOrderId, setUpdatingOrderId] =
     useState(null);
 
+  const [page, setPage] = useState(1);
+
   // ==========================================================
   // FETCH ORDERS
   // ==========================================================
 
   useEffect(() => {
-    dispatch(getOrders());
-  }, [dispatch]);
+    dispatch(getOrders(page));
+  }, [dispatch, page]);
 
   // ==========================================================
   // STATUS UPDATE
@@ -1678,7 +1787,7 @@ export default function OrdersAdmin() {
           <button
             type="button"
             onClick={() =>
-              dispatch(getOrders())
+              dispatch(getOrders(page))
             }
             disabled={loading}
             className="
@@ -1731,7 +1840,7 @@ export default function OrdersAdmin() {
           <StatItem
             label="Total Revenue"
             value={totalRevenue.toLocaleString()}
-            suffix="NZD"
+            suffix="NZ$"
             icon={FiDollarSign}
           />
 
@@ -2018,6 +2127,21 @@ export default function OrdersAdmin() {
                       text-[var(--muted)]
                     "
                   >
+                    Type
+                  </th>
+
+                  <th
+                    className="
+                      px-4
+                      sm:px-5
+                      py-3.5
+                      text-[10px]
+                      font-medium
+                      uppercase
+                      tracking-[0.12em]
+                      text-[var(--muted)]
+                    "
+                  >
                     Payment
                   </th>
 
@@ -2241,6 +2365,33 @@ export default function OrdersAdmin() {
             )}
           </div>
         </section>
+
+        {/* PAGINATION */}
+        {ordersPagination && ordersPagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 py-4">
+            <button
+              type="button"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-[var(--muted)]">
+              Page {ordersPagination.page} of {ordersPagination.totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={page >= ordersPagination.totalPages || loading}
+              onClick={() => setPage((p) => p + 1)}
+              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
 

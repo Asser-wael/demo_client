@@ -1,15 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { FaFacebookF, FaTiktok } from "react-icons/fa";
 import { FiArrowUp, FiShoppingBag, FiUser } from "react-icons/fi";
 
-// Components Import
+// Company components — sourced from state.settings, so changing company
+// info in one place (Admin → Settings) updates it everywhere it's used.
 import Name from "../company/Name";
-import Number from "../company/Number";
-import Whatsapp from "../company/whatsapp";
-import Instgrame from "../company/Social";
-import GoogleMaps from "../company/googleMaps";
+import PhoneNumber from "../company/PhoneNumber";
+import Address from "../company/Address";
+import Social from "../company/Social";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -39,30 +38,11 @@ export default function Footer() {
               </p>
             </div>
 
-            {/* Social Icons Stack */}
+            {/* Social Icons — one component drives all platforms from settings */}
             <div className="flex items-center gap-3 pt-2">
-              <Instgrame className="flex h-10 w-10 items-center justify-center rounded-none border border-[var(--border)] bg-transparent text-[var(--muted)] transition-all hover:border-[var(--text)] hover:text-[var(--text)]" />
-              <Whatsapp className="flex h-10 w-10 items-center justify-center rounded-none border border-[var(--border)] bg-transparent text-[var(--muted)] transition-all hover:border-[var(--text)] hover:text-[var(--text)]" />
-              
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="flex h-10 w-10 items-center justify-center border border-[var(--border)] bg-transparent text-[var(--muted)] transition-all hover:border-[var(--text)] hover:text-[var(--text)]"
-              >
-                <FaFacebookF size={14} />
-              </a>
-
-              <a
-                href="https://tiktok.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="TikTok"
-                className="flex h-10 w-10 items-center justify-center border border-[var(--border)] bg-transparent text-[var(--muted)] transition-all hover:border-[var(--text)] hover:text-[var(--text)]"
-              >
-                <FaTiktok size={14} />
-              </a>
+              <Social
+                itemClassName="flex h-10 w-10 items-center justify-center rounded-none border border-[var(--border)] bg-transparent text-[var(--muted)] transition-all hover:border-[var(--text)] hover:text-[var(--text)]"
+              />
             </div>
           </div>
 
@@ -141,10 +121,10 @@ export default function Footer() {
             </h4>
             <div className="mt-6 space-y-4 text-xs font-medium text-[var(--muted)]">
               <div className="flex items-center gap-3">
-                <Number className="text-[var(--text)] font-semibold" />
+                <PhoneNumber className="text-[var(--text)] font-semibold" />
               </div>
               <div className="flex items-start gap-3">
-                <GoogleMaps className="leading-relaxed hover:text-[var(--text)] transition-colors" />
+                <Address className="leading-relaxed hover:text-[var(--text)] transition-colors" />
               </div>
             </div>
           </div>

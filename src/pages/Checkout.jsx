@@ -16,8 +16,9 @@ import {
   FiCheckCircle,
   FiLoader,
   FiArrowRight,
-  FiAlertCircle,
-  FiX,
+  FiTruck,
+  FiCoffee,
+  FiHash,
 } from "react-icons/fi";
 
 import {
@@ -25,13 +26,12 @@ import {
   getCart,
   selectCartItems,
   selectCartLoading,
-  selectBuyNowItem,
-  clearBuyNowItem,
 } from "../features/cart/cartSlice";
 
 import { checkoutOrder } from "../features/order/orderSlice";
 
 import Currency from "../components/company/Currency";
+import { showToast } from "../utils/showToast";
 
 /* =========================================================
    Get correct item price
@@ -50,7 +50,7 @@ const getItemPrice = (item) => {
   }
 
   const variant = item.product.variants.find(
-    (v) => v.color?.name === item.color
+    (v) => v.variant?.name === item.variant
   );
 
   const sizeInfo = variant?.sizes?.find(
@@ -78,10 +78,11 @@ const Field = React.forwardRef(
         <input
           ref={ref}
           {...props}
-          className={`w-full rounded-xl border bg-card px-4 py-3 !pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${error
-            ? "border-red-400 focus:border-red-400 focus:ring-red-400"
-            : "border-border focus:border-primary focus:ring-primary"
-            } ${className}`}
+          className={`w-full rounded-xl border bg-card px-4 py-3 !pl-11 text-sm text-text placeholder:text-muted transition-colors focus:outline-none focus:ring-1 ${
+            error
+              ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+              : "border-border focus:border-primary focus:ring-primary"
+          } ${className}`}
         />
       </div>
 
@@ -97,28 +98,160 @@ const Field = React.forwardRef(
 Field.displayName = "Field";
 
 /* =========================================================
-   Payment Option
+   Selectable Option (shared by order type & payment method)
 ========================================================= */
 
-function PaymentOption({
-  active,
-  icon,
-  title,
-  onClick,
-}) {
+function SelectOption({ active, icon, title, subtitle, onClick }) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
-      className={`flex flex-col items-center gap-2 rounded-xl border px-4 py-5 text-sm transition ${active
-        ? "border-primary bg-primary/10 text-primary"
-        : "border-border text-muted hover:border-primary/50"
-        }`}
+      className={`flex flex-col items-center gap-2 rounded-xl border px-4 py-5 text-center text-sm transition ${
+        active
+          ? "border-primary bg-primary/10 text-primary"
+          : "border-border text-muted hover:border-primary/50"
+      }`}
     >
       <span className="text-xl">{icon}</span>
-      {title}
+      <span className="font-medium">{title}</span>
+      {subtitle && (
+        <span className="text-xs text-muted">{subtitle}</span>
+      )}
     </motion.button>
+  );
+}
+
+/* =========================================================
+   Order Type Selector
+========================================================= */
+
+const ORDER_TYPES = [
+  {
+    value: "takeaway",
+    title: "Takeaway",
+    subtitle: "Pick it up from the restaurant",
+    icon: <FiShoppingBag />,
+  },
+  {
+    value: "dine_in",
+    title: "Dine In",
+    subtitle: "I'm at the restaurant",
+    icon: <FiCoffee />,
+  },
+  {
+    value: "delivery",
+    title: "Delivery",
+    subtitle: "Deliver it to my address",
+    icon: <FiTruck />,
+  },
+];
+
+function OrderTypeSelector({ value, onChange }) {
+  return (
+    <div className="card p-6 md:p-8">
+      <div className="mb-6 flex items-center gap-2">
+        <FiShoppingBag className="text-primary" />
+        <h3 className="text-2xl text-text">
+          How would you like your order?
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {ORDER_TYPES.map((option) => (
+          <SelectOption
+            key={option.value}
+            active={value === option.value}
+            icon={option.icon}
+            title={option.title}
+            subtitle={option.subtitle}
+            onClick={() => onChange(option.value)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   Delivery Fields
+========================================================= */
+
+function DeliveryFields({ register, errors }) {
+  return (
+    <div className="card p-6 md:p-8">
+      <div className="mb-6 flex items-center gap-2">
+        <FiMapPin className="text-primary" />
+        <h3 className="text-2xl text-text">Delivery Details</h3>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Field
+          icon={<FiUser />}
+          placeholder="Full Name"
+          error={errors.fullName}
+          {...register("fullName", {
+            required: "Full name is required",
+          })}
+        />
+
+        <Field
+          icon={<FiPhone />}
+          type="tel"
+          placeholder="Phone Number"
+          error={errors.phone}
+          {...register("phone", {
+            required: "Phone number is required",
+            minLength: {
+              value: 8,
+              message: "Enter a valid phone number",
+            },
+          })}
+        />
+
+        <Field
+          icon={<FiHome />}
+          placeholder="City / Region"
+          error={errors.city}
+          {...register("city", {
+            required: "City is required",
+          })}
+        />
+
+        <Field
+          icon={<FiMapPin />}
+          placeholder="Detailed Address"
+          error={errors.address}
+          {...register("address", {
+            required: "Address is required",
+          })}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   Dine-In Fields
+========================================================= */
+
+function DineInFields({ register, errors }) {
+  return (
+    <div className="card p-6 md:p-8">
+      <div className="mb-6 flex items-center gap-2">
+        <FiCoffee className="text-primary" />
+        <h3 className="text-2xl text-text">Table Details</h3>
+      </div>
+
+      <Field
+        icon={<FiHash />}
+        placeholder="Table Number"
+        error={errors.tableNumber}
+        {...register("tableNumber", {
+          required: "Table number is required",
+        })}
+      />
+    </div>
   );
 }
 
@@ -137,12 +270,13 @@ export default function Checkout() {
     (state) => state.orders.checkoutLoading
   );
 
-  const BuyNowitem = useSelector(selectBuyNowItem);
+  const BuyNowitem = useSelector(
+    (state) => state.cart.BuyNowitem
+  );
 
   const [transferImage, setTransferImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
   const [imageError, setImageError] = useState("");
 
   const {
@@ -155,10 +289,12 @@ export default function Checkout() {
     mode: "onTouched",
 
     defaultValues: {
+      orderType: "delivery",
       fullName: "",
       phone: "",
       city: "",
       address: "",
+      tableNumber: "",
       paymentMethod: "cash",
       senderName: "",
       senderPhone: "",
@@ -166,6 +302,7 @@ export default function Checkout() {
     },
   });
 
+  const orderType = watch("orderType");
   const paymentMethod = watch("paymentMethod");
   const isWallet = paymentMethod === "wallet";
 
@@ -228,8 +365,12 @@ export default function Checkout() {
   }, []);
 
   /* =========================================================
-     Payment Method
+     Order Type / Payment Method
   ========================================================= */
+
+  const chooseOrderType = (type) => {
+    setValue("orderType", type, { shouldValidate: true });
+  };
 
   const choosePayment = (method) => {
     setValue("paymentMethod", method, {
@@ -268,105 +409,78 @@ export default function Checkout() {
       return;
     }
 
-    setSubmitError("");
-
-    if (
-      data.paymentMethod === "wallet" &&
-      !transferImage
-    ) {
-      setImageError(
-        "Please upload the transfer receipt."
-      );
-
+    if (data.paymentMethod === "wallet" && !transferImage) {
+      setImageError("Please upload the transfer receipt.");
       return;
     }
 
     const fd = new FormData();
 
-    fd.append("fullName", data.fullName);
-    fd.append("phone", data.phone);
-    fd.append("city", data.city);
-    fd.append("address", data.address);
+    fd.append("orderType", data.orderType);
     fd.append("paymentMethod", data.paymentMethod);
-
     fd.append("totalPrice", String(total));
+    fd.append("isBuyNow", BuyNowitem ? "true" : "false");
 
-    fd.append(
-      "isBuyNow",
-      BuyNowitem ? "true" : "false"
-    );
+    // Only send the fields that are actually relevant to the chosen order
+    // type — a hidden field is still a real input in the DOM, so we build
+    // the payload from `data.orderType`, not from what happens to be
+    // rendered right now.
+    if (data.orderType === "delivery") {
+      fd.append("fullName", data.fullName);
+      fd.append("phone", data.phone);
+      fd.append("city", data.city);
+      fd.append("address", data.address);
+    } else if (data.orderType === "dine_in") {
+      fd.append("tableNumber", data.tableNumber);
+    }
 
     fd.append(
       "items",
       JSON.stringify(
         checkoutItems.map((item) => ({
-          product:
-            item.product?._id || item.product,
-
-          name:
-            item.product?.name || item.name,
-
-          color: item.color,
-
+          product: item.product?._id || item.product,
+          name: item.product?.name || item.name,
+          variant: item.variant,
           size: item.size,
-
           price: getItemPrice(item),
-
-          quantity: Number(
-            item.quantity || 1
-          ),
-
-          image:
-            item.product?.image ||
-            item.image,
+          quantity: Number(item.quantity || 1),
+          image: item.product?.image || item.image,
         }))
       )
     );
 
     if (data.paymentMethod === "wallet") {
-      fd.append(
-        "senderName",
-        data.senderName
-      );
-
-      fd.append(
-        "senderPhone",
-        data.senderPhone
-      );
-
-      fd.append(
-        "transactionId",
-        data.transactionId
-      );
-
-      fd.append(
-        "image",
-        transferImage
-      );
+      fd.append("senderName", data.senderName);
+      fd.append("senderPhone", data.senderPhone);
+      fd.append("transactionId", data.transactionId);
+      fd.append("image", transferImage);
     }
 
-    const res = await dispatch(
-      checkoutOrder(fd)
-    );
+    const res = await dispatch(checkoutOrder(fd));
 
     if (checkoutOrder.fulfilled.match(res)) {
       if (!BuyNowitem) {
         dispatch(clearCart());
-      } else {
-        dispatch(clearBuyNowItem());
       }
 
+      // No success toast here — checkoutOrder's thunk already fires one
+      // on success, so adding another would duplicate it.
       setSubmitted(true);
 
       setTimeout(() => {
         navigate("/orders");
       }, 600);
     } else {
-      setSubmitError(
-        res.payload?.message ||
-        res.error?.message ||
-        "Couldn't place your order."
-      );
+      // checkoutOrder's rejectWithValue passes the backend's message
+      // string directly as the payload (not `{ message }`) — using
+      // `res.payload?.message` here would always be undefined and hide
+      // the real validation error behind a generic one.
+      showToast({
+        type: "error",
+        message:
+          res.payload ||
+          "Couldn't place your order. Please try again.",
+      });
     }
   };
 
@@ -480,49 +594,9 @@ export default function Checkout() {
         </h1>
 
         <p className="mt-2 text-muted">
-          Review your order and enter shipping and payment details
+          Choose how you'd like your order, then review payment details
         </p>
       </motion.div>
-
-      {/* Error */}
-
-      <AnimatePresence>
-        {submitError && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: -8,
-              height: 0,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              height: "auto",
-            }}
-            exit={{
-              opacity: 0,
-              height: 0,
-            }}
-            className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600"
-          >
-            <span className="flex items-center gap-2">
-              <FiAlertCircle />
-
-              {submitError}
-            </span>
-
-            <button
-              type="button"
-              onClick={() =>
-                setSubmitError("")
-              }
-              aria-label="Dismiss"
-            >
-              <FiX />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
         {/* ===================================================
@@ -545,66 +619,42 @@ export default function Checkout() {
           }}
           className="flex flex-col gap-6"
         >
-          {/* Shipping */}
+          {/* Order Type */}
 
-          <div className="card p-6 md:p-8">
-            <div className="mb-6 flex items-center gap-2">
-              <FiMapPin className="text-primary" />
+          <OrderTypeSelector
+            value={orderType}
+            onChange={chooseOrderType}
+          />
 
-              <h3 className="text-2xl text-text">
-                Shipping Address
-              </h3>
-            </div>
+          {/* Conditional fields based on order type */}
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field
-                icon={<FiUser />}
-                placeholder="Full Name"
-                error={errors.fullName}
-                {...register("fullName", {
-                  required:
-                    "Full name is required",
-                })}
-              />
+          <AnimatePresence mode="wait" initial={false}>
+            {orderType === "delivery" && (
+              <motion.div
+                key="delivery"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <DeliveryFields register={register} errors={errors} />
+              </motion.div>
+            )}
 
-              <Field
-                icon={<FiPhone />}
-                type="tel"
-                placeholder="Phone Number"
-                error={errors.phone}
-                {...register("phone", {
-                  required:
-                    "Phone number is required",
-
-                  minLength: {
-                    value: 8,
-                    message:
-                      "Enter a valid phone number",
-                  },
-                })}
-              />
-
-              <Field
-                icon={<FiHome />}
-                placeholder="City / Region"
-                error={errors.city}
-                {...register("city", {
-                  required:
-                    "City is required",
-                })}
-              />
-
-              <Field
-                icon={<FiMapPin />}
-                placeholder="Detailed Address"
-                error={errors.address}
-                {...register("address", {
-                  required:
-                    "Address is required",
-                })}
-              />
-            </div>
-          </div>
+            {orderType === "dine_in" && (
+              <motion.div
+                key="dine_in"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <DineInFields register={register} errors={errors} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Payment */}
 
@@ -623,18 +673,18 @@ export default function Checkout() {
             />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <PaymentOption
+              <SelectOption
                 active={
                   paymentMethod === "cash"
                 }
                 icon={<FiDollarSign />}
-                title="Cash on Delivery"
+                title="Cash"
                 onClick={() =>
                   choosePayment("cash")
                 }
               />
 
-              <PaymentOption
+              <SelectOption
                 active={isWallet}
                 icon={<FiCreditCard />}
                 title="E-Wallet"
@@ -830,9 +880,10 @@ export default function Checkout() {
 
                 return (
                   <motion.div
-                    key={`${item.product?._id ||
+                    key={`${
+                      item.product?._id ||
                       item.product
-                      }-${item.color}-${item.size}-${i}`}
+                    }-${item.variant}-${item.size}-${i}`}
                     initial={{
                       opacity: 0,
                       y: 8,
@@ -865,8 +916,8 @@ export default function Checkout() {
                       </p>
 
                       <p className="text-xs text-muted">
-                        {item.color &&
-                          `${item.color} · `}
+                        {item.variant &&
+                          `${item.variant} · `}
 
                         {item.size &&
                           `${item.size} · `}

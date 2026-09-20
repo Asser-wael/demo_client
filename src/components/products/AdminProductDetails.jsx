@@ -147,14 +147,14 @@ export default function AdminProductDetails() {
                 <span
                   className="mx-2 px-3 py-1 rounded-br-2xl inline-block border "
                   style={{
-                    backgroundColor: variant?.color?.name || "#000000", // استخدم اسم اللون أو كود الـ Hex
-                    color: variant?.color?.name || "#000000" // استخدم اسم اللون أو كود الـ Hex
+                    backgroundColor: variant?.variant?.name || "#000000", // استخدم اسم اللون أو كود الـ Hex
+                    color: variant?.variant?.name || "#000000" // استخدم اسم اللون أو كود الـ Hex
                   }}
                 >
                   .
                 </span>
                 <h3 className="font-medium text-text">
-                  {variant.color?.name}
+                  {variant.variant?.name}
                 </h3>
               </div>
 

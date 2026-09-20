@@ -18,8 +18,7 @@ import {
 import { 
   addToCart, 
   selectBuyNowItem, // Changed from BuyNowitem
-  selectCartActionLoading, 
-  setBuyNowItem
+  selectCartActionLoading 
 } from "../features/cart/cartSlice";
 
 import Loading from "../components/common/Loading";
@@ -445,7 +444,7 @@ export default function ProductDetails() {
 
   const cartActionLoading = useSelector(selectCartActionLoading);
 
-  const [color, setColor] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -461,7 +460,7 @@ export default function ProductDetails() {
 
   useEffect(() => {
     if (!currentProduct?.variants?.length) {
-      setColor(null);
+      setSelectedVariant(null);
       setSelectedSize(null);
       setQuantity(1);
       return;
@@ -477,7 +476,7 @@ export default function ProductDetails() {
         (size) => Number(size?.stock || 0) > 0
       ) || null;
 
-    setColor(firstAvailableVariant);
+    setSelectedVariant(firstAvailableVariant);
     setSelectedSize(firstAvailableSize);
     setQuantity(1);
   }, [currentProduct]);
@@ -521,9 +520,9 @@ export default function ProductDetails() {
     setQuantity((prev) => Math.min(stock, prev + 1));
   };
 
-  const changeColor = (variant) => {
+  const changeVariant = (variant) => {
     if (!variant) return;
-    setColor(variant);
+    setSelectedVariant(variant);
 
     const firstAvailableSize =
       variant?.sizes?.find((size) => Number(size?.stock || 0) > 0) || null;
@@ -542,7 +541,7 @@ export default function ProductDetails() {
 
   const isValidSelection = Boolean(
     currentProduct?._id &&
-      color?.color?.name &&
+      selectedVariant?.variant?.name &&
       selectedSize?.size &&
       !isOutOfStock
   );
@@ -553,7 +552,7 @@ export default function ProductDetails() {
     dispatch(
       addToCart({
         productId: currentProduct._id,
-        color: color.color.name,
+        variant: selectedVariant.variant.name,
         size: selectedSize.size,
         quantity,
       })
@@ -564,7 +563,7 @@ export default function ProductDetails() {
     if (!isValidSelection) return;
 
     dispatch(
-      setBuyNowItem({
+      BuyNowitem({
         product: {
           _id: currentProduct._id,
           name: currentProduct.name,
@@ -573,7 +572,7 @@ export default function ProductDetails() {
         productId: currentProduct._id,
         name: currentProduct.name,
         image: currentProduct.image,
-        color: color.color.name,
+        variant: selectedVariant.variant.name,
         size: selectedSize.size,
         price: finalPrice,
         offerPrice: hasOffer ? offerPrice : null,
@@ -659,22 +658,22 @@ export default function ProductDetails() {
 
               <div className="flex flex-wrap gap-2">
                 {currentProduct.variants.map((variant, index) => {
-                  const colorName = variant?.color?.name;
-                  if (!colorName) return null;
-                  const isSelected = color?.color?.name === colorName;
+                  const variantName = variant?.variant?.name;
+                  if (!variantName) return null;
+                  const isSelected = selectedVariant?.variant?.name === variantName;
 
                   return (
                     <button
-                      key={`${colorName}-${index}`}
+                      key={`${variantName}-${index}`}
                       type="button"
-                      onClick={() => changeColor(variant)}
+                      onClick={() => changeVariant(variant)}
                       className={`rounded-full border px-4 py-2 text-sm transition-all ${
                         isSelected
                           ? "border-primary bg-primary text-white"
                           : "border-border text-text hover:border-primary"
                       }`}
                     >
-                      {colorName}
+                      {variantName}
                     </button>
                   );
                 })}
@@ -683,14 +682,14 @@ export default function ProductDetails() {
           )}
 
           {/* PORTION */}
-          {color?.sizes?.length > 0 && (
+          {selectedVariant?.sizes?.length > 0 && (
             <div className="mt-6">
               <h3 className="mb-3 text-sm font-semibold text-text">
                 Portion
               </h3>
 
               <div className="flex flex-wrap gap-2">
-                {color.sizes.map((size, index) => {
+                {selectedVariant.sizes.map((size, index) => {
                   const sizeName = size?.size;
                   const isSelected = selectedSize?.size === sizeName;
                   const outOfStock = Number(size?.stock || 0) <= 0;
@@ -733,7 +732,7 @@ export default function ProductDetails() {
           <div className="rounded-lg border border-border px-4 py-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted">Preparation</span>
-              <span className="font-semibold">{color?.color?.name || "—"}</span>
+              <span className="font-semibold">{selectedVariant?.variant?.name || "—"}</span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">

@@ -9,6 +9,7 @@ import {
   MdLogout,
 } from "react-icons/md";
 import { logoutUser } from '../features/auth/authSlice';
+import { unsubscribeFromPush } from '../utils/pushSubscribe';
 import { IoIosNotifications } from "react-icons/io";
 import ThemeToggle from "../components/common/ToggleButton";
 import Name from '../components/company/Name';
@@ -100,11 +101,12 @@ export default function AdminLayout() {
           <button
             onClick={async () => {
               try {
+                await unsubscribeFromPush();
                 await dispatch(logoutUser()).unwrap();
                 window.location.reload();
                 navigate("/");
               } catch (error) {
-                console.log(error);
+                console.error("Logout failed:", error);
               }
             }}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-500 transition hover:bg-red-500/10"
