@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,12 +34,28 @@ function App() {
   const socket = useSocket(accessToken);
 
   /* =========================================================
-     AUTH
+     BOOT — resolve site settings (theme/branding) and, if a
+     session exists, who the user is, BEFORE the app renders.
+     Without this gate the app used to flash default theme/
+     branding for a frame and route guards (PrivateRoute/
+     AdminRoute) each independently spinner-waited on auth,
+     which felt inconsistent across the app.
   ========================================================= */
 
+  const [settingsReady, setSettingsReady] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const bootReady = settingsReady && authChecked;
+
   useEffect(() => {
-    if (!accessToken) return;
-    dispatch(getUser());
+    dispatch(fetchSettings()).finally(() => setSettingsReady(true));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setAuthChecked(true);
+      return;
+    }
+    dispatch(getUser()).finally(() => setAuthChecked(true));
   }, [accessToken, dispatch]);
 
   /* =========================================================
@@ -223,7 +239,10 @@ function App() {
   useEffect(() => {
     if (!user) return;
     dispatch(getCart());
-  }, [dispatch]);
+    // `user` was previously missing from this array, so logging in after
+    // the initial mount (accessToken/user arriving later) never re-ran
+    // this effect — the cart silently stayed empty until a full reload.
+  }, [dispatch, user]);
 
   /* =========================================================
      PUSH NOTIFICATIONS
@@ -238,9 +257,6 @@ function App() {
   /* =========================================================
      ADMIN SOCKET ROOM
   ========================================================= */
-  useEffect(() => {
-    dispatch(fetchSettings());
-  }, [dispatch]);
   useEffect(() => {
     if (!socket) return;
 
@@ -257,6 +273,8 @@ function App() {
   /* =========================================================
      UI
   ========================================================= */
+
+  if (!bootReady) return <Loading />;
 
   return (
     <>

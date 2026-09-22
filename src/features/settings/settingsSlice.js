@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { showToast } from "../../utils/showToast.jsx";
 
 export const fetchSettings = createAsyncThunk(
   "settings/fetch",
@@ -18,9 +19,12 @@ export const saveSettings = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.put("/settings", payload);
+      showToast({ type: "success", message: "Settings saved successfully" });
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to save settings.");
+      const message = err.response?.data?.message || "Failed to save settings.";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );
@@ -30,9 +34,12 @@ export const resetColorsRemote = createAsyncThunk(
   async (mode, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.put(`/settings/reset-colors/${mode}`);
+      showToast({ type: "success", message: "Colors reset to default" });
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to reset colors.");
+      const message = err.response?.data?.message || "Failed to reset colors.";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );
@@ -45,9 +52,12 @@ export const saveHomeContent = createAsyncThunk(
       const { data } = await axiosInstance.put("/settings/home-content", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      showToast({ type: "success", message: "Home content saved successfully" });
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to save home content.");
+      const message = err.response?.data?.message || "Failed to save home content.";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );
@@ -58,9 +68,12 @@ export const deleteHomeMedia = createAsyncThunk(
   async (type, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.delete(`/settings/home-content/${type}`);
+      showToast({ type: "success", message: "Media deleted successfully" });
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to delete media.");
+      const message = err.response?.data?.message || "Failed to delete media.";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );

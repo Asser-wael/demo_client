@@ -1,22 +1,22 @@
 // AdminRoute.jsx
 import { Navigate, Outlet } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Loading from "../components/common/Loading";
-import { getUser } from "../features/auth/authSlice";
 
 const AdminRoute = () => {
   const { accessToken, user, userLoading } = useSelector((state) => state.auth);
 
-  if (userLoading)
-    return <Loading />;
+  // Never logged in at all — nothing to wait on, send them straight to login.
+  if (!accessToken) return <Navigate to="/login" replace />;
 
-  if (!user)
-    return <Loading />;
+  // Logged in, still resolving who they are.
+  if (userLoading) return <Loading />;
 
-  if (user.role !== "admin")
-    return <Navigate to="/" replace />;
+  // Had a token but the user fetch never resolved a user (expired/invalid
+  // token, deleted account, etc.) — don't strand them on a spinner forever.
+  if (!user) return <Navigate to="/login" replace />;
 
+  if (user.role !== "admin") return <Navigate to="/" replace />;
 
   return <Outlet />;
 };

@@ -24,6 +24,8 @@ const getStock = (product) =>
 
 const getPrice = (product) => product.price ?? product.variants?.[0]?.sizes?.[0]?.price ?? 0;
 
+const PAGE_SIZE = 20;
+
 export default function Products() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ export default function Products() {
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [page, setPage] = useState(1);
 
   const { categories } = useSelector((state) => state.categories);
   const { products, editid } = useSelector((state) => state.products);
@@ -56,6 +59,19 @@ export default function Products() {
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [products, search, category, status]);
+
+  // The admin product list is fetched in full (no server-side pagination —
+  // the same endpoint backs the public storefront's client-side search),
+  // so pagination happens here over the already-filtered results instead.
+  useEffect(() => {
+    setPage(1);
+  }, [search, category, status]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  const paginatedProducts = useMemo(
+    () => filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredProducts, page]
+  );
 
   const handleDelete = (id) => {
     dispatch(deleteProduct(id));
@@ -167,7 +183,7 @@ export default function Products() {
               </thead>
               <tbody>
                 <AnimatePresence initial={false}>
-                  {filteredProducts.map((product) => {
+                  {paginatedProducts.map((product) => {
                     const stock = getStock(product);
                     const price = getPrice(product);
                     const isActive = product.isActive !== false;
@@ -259,7 +275,7 @@ export default function Products() {
       {filteredProducts.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
           <AnimatePresence initial={false}>
-            {filteredProducts.map((product) => {
+            {paginatedProducts.map((product) => {
               const stock = getStock(product);
               const price = getPrice(product);
               const isActive = product.isActive !== false;
@@ -321,6 +337,31 @@ export default function Products() {
               );
             })}
           </AnimatePresence>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filteredProducts.length > PAGE_SIZE && (
+        <div className="flex items-center justify-center gap-4 py-2">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="rounded-xl border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-bg disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-muted">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            className="rounded-xl border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-bg disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next
+          </button>
         </div>
       )}
 

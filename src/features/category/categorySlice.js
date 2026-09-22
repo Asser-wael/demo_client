@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { showToast } from "../../utils/showToast.jsx";
 
 // =========================
 // Thunks
@@ -33,11 +34,12 @@ export const addCategory = createAsyncThunk(
         }
       );
 
+      showToast({ type: "success", message: "Category created successfully" });
       return data.category;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to create category"
-      );
+      const message = err.response?.data?.message || "Failed to create category";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );
@@ -56,11 +58,12 @@ export const updateCategory = createAsyncThunk(
         }
       );
 
+      showToast({ type: "success", message: "Category updated successfully" });
       return data.category;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to update category"
-      );
+      const message = err.response?.data?.message || "Failed to update category";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );
@@ -73,11 +76,12 @@ export const deleteCategory = createAsyncThunk(
         data: { id },
       });
 
+      showToast({ type: "success", message: "Category deleted successfully" });
       return id;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to delete category"
-      );
+      const message = err.response?.data?.message || "Failed to delete category";
+      showToast({ type: "error", message });
+      return rejectWithValue(message);
     }
   }
 );

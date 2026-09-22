@@ -2,7 +2,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { FaMoon, FaSun } from "react-icons/fa";
 
 import { setThemeLocal, saveSettings } from "../../features/settings/settingsSlice.js";
-import { showToast } from "../../utils/showToast.jsx";
 
 export default function ThemeToggle() {
   const dispatch = useDispatch();
@@ -11,25 +10,18 @@ export default function ThemeToggle() {
   const isDark = theme === "dark";
   const isAdmin = user?.role === "admin";
 
-  const handleToggle = async () => {
+  const handleToggle = () => {
     const newTheme = isDark ? "light" : "dark";
 
     // Every visitor — admin or not — gets an instant, permanent local
     // preference via localStorage. Only an admin's toggle also updates the
     // site-wide default stored on the server; a non-admin save would 403
     // against the admin-only /settings route, so we never attempt it.
+    // saveSettings already reports success/failure via toast itself, so
+    // there's nothing left for this component to catch.
     dispatch(setThemeLocal(newTheme));
 
-    if (!isAdmin) return;
-
-    try {
-      await dispatch(saveSettings({ theme: newTheme })).unwrap();
-    } catch (err) {
-      showToast({
-        type: "error",
-        message: err || "تعذر حفظ الثيم كإعداد افتراضي للموقع",
-      });
-    }
+    if (isAdmin) dispatch(saveSettings({ theme: newTheme }));
   };
 
   return (
