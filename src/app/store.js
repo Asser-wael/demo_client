@@ -14,6 +14,8 @@ import popularReducer from "../features/popular/popularSlice.js";
 import trustReducer from "../features/trust/trustSlice.js";
 import accountReducer from "../features/account/accountSlice";
 import settingsReducer from "../features/settings/settingsSlice";
+import usersReducer from "../features/users/usersSlice";
+import broadcastReducer from "../features/notifications/broadcastSlice";
 
 export const store = configureStore({
   reducer: {
@@ -39,5 +41,8 @@ export const store = configureStore({
     settings: settingsReducer,
 
     account: accountReducer,
+
+    users: usersReducer,
+    broadcast: broadcastReducer,
   },
 });

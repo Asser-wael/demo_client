@@ -79,8 +79,26 @@ const defaultColors = {
   },
 };
 
+const THEME_STORAGE_KEY = "theme";
+
+function getStoredTheme() {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function persistTheme(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // localStorage unavailable (private mode, disabled storage) — theme just won't persist
+  }
+}
+
 const initialState = {
-  theme: "light",
+  theme: getStoredTheme() || "light",
   colors: { light: { ...defaultColors.light }, dark: { ...defaultColors.dark } },
   company: { name: "Company", address: "" },
   social: { instagram: "", tiktok: "", facebook: "", whatsapp: "" },
@@ -106,12 +124,20 @@ const settingsSlice = createSlice({
     },
     setThemeLocal(state, action) {
       state.theme = action.payload;
+      persistTheme(action.payload);
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchSettings.pending, (state) => { state.status = "loading"; state.error = null; })
-      .addCase(fetchSettings.fulfilled, (state, action) => { state.status = "succeeded"; Object.assign(state, action.payload); })
+      .addCase(fetchSettings.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        // A personal theme preference (localStorage) always wins over the
+        // site-wide admin default so non-admins keep their own light/dark choice.
+        const personalTheme = getStoredTheme();
+        Object.assign(state, action.payload);
+        if (personalTheme) state.theme = personalTheme;
+      })
       .addCase(fetchSettings.rejected, (state, action) => { state.status = "failed"; state.error = action.payload; })
 
       .addCase(saveSettings.pending, (state) => { state.status = "loading"; state.error = null; })

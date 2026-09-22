@@ -21,8 +21,10 @@ import {
   PiWarningCircle,
   PiPencilSimple,
   PiArrowRight,
+  PiPaperPlaneTiltDuotone,
 } from "react-icons/pi";
 
+import { sendBroadcast, getBroadcasts } from "../../features/notifications/broadcastSlice";
 import useSocket from "../../hooks/useSocket";
 import {
   fetchDashboardCards,
@@ -265,6 +267,174 @@ function Status({ status }) {
     >
       {status || "pending"}
     </span>
+  );
+}
+
+/* =========================================================
+   BROADCAST PANEL — push every diner now, or at a clock time
+   the server delivers to each of them in their own local time
+========================================================= */
+
+function BroadcastPanel() {
+  const dispatch = useDispatch();
+  const { history, sending, loading } = useSelector((state) => state.broadcast);
+
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [mode, setMode] = useState("now");
+  const [scheduledTime, setScheduledTime] = useState("17:00");
+
+  useEffect(() => {
+    dispatch(getBroadcasts());
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title.trim() || !message.trim()) return;
+
+    const result = await dispatch(
+      sendBroadcast({ title, message, mode, scheduledTime })
+    );
+
+    if (sendBroadcast.fulfilled.match(result)) {
+      setTitle("");
+      setMessage("");
+    }
+  };
+
+  return (
+    <section className="border border-border bg-card">
+      <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5">
+        <h2 className="font-serif text-lg text-text sm:text-xl">
+          Broadcast
+        </h2>
+        <p className="mt-1 text-xs text-muted">
+          Push a message to every diner — now, or at a time each of them
+          receives in their own local timezone.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 border-b border-border px-4 py-5 sm:px-6 lg:border-b-0 lg:border-r"
+        >
+          <div>
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+              Title
+            </label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={100}
+              placeholder="Tonight's special"
+              className="w-full border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+              Message
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={300}
+              rows={3}
+              placeholder="Fresh market fish just landed — booking recommended."
+              className="w-full resize-none border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:border-accent"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-text">
+              <input
+                type="radio"
+                name="broadcastMode"
+                checked={mode === "now"}
+                onChange={() => setMode("now")}
+              />
+              Send now
+            </label>
+
+            <label className="flex items-center gap-2 text-sm text-text">
+              <input
+                type="radio"
+                name="broadcastMode"
+                checked={mode === "scheduled"}
+                onChange={() => setMode("scheduled")}
+              />
+              Send at
+            </label>
+
+            {mode === "scheduled" && (
+              <input
+                type="time"
+                value={scheduledTime}
+                onChange={(e) => setScheduledTime(e.target.value)}
+                className="border border-border bg-bg px-2 py-1.5 text-sm text-text outline-none focus:border-accent"
+              />
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={sending || !title.trim() || !message.trim()}
+            className="mt-1 flex items-center justify-center gap-2 border border-accent bg-accent/10 px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <PiPaperPlaneTiltDuotone />
+            {sending ? "Sending…" : "Send Broadcast"}
+          </button>
+        </form>
+
+        <div className="px-4 py-5 sm:px-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+            Recent broadcasts
+          </p>
+
+          {loading && !history.length ? (
+            <>
+              <RowSkeleton />
+              <RowSkeleton />
+            </>
+          ) : !history.length ? (
+            <p className="mt-6 text-center text-sm text-muted">
+              No broadcasts sent yet.
+            </p>
+          ) : (
+            <div className="mt-3">
+              {history.slice(0, 6).map((b) => (
+                <div
+                  key={b._id}
+                  className="flex items-center justify-between gap-4 border-b border-border py-3 last:border-0"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-text">
+                      {b.title}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-muted">
+                      {b.mode === "now"
+                        ? "Sent immediately"
+                        : `Scheduled ${b.scheduledTime}`}{" "}
+                      · {b.sentCount}/{b.targetCount} delivered
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${
+                      b.status === "completed"
+                        ? "border-border text-muted"
+                        : "border-accent/30 bg-accent/10 text-accent"
+                    }`}
+                  >
+                    {b.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -962,6 +1132,14 @@ export default function Dashboard() {
 
             </div>
           </section>
+        </div>
+
+        {/* =================================================
+            BROADCAST
+        ================================================= */}
+
+        <div className="mt-6">
+          <BroadcastPanel />
         </div>
       </div>
     </main>

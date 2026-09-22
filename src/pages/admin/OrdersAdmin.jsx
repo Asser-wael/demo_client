@@ -442,7 +442,6 @@ function OrderRow({
             className="
               h-8
               px-2
-              rounded-md
               border
               border-[var(--border)]
               bg-[var(--bg)]
@@ -481,7 +480,6 @@ function OrderRow({
             className="
               w-8
               h-8
-              rounded-md
               border
               border-[var(--border)]
               flex
@@ -590,7 +588,6 @@ function MobileOrderCard({
           className="
             w-9
             h-9
-            rounded-full
             border
             border-[var(--border)]
             flex
@@ -760,7 +757,6 @@ function MobileOrderCard({
             w-full
             h-10
             px-3
-            rounded-md
             border
             border-[var(--border)]
             bg-[var(--bg)]
@@ -800,7 +796,6 @@ function MobileOrderCard({
           mt-3
           w-full
           h-10
-          rounded-md
           border
           border-[var(--border)]
           text-sm
@@ -866,7 +861,6 @@ function OrderModal({
           bg-[var(--card)]
           border
           border-[var(--border)]
-          shadow-2xl
         "
       >
         {/* HEADER */}
@@ -902,9 +896,9 @@ function OrderModal({
             <h2
               className="
                 mt-1
+                font-serif
                 text-lg
                 sm:text-xl
-                font-semibold
                 truncate
               "
             >
@@ -921,7 +915,6 @@ function OrderModal({
             className="
               w-9
               h-9
-              rounded-md
               border
               border-[var(--border)]
               flex
@@ -992,7 +985,6 @@ function OrderModal({
                   sm:w-auto
                   min-w-[150px]
                   px-3
-                  rounded-md
                   border
                   border-[var(--border)]
                   bg-[var(--bg)]
@@ -1262,7 +1254,6 @@ function OrderModal({
                             w-12
                             h-12
                             object-cover
-                            rounded-md
                             border
                             border-[var(--border)]
                             shrink-0
@@ -1273,7 +1264,6 @@ function OrderModal({
                           className="
                             w-12
                             h-12
-                            rounded-md
                             border
                             border-[var(--border)]
                             flex
@@ -1408,7 +1398,6 @@ function OrderModal({
                 className="
                   h-9
                   w-9
-                  rounded-md
                   bg-[#25D366]
                   text-white
                   flex
@@ -1450,7 +1439,6 @@ function OrderModal({
                 className="
                   h-9
                   px-4
-                  rounded-md
                   border
                   border-[var(--border)]
                   text-xs
@@ -1471,7 +1459,6 @@ function OrderModal({
                 className="
                   h-9
                   px-4
-                  rounded-md
                   border
                   border-[var(--border)]
                   text-xs
@@ -1763,10 +1750,10 @@ export default function OrdersAdmin() {
 
             <h1
               className="
+                font-serif
                 text-xl
                 sm:text-2xl
                 lg:text-3xl
-                font-semibold
                 tracking-tight
               "
             >
@@ -1795,7 +1782,6 @@ export default function OrdersAdmin() {
               sm:w-auto
               h-10
               px-4
-              rounded-md
               border
               border-[var(--border)]
               bg-[var(--card)]
@@ -1917,7 +1903,6 @@ export default function OrdersAdmin() {
                   h-10
                   pl-10
                   pr-3
-                  rounded-md
                   border
                   border-[var(--border)]
                   bg-[var(--bg)]
@@ -1981,7 +1966,6 @@ export default function OrdersAdmin() {
                   className={`
                     h-9
                     px-3
-                    rounded-md
                     text-xs
                     font-medium
                     whitespace-nowrap
@@ -2373,7 +2357,7 @@ export default function OrdersAdmin() {
               type="button"
               disabled={page <= 1 || loading}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
+              className="border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
             >
               Previous
             </button>
@@ -2386,7 +2370,7 @@ export default function OrdersAdmin() {
               type="button"
               disabled={page >= ordersPagination.totalPages || loading}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
+              className="border border-[var(--border)] px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--border)]/20 transition"
             >
               Next
             </button>
